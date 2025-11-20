@@ -1,11 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
+<?php 
+include_once './Models/database.php';
+$db = new Database();
+
+include_once './Views/layout_header.php';
+
+//điều hướng đến các Controller
+if (isset($_GET['ctrl'])&& isset($_GET['act'])) {
+    // kiểm tra xem có tham số crl và act không
+    include_once './Controller/' . ucwords($_GET['ctrl']) . 'Controller.php';
+
+    $crl = new (ucwords($_GET['ctrl']) . 'controller')();
+    $act = $_GET['act'];
+    $crl->$act();
+
     
-</body>
-</html>
+}else {
+
+include_once './Controller/PageController.php';
+
+$crl = new PageController();
+$crl->home();
+}
+
+include_once './Views/layout_footer.php';
