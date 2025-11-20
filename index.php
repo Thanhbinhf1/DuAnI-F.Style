@@ -13,7 +13,6 @@ if (isset($_GET['ctrl'])&& isset($_GET['act'])) {
     $act = $_GET['act'];
     $crl->$act();
 
-    
 }else {
 
 include_once './Controller/PageController.php';
