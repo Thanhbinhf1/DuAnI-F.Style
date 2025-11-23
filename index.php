@@ -1,6 +1,6 @@
 <?php 
 include_once './Models/Database.php';
-$db = new Database();
+
 
 include_once './Views/layout_header.php';
 
