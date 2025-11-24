@@ -1,7 +1,6 @@
 <?php 
 include_once './Models/Database.php';
 
-
 include_once './Views/layout_header.php';
 
 if (isset($_GET['ctrl'])&& isset($_GET['act'])) {

@@ -1,38 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="./public/css/layout_header.css">
+    <title>F.Style Store</title>
+    <link rel="stylesheet" href="./public/css/style.css"> 
 </head>
- <div class="logo">
-            <img src="https://example.com/logo.png" alt="Logo">
+<body>
+    <header>
+        <div class="logo-section">
+            <img src="img/logo.png" alt="Logo" style="height: 50px;">
             
-            <search>
-                <form action="search.php" method="get">
-                    <input type="text" name="query" placeholder="Tìm kiếm sản phẩm...">
-                    <button type="submit">Tìm kiếm</button>
-
-                    <div class="user">
-                        <img src="" alt="">
-                    </div>
-
-                    <div class="cart">
-                        <img src="" alt="">
+            <div class="search-box">
+                <form action="index.php" method="get">
+                    <input type="hidden" name="ctrl" value="product">
+                    <input type="hidden" name="act" value="search">
+                    <input type="text" name="keyword" placeholder="Tìm kiếm...">
+                    <button type="submit">Tìm</button>
                 </form>
-            </search>
+            </div>
+            
+            <div class="user-actions">
+                <a href="?ctrl=user&act=login">Đăng nhập</a>
+                <a href="?ctrl=cart&act=view">Giỏ hàng</a>
+            </div>
         </div>
-<ul>
-    <li><a href="?ctrl=page&act=home">trang chủ</a></li>
 
-    <li><a href="?ctrl=page&act=about">giới thiệu</a></li>
-
-    <li><a href="?ctrl=page&act=contact">liên hệ</a></li>
-
-    <li><a href="?ctrl=user&act=login">đăng nhập</a></li>
-
-    <li><a href="?ctrl=user&act=register">đăng ký</a></li>
-</ul>
-
-<body></body>
+        <nav>
+            <ul>
+                <li><a href="index.php">Trang chủ</a></li>
+                <li><a href="?ctrl=page&act=about">Giới thiệu</a></li>
+                <li><a href="?ctrl=product&act=list">Sản phẩm</a></li>
+                <li><a href="?ctrl=page&act=contact">Liên hệ</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
