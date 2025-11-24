@@ -4,9 +4,7 @@ include_once './Models/Database.php';
 
 include_once './Views/layout_header.php';
 
-//điều hướng đến các Controller
 if (isset($_GET['ctrl'])&& isset($_GET['act'])) {
-    // kiểm tra xem có tham số crl và act không
     include_once './Controller/' . ucwords($_GET['ctrl']) . 'Controller.php';
 
     $crl = new (ucwords($_GET['ctrl']) . 'controller')();
