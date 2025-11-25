@@ -7,7 +7,7 @@ class Product {
     }
 
     function getNewProducts() {
-        // Giả sử bảng của bạn tên là 'products'
+       
         $sql = "SELECT * FROM products ORDER BY id DESC LIMIT 8"; 
         return $this->db->query($sql);
     }
