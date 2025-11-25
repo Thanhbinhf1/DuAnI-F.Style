@@ -8,7 +8,7 @@ class UserController {
         $this->model = new User();
     }
 
-    // --- XỬ LÝ ĐĂNG KÝ ---
+    // XỬ LÝ ĐĂNG KÝ 
     function register() {
         include_once 'Views/user_register.php';
     }
@@ -16,7 +16,7 @@ class UserController {
     function registerPost() {
         // Nhận dữ liệu từ form
         $user = $_POST['username'];
-        $pass = $_POST['password']; // Lưu ý: Thực tế nên mã hóa password bằng password_hash()
+        $pass = $_POST['password'];
         $email = $_POST['email'];
         $name = $_POST['fullname'];
 
@@ -31,7 +31,7 @@ class UserController {
         }
     }
 
-    // --- XỬ LÝ ĐĂNG NHẬP ---
+    // XỬ LÝ ĐĂNG NHẬP 
     function login() {
         include_once 'Views/user_login.php';
     }
@@ -43,7 +43,7 @@ class UserController {
         $check = $this->model->checkUser($user, $pass);
 
         if ($check) {
-            // Lưu thông tin vào Session
+            
             $_SESSION['user'] = $check;
             
             // Nếu là admin thì chuyển trang quản trị (làm sau), khách thì về trang chủ
