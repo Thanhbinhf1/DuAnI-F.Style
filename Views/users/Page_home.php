@@ -29,7 +29,7 @@
     
     <section class="section-product">
         <div class="section-header">
-            <h2>SẢN PHẨM HOT 🔥</h2>
+            <h2>SẢN PHẨM HOT </h2>
             <a href="?ctrl=product&act=list&type=hot">Xem tất cả &rarr;</a>
         </div>
         <div class="product-list">
@@ -49,7 +49,7 @@
 
     <section class="section-product">
         <div class="section-header">
-            <h2>HÀNG MỚI VỀ 🆕</h2>
+            <h2>HÀNG MỚI VỀ </h2>
             <a href="?ctrl=product&act=list&type=new">Xem tất cả &rarr;</a>
         </div>
         
@@ -75,7 +75,7 @@
 
     <section class="section-product">
         <div class="section-header">
-            <h2>SẢN PHẨM GIÁ TỐT 💸</h2>
+            <h2>SẢN PHẨM GIÁ TỐT </h2>
             <a href="?ctrl=product&act=list&type=sale">Xem tất cả &rarr;</a>
         </div>
         <div class="product-list">
