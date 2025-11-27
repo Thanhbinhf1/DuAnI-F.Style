@@ -6,20 +6,32 @@ class Product {
         $this->db = new Database();
     }
 
-    // Lấy danh sách sản phẩm mới (Đã có)
+    // 1. Hàng mới về (Lấy 4 cái mới nhất)
     function getNewProducts() {
-        $sql = "SELECT * FROM products ORDER BY id DESC LIMIT 8"; 
+        $sql = "SELECT * FROM products ORDER BY id DESC LIMIT 4"; 
         return $this->db->query($sql);
     }
 
-    // --- THÊM HÀM NÀY: Lấy chi tiết 1 sản phẩm theo ID ---
+    // 2. Sản phẩm Hot (Lấy 4 cái có nhiều lượt xem nhất)
+    function getHotProducts() {
+        $sql = "SELECT * FROM products ORDER BY views DESC LIMIT 4";
+        return $this->db->query($sql);
+    }
+
+    // 3. Sản phẩm Giá tốt (Lấy 4 cái giá rẻ nhất hoặc đang giảm giá)
+    function getSaleProducts() {
+        // Ưu tiên lấy những sản phẩm có giá < 200.000 hoặc sắp xếp giá tăng dần
+        $sql = "SELECT * FROM products ORDER BY price ASC LIMIT 4";
+        return $this->db->query($sql);
+    }
+    
+    // Lấy chi tiết (giữ nguyên)
     function getProductById($id) {
-        // Dùng tham số $id để lọc đúng sản phẩm cần tìm
         $sql = "SELECT * FROM products WHERE id = $id";
         return $this->db->queryOne($sql);
     }
     
-    // --- THÊM HÀM NÀY (Optional): Lấy sản phẩm liên quan (cùng danh mục) ---
+    // Sản phẩm liên quan (giữ nguyên)
     function getRelatedProducts($categoryId, $excludeId) {
         $sql = "SELECT * FROM products WHERE category_id = $categoryId AND id != $excludeId LIMIT 4";
         return $this->db->query($sql);
