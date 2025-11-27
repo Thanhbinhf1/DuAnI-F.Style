@@ -6,7 +6,7 @@ class PageController {
         $productModel = new Product();
         $dsSanPham = $productModel->getNewProducts(); 
         
-        include_once 'Views/page_home.php';
+        include_once 'Views/users/page_home.php';
     }
 }
 ?>

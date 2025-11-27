@@ -3,7 +3,7 @@ session_start();
 
 include_once './Models/Database.php';
 
-include_once './Views/layout_header.php';
+include_once './Views/users/layout_header.php';
 
 if (isset($_GET['ctrl'])&& isset($_GET['act'])) {
     include_once './Controller/' . ucwords($_GET['ctrl']) . 'Controller.php';
