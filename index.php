@@ -1,4 +1,6 @@
 <?php 
+session_start();
+
 include_once './Models/Database.php';
 
 include_once './Views/layout_header.php';
