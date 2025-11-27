@@ -20,4 +20,4 @@ $crl = new PageController();
 $crl->home();
 }
 
-include_once './Views/layout_footer.php';
+include_once './Views/users/layout_footer.php';
