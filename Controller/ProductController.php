@@ -30,7 +30,7 @@ class ProductController {
         $spLienQuan = $this->model->getRelatedProducts($sp['category_id'], $id);
 
         // 4. Gọi View để hiển thị
-        include_once 'Views/product_detail.php';
+        include_once 'Views/users/product_detail.php';
     }
     
     // Hàm hiển thị danh sách tất cả sản phẩm (làm sau)
