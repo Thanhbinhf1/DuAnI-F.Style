@@ -10,7 +10,7 @@ class UserController {
 
     // XỬ LÝ ĐĂNG KÝ 
     function register() {
-        include_once 'Views/user_register.php';
+        include_once 'Views/users/user_register.php';
     }
 
     function registerPost() {
@@ -23,7 +23,7 @@ class UserController {
         // Kiểm tra xem user đã có chưa
         if($this->model->checkUserExist($user)) {
             $error = "Tài khoản đã tồn tại!";
-            include_once 'Views/user_register.php';
+            include_once 'Views/users/user_register.php';
         } else {
             // Thêm vào DB
             $this->model->insertUser($user, $pass, $name, $email);
@@ -33,7 +33,7 @@ class UserController {
 
     // XỬ LÝ ĐĂNG NHẬP 
     function login() {
-        include_once 'Views/user_login.php';
+        include_once 'Views/users/user_login.php';
     }
 
     function loginPost() {
@@ -50,7 +50,7 @@ class UserController {
             echo "<script>alert('Đăng nhập thành công!'); window.location='index.php';</script>";
         } else {
             $error = "Sai tên đăng nhập hoặc mật khẩu!";
-            include_once 'Views/user_login.php';
+            include_once 'Views/users/user_login.php';
         }
     }
 
