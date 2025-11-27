@@ -11,7 +11,7 @@
 <body>
     <header>
         <div class="logo-section">
-            <img src="img/logo.png" alt="Logo" style="height: 50px;">
+            <img src="" alt="Logo" style="height: 50px;">
 
             <div class="search-box">
                 <form action="index.php" method="get">
