@@ -24,8 +24,8 @@
 
             <div class="user-actions">
                 <?php if(isset($_SESSION['user'])) { ?>
-                <span>Xin chào, <b><?=$_SESSION['user']['fullname']?></b></span>
-                <a href="?ctrl=user&act=logout" style="color: red; margin-left: 10px;">(Thoát)</a>
+                <span><b><?=$_SESSION['user']['fullname']?></b></span>
+                <a href="?ctrl=user&act=logout" style="color: black; margin-left: 10px;">Đăng xuất</a>
                 <?php } else { ?>
                 <a href="?ctrl=user&act=login">Đăng nhập</a>
                 <a href="?ctrl=user&act=register">Đăng ký</a>
