@@ -95,10 +95,7 @@ class CartController {
         }
         echo "<script>window.location='?ctrl=cart&act=view';</script>";
     }
-    
-    
-}
-function updateAjax() {
+    function updateAjax() {
         if (isset($_POST['key']) && isset($_POST['qty'])) {
             $key = $_POST['key'];
             $qty = (int)$_POST['qty'];
@@ -130,5 +127,9 @@ function updateAjax() {
                 exit;
             }
         }
-    }
+    }   
+    
+    
+}
+
 ?>
