@@ -1,5 +1,5 @@
 <?php
-// Views/admin/layout_footer.php
+
 ?>
     </main> 
     

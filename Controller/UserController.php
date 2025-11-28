@@ -1,4 +1,4 @@
-// thanhbinhf1/duani-f.style/DuAnI-F.Style-Quy/Controller/UserController.php
+
 <?php 
 include_once 'Models/User.php';
 

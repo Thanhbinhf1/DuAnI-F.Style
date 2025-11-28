@@ -1,4 +1,4 @@
-// thanhbinhf1/duani-f.style/DuAnI-F.Style-Quy/index.php
+
 <?php 
 session_start();
 

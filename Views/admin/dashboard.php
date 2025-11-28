@@ -1,5 +1,5 @@
 <?php
-// Views/admin/dashboard.php
+
 ?>
 <h1 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-bottom: 30px;">TRANG QUẢN TRỊ (DASHBOARD)</h1>
 
