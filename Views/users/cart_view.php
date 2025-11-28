@@ -45,7 +45,7 @@
                                 <?=number_format($item['price'] * $item['quantity'])?> đ
                             </td>
                             <td>
-                                <a href="?ctrl=cart&act=delete&key=<?=$key?>" onclick="return confirm('Xóa món này?')" style="color: #999; font-size: 20px;">&times;</a>
+                                <a href="?ctrl=cart&act=delete&key=<?=$key?>" onclick="return confirm('Xóa món này?')" style="color: #999; font-size: 20px; text-decoration: none;">&times;</a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -57,7 +57,6 @@
             <div class="cart-right">
                 <div class="cart-summary">
                     <div class="summary-title">Thông tin đơn hàng</div>
-                    
                     <div class="summary-row">
                         <span>Tạm tính:</span>
                         <span id="sub-total"><?=number_format($totalPrice)?> đ</span>
@@ -66,18 +65,16 @@
                         <span>Phí vận chuyển:</span>
                         <span>Miễn phí</span>
                     </div>
-
                     <div class="summary-total">
                         <span>Tổng cộng:</span>
                         <span class="total-price" id="cart-total"><?=number_format($totalPrice)?> đ</span>
                     </div>
-
-                    <a href="?ctrl=order&act=checkout" class="btn-checkout">TIẾN HÀNH THANH TOÁN</a>
+                    <a href="?ctrl=order&act=checkout" class="btn-checkout">THANH TOÁN</a>
                 </div>
             </div>
-
         </div>
-        <?php else: ?>
+
+    <?php else: ?>
         <div style="text-align: center; padding: 50px; background: #fff; border-radius: 10px;">
             <img src="https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/cart/9bdd8040b334d31946f4.png" style="width: 100px;">
             <p style="margin-top: 20px; color: #666;">Giỏ hàng của bạn còn trống</p>
@@ -95,17 +92,17 @@ function updateQty(key, change) {
 
     let newQty = currentQty + change;
 
-    // 1. Kiểm tra logic (Không < 1, Không > Tồn kho)
+    // 1. Chặn số lượng
     if (newQty < 1) return; 
     if (newQty > maxStock) {
         alert('Kho chỉ còn ' + maxStock + ' sản phẩm!');
         return;
     }
 
-    // 2. Cập nhật số lượng trên giao diện ngay lập tức
+    // 2. Cập nhật ô input ngay lập tức
     qtyInput.value = newQty;
 
-    // 3. Gửi AJAX lên server để tính toán giá tiền mới
+    // 3. Gửi AJAX để lấy giá tiền mới
     let formData = new FormData();
     formData.append('key', key);
     formData.append('qty', newQty);
@@ -117,10 +114,10 @@ function updateQty(key, change) {
     .then(response => response.json())
     .then(data => {
         if(data.status === 'success') {
-            // CẬP NHẬT GIÁ TIỀN MỚI VÀO CÁC VỊ TRÍ
-            document.getElementById('row-total-' + key).innerText = data.row_total; // Thành tiền từng dòng
-            document.getElementById('sub-total').innerText = data.cart_total; // Tạm tính bên phải
-            document.getElementById('cart-total').innerText = data.cart_total; // Tổng cộng bên phải
+            // ĐIỀN GIÁ MỚI VÀO HTML
+            document.getElementById('row-total-' + key).innerText = data.row_total;
+            document.getElementById('sub-total').innerText = data.cart_total;
+            document.getElementById('cart-total').innerText = data.cart_total;
         }
     })
     .catch(error => console.error('Lỗi:', error));
