@@ -81,16 +81,6 @@ class Product {
         $sql = "SELECT * FROM product_variants WHERE id = ?";
         return $this->db->queryOne($sql, [$variantId]);
     }
-   // File: Controller/AdminProductController.php (Thêm hàm này)
-// ...
-// [GET] Hiển thị danh sách sản phẩm
-function listProducts() {
-    // Giả định Model Product đã có hàm getAllProducts()
-    $products = $this->model->getAllProducts(); 
-    // Gán tên file view để layout biết file nào để nhúng
-    $view_file = 'Views/admin/product_list.php';
-    include_once 'Views/admin/admin_layout.php';
-}
-// ...
+
 }
 ?>
