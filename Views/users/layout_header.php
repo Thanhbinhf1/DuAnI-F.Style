@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F.Style Store</title>
-    <link rel="stylesheet" href="./Public/css/home.css">
+    <link rel="stylesheet" href="./Public/Css/home.css">
 </head>
 
 <body>
