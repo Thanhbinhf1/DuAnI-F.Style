@@ -23,5 +23,6 @@ class User {
         $sql = "SELECT * FROM users WHERE username = ?";
         return $this->db->queryOne($sql, [$username]);
     }
+   
 }
 ?>

@@ -55,5 +55,29 @@ class UserController {
         unset($_SESSION['user']);
         echo "<script>window.location='index.php';</script>";
     }
+    // File: Controller/UserController.php (Chỉ phần hàm loginPost)
+// ...
+    function loginPost() {
+        $user = $_POST['username'];
+        $pass = $_POST['password'];
+
+        $check = $this->model->checkUser($user);
+
+        if ($check && password_verify($pass, $check['password'])) {
+            $_SESSION['user'] = $check;
+            
+            // --- LOGIC CHUYỂN HƯỚNG ADMIN ---
+            if ($check['role'] == 1) { // 1 là Admin theo DB schema
+                echo "<script>alert('Đăng nhập ADMIN thành công!'); window.location='index.php?ctrl=Admin&act=index';</script>";
+            } else {
+                echo "<script>alert('Đăng nhập thành công!'); window.location='index.php';</script>";
+            }
+            // ----------------------------------------
+        } else {
+            $error = "Sai tên đăng nhập hoặc mật khẩu!";
+            include_once 'Views/users/user_login.php';
+        }
+    }
+// ...
 }
 ?>

@@ -81,6 +81,29 @@ class Product {
         $sql = "SELECT * FROM product_variants WHERE id = ?";
         return $this->db->queryOne($sql, [$variantId]);
     }
+// ... trong class Product { ...
+    // HÀM MỚI: Lấy tất cả danh mục (cho form Thêm/Sửa SP)
+    function getAllCategories() {
+        $sql = "SELECT * FROM categories ORDER BY id ASC";
+        return $this->db->query($sql);
+    }
 
+    // HÀM MỚI: Lấy tất cả sản phẩm (cho trang QL Sản phẩm)
+    function getAllProductsAdmin() {
+        // Lấy thêm tên danh mục để hiển thị
+        $sql = "SELECT p.*, c.name as category_name 
+                FROM products p 
+                JOIN categories c ON p.category_id = c.id
+                ORDER BY p.id DESC";
+        return $this->db->query($sql);
+    }
+    
+    // HÀM MỚI: Thêm sản phẩm mới
+    function insertProduct($name, $price, $image, $description, $category_id) {
+        $sql = "INSERT INTO products(name, price, image, description, category_id, views) 
+                VALUES (?, ?, ?, ?, ?, 0)"; 
+        return $this->db->execute($sql, [$name, $price, $image, $description, $category_id]);
+    }
+// }
 }
 ?>
