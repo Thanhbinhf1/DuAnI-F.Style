@@ -37,8 +37,12 @@ class Product {
         return $this->db->query($sql);
     }
 
-    function getProductVariants($productId) {
-        $sql = "SELECT * FROM product_variants WHERE product_id = ? ORDER BY color, size";
+   function getProductVariants($productId) {
+        $sql = "SELECT * FROM product_variants 
+                WHERE product_id = ? 
+                ORDER BY color, 
+                FIELD(size, 'S', 'M', 'L', 'XL', 'XXL')"; 
+        
         return $this->db->query($sql, [$productId]);
     }
     
