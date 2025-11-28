@@ -562,8 +562,30 @@ nav ul li.dropdown:hover > a::after { width: 0; }
     font-style: italic; /* In nghiêng nhẹ cho nghệ thuật (tùy chọn) */
 }
 /* =========================================
-   11. SHOPPING CART (Giỏ Hàng)
+   11. SHOPPING CART (LAYOUT 7/3)
    ========================================= */
+/* Khung bao quanh chia cột */
+.cart-layout {
+    display: flex;
+    gap: 30px; /* Khoảng cách giữa 2 cột */
+    align-items: flex-start; /* Căn hàng trên cùng */
+}
+
+/* Cột Trái (Sản phẩm) - Chiếm 70% */
+.cart-left {
+    flex: 7; 
+    width: 70%;
+}
+
+/* Cột Phải (Tổng tiền) - Chiếm 30% */
+.cart-right {
+    flex: 3;
+    width: 30%;
+    position: sticky; /* Dính thanh toán khi cuộn trang */
+    top: 100px; /* Cách mép trên 100px */
+}
+
+/* Bảng sản phẩm */
 .cart-table {
     width: 100%;
     border-collapse: collapse;
@@ -595,51 +617,47 @@ nav ul li.dropdown:hover > a::after { width: 0; }
     gap: 15px;
 }
 
-.cart-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-}
-
-.btn-continue {
-    color: #333;
-    font-weight: 500;
-    padding: 10px 0;
-}
-
-.btn-update {
-    background: #333;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-/* Hộp Tổng tiền */
-.cart-total-box {
+/* Hộp Tổng tiền (Bên phải) */
+.cart-summary {
     background: #fff;
-    padding: 30px;
+    padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    max-width: 400px;
-    margin-left: auto; /* Đẩy sang phải */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
 }
 
-.total-row {
-    display: flex;
-    justify-content: space-between;
+.summary-title {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 20px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
 }
 
-.total-price { color: #ff5722; font-size: 24px; }
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 15px;
+    color: #555;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.total-price { color: #ff5722; font-size: 22px; }
 
 .btn-checkout {
     display: block;
+    width: 100%;
     background: #ff5722;
     color: white;
     text-align: center;
@@ -647,10 +665,19 @@ nav ul li.dropdown:hover > a::after { width: 0; }
     border-radius: 5px;
     font-weight: bold;
     text-transform: uppercase;
+    margin-top: 20px;
+    border: none;
+    cursor: pointer;
     transition: 0.3s;
 }
 
-.btn-checkout:hover { background: #e64a19; box-shadow: 0 5px 15px rgba(255, 87, 34, 0.3); }
+.btn-checkout:hover { background: #e64a19; }
+
+/* Responsive: Trên điện thoại thì dồn thành 1 cột */
+@media (max-width: 768px) {
+    .cart-layout { flex-direction: column; }
+    .cart-left, .cart-right { width: 100%; flex: none; }
+}
 /* =========================================
    12. NÂNG CẤP UI GIỎ HÀNG & NÚT
    ========================================= */
