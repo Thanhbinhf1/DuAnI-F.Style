@@ -29,7 +29,34 @@ class ProductController {
     
     // Hàm hiển thị danh sách tất cả sản phẩm (làm sau)
     function list() {
-        echo "Trang danh sách sản phẩm đang xây dựng...";
+        $titleMain = "DANH MỤC SẢN PHẨM"; 
+        $titleSub = "";
+
+        if (isset($_GET['cat'])) {
+            $id = $_GET['cat'];
+            $products = $this->model->getProductsByCategory($id);
+            $titleSub = $this->model->getCategoryName($id); 
+        } 
+        else if (isset($_GET['type']) && $_GET['type'] == 'sale') {
+            $products = $this->model->getSaleProducts();
+            $titleSub = "Săn Sale Giá Sốc";
+        }
+        // --- CẬP NHẬT ĐOẠN TÌM KIẾM NÀY ---
+        else if (isset($_GET['keyword'])) {
+         
+         
+       
+         $key = $_GET['keyword'];
+         $products = $this->model->searchProducts($key);
+         $titleSub = "Tìm kiếm: " . $key;
+    }
+        // -----------------------------------
+        else {
+            $products = $this->model->getAllProductsList();
+            $titleSub = "Tất cả sản phẩm";
+        }
+
+        include_once 'Views/users/product_list.php';
     }
 }
 ?>
