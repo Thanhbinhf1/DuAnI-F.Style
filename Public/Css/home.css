@@ -468,3 +468,96 @@ input[type="number"] {
     line-height: 1.8; /* Giãn dòng cho dễ đọc */
     background: #fff;
 }
+/* =========================================
+   9. NAVIGATION DROPDOWN (MENU ĐA CẤP)
+   ========================================= */
+/* Cài đặt cho thẻ li chứa menu con */
+nav ul li.dropdown {
+    position: relative; /* Để menu con bám theo nó */
+}
+
+/* Mũi tên nhỏ */
+.arrow { font-size: 10px; margin-left: 5px; vertical-align: middle; }
+
+/* Menu con (Ban đầu ẩn đi) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%; /* Hiện ngay dưới menu cha */
+    left: 0;
+    background-color: #fff;
+    min-width: 220px; /* Chiều rộng menu con */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: 0 0 5px 5px;
+    z-index: 1000;
+    padding: 10px 0;
+    flex-direction: column; /* Xếp dọc */
+}
+
+/* Khi rê chuột vào li cha thì hiện menu con */
+nav ul li.dropdown:hover .dropdown-content {
+    display: flex;
+}
+
+/* Style cho các link con */
+.dropdown-content li {
+    width: 100%;
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 10px 20px;
+    color: #333;
+    text-transform: none; /* Không viết hoa hết cho dễ đọc */
+    font-weight: 500;
+    font-size: 14px;
+    transition: 0.2s;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+/* Hiệu ứng hover menu con */
+.dropdown-content a:hover {
+    background-color: #f8f9fa;
+    color: #ff5722;
+    padding-left: 25px; /* Hiệu ứng đẩy chữ sang phải */
+}
+
+/* Xóa gạch chân hover của menu cha cho đỡ rối */
+nav ul li.dropdown:hover > a::after { width: 0; }
+
+/* =========================================
+   10. CATEGORY TITLE BAR (Tiêu đề danh mục)
+   ========================================= */
+.category-title-bar {
+    display: flex;
+    align-items: center; /* Căn giữa dòng */
+    margin-bottom: 40px;
+    border-bottom: 2px solid #ff5722; /* Gạch chân màu cam dưới cùng */
+    padding-bottom: 10px;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Chữ "DANH MỤC SẢN PHẨM" */
+.main-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+}
+
+/* Dấu gạch chéo / */
+.divider {
+    font-size: 30px;
+    color: #ff5722; /* Màu đỏ cam */
+    margin: 0 15px; /* Khoảng cách 2 bên */
+    font-weight: 300; /* Mảnh thôi cho đẹp */
+}
+
+/* Tên mục vừa ấn (Sale, Áo thun...) */
+.sub-title {
+    font-size: 28px; /* To hơn chữ chính một chút cho nổi */
+    color: #ff5722; /* Màu đỏ cam nổi bật */
+    font-weight: 600; /* Đậm vừa phải */
+    text-transform: uppercase;
+    font-style: italic; /* In nghiêng nhẹ cho nghệ thuật (tùy chọn) */
+}
