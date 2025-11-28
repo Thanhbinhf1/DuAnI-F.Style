@@ -1,3 +1,4 @@
+// thanhbinhf1/duani-f.style/DuAnI-F.Style-Quy/Controller/UserController.php
 <?php 
 include_once 'Models/User.php';
 
@@ -44,7 +45,15 @@ class UserController {
         // Kiểm tra: Có user đó KHÔNG và Mật khẩu có khớp mã hóa KHÔNG
         if ($check && password_verify($pass, $check['password'])) {
             $_SESSION['user'] = $check;
-            echo "<script>alert('Đăng nhập thành công!'); window.location='index.php';</script>";
+            
+            // LOGIC PHÂN QUYỀN MỚI
+            if ($check['role'] == 1) {
+                // Chuyển hướng Admin
+                echo "<script>alert('Đăng nhập thành công! Chuyển đến trang quản trị.'); window.location='?ctrl=admin&act=dashboard';</script>";
+            } else {
+                // Chuyển hướng Khách hàng
+                echo "<script>alert('Đăng nhập thành công!'); window.location='index.php';</script>";
+            }
         } else {
             $error = "Sai tên đăng nhập hoặc mật khẩu!";
             include_once 'Views/users/user_login.php';
