@@ -15,10 +15,9 @@
 
             <div class="search-box">
                 <form action="index.php" method="get">
-                    <input type="hidden" name="ctrl" value="product">
-                    <input type="hidden" name="act" value="search">
-                    <input type="text" name="keyword" placeholder="Tìm kiếm...">
-                    <button type="submit">Tìm</button>
+                <input type="hidden" name="ctrl" value="product">
+                <input type="hidden" name="act" value="list"> <input type="text" name="keyword" placeholder="Tìm kiếm...">
+                <button type="submit">Tìm</button>
                 </form>
             </div>
 
@@ -36,13 +35,24 @@
         </div>
 
         <nav>
-            <ul>
-                <li><a href="index.php">Trang chủ</a></li>
-                <li><a href="?ctrl=page&act=about">Giới thiệu</a></li>
-                <li><a href="?ctrl=product&act=list">Sản phẩm</a></li>
-                <li><a href="?ctrl=page&act=contact">Liên hệ</a></li>
+    <ul>
+        <li><a href="index.php">Trang chủ</a></li>
+        
+        <li class="dropdown">
+            <a href="?ctrl=product&act=list">Sản phẩm <span class="arrow">▼</span></a>
+            <ul class="dropdown-content">
+                <li><a href="?ctrl=product&act=list&cat=1">Áo Thời Trang</a></li>
+                <li><a href="?ctrl=product&act=list&cat=3">Quần Jean & Kaki</a></li>
+                <li><a href="?ctrl=product&act=list&cat=4">Phụ Kiện</a></li>
+                <li><a href="?ctrl=product&act=list&type=sale">Săn Sale Giá Sốc 🔥</a></li>
+                <li><a href="?ctrl=product&act=list">Tất cả sản phẩm</a></li>
             </ul>
-        </nav>
+        </li>
+
+        <li><a href="?ctrl=page&act=about">Giới thiệu</a></li>
+        <li><a href="?ctrl=page&act=contact">Liên hệ</a></li>
+    </ul>
+</nav>
     </header>
 
     <main>
