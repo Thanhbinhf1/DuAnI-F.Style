@@ -124,6 +124,7 @@ class CartController {
                     'row_total' => number_format($currentRowTotal) . ' đ', // Trả về số tiền đã format
                     'cart_total' => number_format($totalOrder) . ' đ'
                 ]);
+                exit;
             }
         }
 }
