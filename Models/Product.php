@@ -77,6 +77,10 @@ class Product {
         return $this->db->query($sql, ['%' . $keyword . '%']);
     }
 
+    function getVariantDetail($variantId) {
+        $sql = "SELECT * FROM product_variants WHERE id = ?";
+        return $this->db->queryOne($sql, [$variantId]);
+    }
    
 }
 ?>
