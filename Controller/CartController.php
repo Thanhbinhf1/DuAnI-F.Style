@@ -3,6 +3,7 @@ include_once 'Models/Product.php';
 
 class CartController {
     private $model;
+    
 
     function __construct() {
         $this->model = new Product();
@@ -94,8 +95,10 @@ class CartController {
         }
         echo "<script>window.location='?ctrl=cart&act=view';</script>";
     }
-    // Cập nhật số lượng qua Ajax
-    function updateAjax() {
+    
+    
+}
+function updateAjax() {
         if (isset($_POST['key']) && isset($_POST['qty'])) {
             $key = $_POST['key'];
             $qty = (int)$_POST['qty'];
@@ -127,6 +130,5 @@ class CartController {
                 exit;
             }
         }
-}
-}
+    }
 ?>
