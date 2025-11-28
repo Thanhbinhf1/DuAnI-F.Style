@@ -220,7 +220,7 @@ h2 {
     box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4);
     transition: transform 0.2s;
     width: auto;
-    padding: 15px 40px !important;
+    padding: 5px 20px !important;
     font-size: 18px !important;
 }
 
