@@ -36,5 +36,23 @@ class Product {
         $sql = "SELECT * FROM products WHERE category_id = $categoryId AND id != $excludeId LIMIT 4";
         return $this->db->query($sql);
     }
+
+   function getProductVariants($productId) {
+        $sql = "SELECT * FROM product_variants 
+                WHERE product_id = ? 
+                ORDER BY color, 
+                FIELD(size, 'S', 'M', 'L', 'XL', 'XXL')"; 
+        
+        return $this->db->query($sql, [$productId]);
+    }
+    
+    function checkStock($productId, $color, $size) {
+        $sql = "SELECT quantity FROM product_variants 
+                WHERE product_id = ? AND color = ? AND size = ?";
+        $result = $this->db->queryOne($sql, [$productId, $color, $size]);
+        
+        // Trả về số lượng (nếu không tìm thấy thì trả về 0)
+        return $result ? $result['quantity'] : 0;
+    }
 }
 ?>

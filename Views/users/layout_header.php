@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F.Style Store</title>
-    <link rel="stylesheet" href="./public/css/home.css">
+    <link rel="stylesheet" href="./Public/Css/home.css">
 </head>
 
 <body>
     <header>
         <div class="logo-section">
-            <img src="img/logo.png" alt="Logo" style="height: 50px;">
+            <img src="./Public/Img/logo.png" alt="Logo" style="height: 60px;">
 
             <div class="search-box">
                 <form action="index.php" method="get">
