@@ -20,8 +20,5 @@ $crl = new PageController();
 $crl->home();
 }
 
-<<<<<<< Updated upstream
+
 include_once './Views/users/layout_footer.php';
-=======
-include_once './Views/layout_footer.php';   
->>>>>>> Stashed changes
