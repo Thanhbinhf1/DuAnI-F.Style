@@ -338,45 +338,133 @@ footer p { font-size: 14px; }
 .news-item:hover { transform: translateY(-5px); }
 
 /* =========================================
-   8. PRODUCT VARIANTS (Nút chọn Size/Màu)
+   8. PRODUCT DETAIL & VARIANTS (NEW STYLE)
    ========================================= */
+
+/* Khung chứa chính */
+.product-detail-container {
+    background: #fff;
+    padding: 40px;
+    border-radius: 8px; /* Bo góc nhẹ thôi cho sang */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03); /* Bóng mờ thật nhẹ */
+    margin-bottom: 50px;
+    display: flex;
+    gap: 50px; /* Tăng khoảng cách giữa ảnh và chữ */
+}
+
+/* Cột phải: Thông tin */
+.right-column h1 {
+    font-size: 26px; /* Chữ tiêu đề vừa phải, không quá to */
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 10px;
+    color: #222;
+}
+
+.right-column .price {
+    font-size: 28px;
+    color: #ff424e; /* Màu đỏ cam hiện đại */
+    font-weight: 700;
+    background: #fafafa; /* Nền xám nhẹ làm nổi bật giá */
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    display: inline-block; /* Ôm gọn giá tiền */
+    width: 100%;
+}
+
+/* Nhãn (Màu sắc, Kích thước...) */
+.right-column label {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 8px;
+    display: block; /* Xuống dòng */
+    font-weight: 500;
+}
+
+/* Group nút bấm */
 .variant-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; /* Khoảng cách giữa các nút */
-    margin-top: 5px;
+    gap: 12px; /* Khoảng cách giữa các nút */
+    margin-bottom: 20px; /* Cách xa mục tiếp theo */
 }
 
+/* TẠO HÌNH NÚT BẤM (QUAN TRỌNG) */
 .variant-btn {
-    min-width: 60px;
-    padding: 8px 16px;
-    border: 1px solid #ddd;
+    min-width: 40px; /* Độ rộng tối thiểu nhỏ lại */
+    padding: 8px 18px; /* Padding vừa đủ tạo hình chữ nhật bo tròn */
+    border: 1px solid #e0e0e0; /* Viền xám nhạt tinh tế */
     background: #fff;
     color: #333;
     cursor: pointer;
-    border-radius: 4px; /* Bo góc nhẹ */
-    font-size: 14px;
+    border-radius: 4px; /* Bo góc nhẹ 4px là chuẩn đẹp */
+    font-size: 13px; /* Chữ nhỏ gọn gàng */
+    font-weight: 500;
     transition: all 0.2s ease;
+    outline: none;
 }
 
+/* Hiệu ứng khi di chuột */
 .variant-btn:hover {
     border-color: #ff5722;
     color: #ff5722;
 }
 
-/* Khi nút được chọn */
+/* TRẠNG THÁI ĐANG CHỌN (ACTIVE) */
 .variant-btn.active {
-    border: 2px solid #ff5722;
+    border: 1px solid #ff5722;
+    background-color: #fff; /* Nền trắng */
     color: #ff5722;
+    position: relative; /* Để tạo icon tích góc nếu cần */
     font-weight: 600;
-    background-color: #fff5f2;
+    box-shadow: 0 0 0 1px #ff5722 inset; /* Viền đôi sắc nét */
 }
 
-/* Khi hết hàng hoặc chưa kích hoạt */
+/* TRẠNG THÁI HẾT HÀNG / DISABLED */
 .variant-btn:disabled {
-    background-color: #f9f9f9;
+    background-color: #f5f5f5;
     color: #ccc;
-    border-color: #eee;
+    border-color: #f0f0f0;
     cursor: not-allowed;
-    text-decoration: line-through;
+    opacity: 0.7;
+    text-decoration: none; /* Bỏ gạch ngang nhìn cho đỡ rối */
+}
+
+/* Ô nhập số lượng */
+input[type="number"] {
+    width: 60px !important;
+    text-align: center;
+    border: 1px solid #ddd !important;
+    height: 40px;
+    font-weight: 600;
+    border-radius: 4px !important;
+    margin-right: 10px;
+}
+
+/* NÚT THÊM VÀO GIỎ (CTA) */
+#btn-add-cart {
+    width: 100%; /* Nút to full chiều ngang */
+    padding: 16px !important;
+    font-size: 16px !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    box-shadow: none !important; /* Bỏ bóng đổ cũ */
+    border-radius: 4px !important;
+    transition: background 0.3s;
+}
+
+#btn-add-cart:disabled {
+    background-color: #e0e0e0 !important;
+    color: #999 !important;
+}
+
+/* Mô tả sản phẩm */
+.description {
+    margin-top: 30px;
+    font-size: 14px;
+    color: #444;
+    line-height: 1.8; /* Giãn dòng cho dễ đọc */
+    background: #fff;
 }
