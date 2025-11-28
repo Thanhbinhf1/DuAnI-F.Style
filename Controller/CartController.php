@@ -3,6 +3,7 @@ include_once 'Models/Product.php';
 
 class CartController {
     private $model;
+    
 
     function __construct() {
         $this->model = new Product();
@@ -94,8 +95,13 @@ class CartController {
         }
         echo "<script>window.location='?ctrl=cart&act=view';</script>";
     }
-    // Cập nhật số lượng qua Ajax
     function updateAjax() {
+        // --- ĐOẠN CODE QUAN TRỌNG NHẤT: Xóa sạch HTML Header thừa ---
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        // -------------------------------------------------------------
+
         if (isset($_POST['key']) && isset($_POST['qty'])) {
             $key = $_POST['key'];
             $qty = (int)$_POST['qty'];
@@ -110,22 +116,27 @@ class CartController {
                 $_SESSION['cart'][$key]['quantity'] = $qty;
                 
                 // Tính toán giá trị mới
-                $currentRowTotal = $qty * $_SESSION['cart'][$key]['price']; // Thành tiền của dòng này
+                $price = $_SESSION['cart'][$key]['price'];
+                $rowTotal = $price * $qty; 
                 
-                $totalOrder = 0; // Tổng tiền cả giỏ hàng
+                $totalOrder = 0; 
                 foreach ($_SESSION['cart'] as $item) {
                     $totalOrder += $item['price'] * $item['quantity'];
                 }
 
-                // Trả về kết quả cho JS
+                // Trả về kết quả JSON sạch
                 echo json_encode([
                     'status' => 'success', 
                     'new_qty' => $qty,
-                    'row_total' => number_format($currentRowTotal) . ' đ', // Trả về số tiền đã format
+                    'row_total' => number_format($rowTotal) . ' đ', 
                     'cart_total' => number_format($totalOrder) . ' đ'
                 ]);
+                exit; // Dừng ngay lập tức để không in thêm Footer
             }
         }
+    } 
+    
+    
 }
-}
+
 ?>
