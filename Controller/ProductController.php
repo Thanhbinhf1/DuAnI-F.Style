@@ -29,30 +29,33 @@ class ProductController {
     
     // Hàm hiển thị danh sách tất cả sản phẩm (làm sau)
     function list() {
-        $titleMain = "DANH MỤC SẢN PHẨM"; // Phần chữ to bên trái
-        $titleSub = ""; // Phần chữ đỏ bên phải (sẽ thay đổi)
+        $titleMain = "DANH MỤC SẢN PHẨM"; 
+        $titleSub = "";
 
-        // 1. Kiểm tra xem người dùng muốn xem gì
         if (isset($_GET['cat'])) {
             $id = $_GET['cat'];
             $products = $this->model->getProductsByCategory($id);
-            // Lấy tên danh mục từ Database
             $titleSub = $this->model->getCategoryName($id); 
         } 
         else if (isset($_GET['type']) && $_GET['type'] == 'sale') {
             $products = $this->model->getSaleProducts();
-            $titleSub = "Săn Sale Giá Sốc"; // Chữ hiện ra khi bấm Sale
+            $titleSub = "Săn Sale Giá Sốc";
         }
+        // --- CẬP NHẬT ĐOẠN TÌM KIẾM NÀY ---
         else if (isset($_GET['keyword'])) {
-             $products = $this->model->getAllProductsList(); // (Logic tìm kiếm làm sau)
-             $titleSub = "Tìm kiếm: " . $_GET['keyword'];
-        }
+         
+         
+       
+         $key = $_GET['keyword'];
+         $products = $this->model->searchProducts($key);
+         $titleSub = "Tìm kiếm: " . $key;
+    }
+        // -----------------------------------
         else {
             $products = $this->model->getAllProductsList();
             $titleSub = "Tất cả sản phẩm";
         }
 
-        // Gửi 2 biến tiêu đề sang View
         include_once 'Views/users/product_list.php';
     }
 }

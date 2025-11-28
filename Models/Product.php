@@ -70,5 +70,13 @@ class Product {
         $result = $this->db->queryOne($sql, [$id]);
         return $result ? $result['name'] : "";
     }
+
+    function searchProducts($keyword) {
+        $sql = "SELECT * FROM products WHERE name LIKE ? ORDER BY id DESC";
+        // Thêm dấu % để tìm tương đối (Ví dụ: %Jean% sẽ tìm thấy "Quần Jean Đẹp")
+        return $this->db->query($sql, ['%' . $keyword . '%']);
+    }
+
+   
 }
 ?>
