@@ -34,5 +34,5 @@ if (isset($_GET['ctrl']) && isset($_GET['act'])) {
     $home->home();
 }
 
+<<<<<<< Updated upstream
 include_once './Views/users/layout_footer.php';
-?>

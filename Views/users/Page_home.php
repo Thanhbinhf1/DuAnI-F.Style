@@ -1,5 +1,5 @@
 <div class="banner">
-    <img src="https://theme.hstatic.net/200000182297/1000887316/14/slide_1_img.jpg?v=999" alt="Banner Thời Trang">
+    <img src="./Public/Img/banner.jpg" alt="Banner Thời Trang">
     <div class="banner-content">
         <h1>THỜI TRANG & PHONG CÁCH</h1>
         <p>Bộ sưu tập mùa hè mới nhất 2025</p>
@@ -13,13 +13,13 @@
     <section class="section-product">
         <div class="section-header">
             <h2>SẢN PHẨM HOT 🔥</h2>
-            <a href="?ctrl=product&act=list&type=hot">Xem tất cả →</a>
+            <a href="?ctrl=product&act=list&type=hot">Xem tất cả &rarr;</a>
         </div>
 
         <div class="product-list">
             <?php foreach ($spHot as $sp): 
                 $link = "?ctrl=product&act=detail&id=" . $sp['id'];
-                $img = $sp['image'] ?: 'https://via.placeholder.com/200';
+                $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
             ?>
             <div class="product-item">
                 <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
@@ -32,7 +32,9 @@
 
                 <a href="<?=$link?>"><button>Xem chi tiết</button></a>
             </div>
-            <?php endforeach; ?>
+            <?php endforeach; 
+            } else { echo "<p>Đang cập nhật...</p>"; }
+            ?>
         </div>
     </section>
 
@@ -41,7 +43,7 @@
     <section class="section-product">
         <div class="section-header">
             <h2>HÀNG MỚI VỀ 🆕</h2>
-            <a href="?ctrl=product&act=list&type=new">Xem tất cả →</a>
+            <a href="?ctrl=product&act=list&type=new">Xem tất cả &rarr;</a>
         </div>
 
         <div class="new-arrival-layout" style="display:flex; gap:20px;">
@@ -51,11 +53,10 @@
                      style="width:100%; height:100%; border-radius:10px;">
             </div>
             
-            <div class="product-grid-right" style="width:60%; display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-
+            <div class="product-grid-right" style="width: 60%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <?php foreach ($spMoi as $sp): 
                     $link = "?ctrl=product&act=detail&id=" . $sp['id'];
-                    $img = $sp['image'] ?: 'https://via.placeholder.com/200';
+                    $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
                 ?>
                 <div class="product-item">
                     <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
@@ -67,7 +68,6 @@
                        href="index.php?ctrl=cart&act=addToCart&id=<?=$sp['id']?>&name=<?=urlencode($sp['name'])?>&price=<?=$sp['price']?>&img=<?=$sp['image']?>">🛒 Thêm vào giỏ</a>
                 </div>
                 <?php endforeach; ?>
-
             </div>
         </div>
     </section>
@@ -77,13 +77,13 @@
     <section class="section-product">
         <div class="section-header">
             <h2>SẢN PHẨM GIÁ TỐT 💸</h2>
-            <a href="?ctrl=product&act=list&type=sale">Xem tất cả →</a>
+            <a href="?ctrl=product&act=list&type=sale">Xem tất cả &rarr;</a>
         </div>
 
         <div class="product-list">
             <?php foreach ($spGiaTot as $sp): 
                 $link = "?ctrl=product&act=detail&id=" . $sp['id'];
-                $img = $sp['image'] ?: 'https://via.placeholder.com/200';
+                $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
             ?>
             <div class="product-item">
                 <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
@@ -95,7 +95,9 @@
 
                 <a href="<?=$link?>"><button>Xem chi tiết</button></a>
             </div>
-            <?php endforeach; ?>
+            <?php endforeach; 
+            } else { echo "<p>Đang cập nhật...</p>"; }
+            ?>
         </div>
     </section>
 
