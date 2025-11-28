@@ -94,38 +94,7 @@ class CartController {
         }
         echo "<script>window.location='?ctrl=cart&act=view';</script>";
     }
-
-    // Cập nhật bằng AJAX (Không load lại trang)
-    // function updateAjax() {
-    //     if (isset($_POST['key']) && isset($_POST['qty'])) {
-    //         $key = $_POST['key'];
-    //         $qty = (int)$_POST['qty'];
-
-    //         if (isset($_SESSION['cart'][$key])) {
-    //             $stock = $_SESSION['cart'][$key]['stock'];
-                
-    //             // Kiểm tra tồn kho
-    //             if ($qty > $stock) $qty = $stock;
-    //             if ($qty < 1) $qty = 1;
-
-    //             $_SESSION['cart'][$key]['quantity'] = $qty;
-                
-    //             // Tính lại tổng tiền giỏ hàng để trả về cho JS
-    //             $totalOrder = 0;
-    //             foreach ($_SESSION['cart'] as $item) {
-    //                 $totalOrder += $item['price'] * $item['quantity'];
-    //             }
-
-    //             // Trả về JSON
-    //             echo json_encode([
-    //                 'status' => 'success', 
-    //                 'new_qty' => $qty,
-    //                 'row_total' => number_format($qty * $_SESSION['cart'][$key]['price']) . ' đ',
-    //                 'cart_total' => number_format($totalOrder) . ' đ'
-    //             ]);
-    //         }
-    //     }
-    // }
+    // Cập nhật số lượng qua Ajax
     function updateAjax() {
         if (isset($_POST['key']) && isset($_POST['qty'])) {
             $key = $_POST['key'];
