@@ -415,7 +415,7 @@ footer p { font-size: 14px; }
 .variant-btn.active {
     border: 1px solid #ff5722;
     background-color: #fff; /* Nền trắng */
-    color: #ff5722;
+    color: #ffffff;
     position: relative; /* Để tạo icon tích góc nếu cần */
     font-weight: 600;
     box-shadow: 0 0 0 1px #ff5722 inset; /* Viền đôi sắc nét */
