@@ -37,12 +37,13 @@ class OrderController {
     // 2. Xử lý lưu đơn hàng
     function saveOrder() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // ... (Đoạn lấy dữ liệu giữ nguyên) ...
             $userId = $_SESSION['user']['id'];
             $fullname = $_POST['fullname'];
             $phone = $_POST['phone'];
             $address = $_POST['address'];
-            $note = $_POST['note']; // Lấy ghi chú
-            $payment = $_POST['payment_method']; // Lấy phương thức thanh toán
+            $note = $_POST['note'];
+            $payment = $_POST['payment_method']; // 'COD' hoặc 'BANK'
             
             // Tính tổng tiền
             $totalMoney = 0;
@@ -50,17 +51,42 @@ class OrderController {
                 $totalMoney += $item['price'] * $item['quantity'];
             }
 
-            // Gọi hàm createOrder với đầy đủ tham số mới
+            // Tạo đơn hàng
             $orderId = $this->model->createOrder($userId, $fullname, $phone, $address, $totalMoney, $payment, $note);
 
             if ($orderId) {
+                // Lưu chi tiết
                 foreach ($_SESSION['cart'] as $item) {
                     $this->model->createOrderDetail($orderId, $item['id'], $item['quantity'], $item['price']);
                 }
-                unset($_SESSION['cart']);
-                echo "<script>alert('Đặt hàng thành công! Mã đơn: #$orderId'); window.location='?ctrl=user&act=profile';</script>";
+                unset($_SESSION['cart']); // Xóa giỏ hàng
+
+                // --- LOGIC PHÂN LUỒNG ---
+                if ($payment == 'BANK') {
+                    // Nếu là chuyển khoản -> Chuyển sang trang quét mã
+                    header("Location: ?ctrl=order&act=payment&id=$orderId");
+                } else {
+                    // Nếu là COD -> Xong luôn
+                    echo "<script>alert('Đặt hàng thành công!'); window.location='?ctrl=user&act=profile';</script>";
+                }
+                // ------------------------
             } else {
                 echo "<script>alert('Lỗi hệ thống!'); history.back();</script>";
+            }
+        }
+    }
+
+    // 2. THÊM HÀM MỚI: Hiển thị trang thanh toán QR
+    function payment() {
+        if (isset($_GET['id'])) {
+            $orderId = $_GET['id'];
+            // Lấy thông tin đơn hàng để hiện số tiền và nội dung CK
+            $order = $this->model->getOrderById($orderId);
+            
+            if ($order) {
+                include_once 'Views/users/payment_qr.php';
+            } else {
+                echo "Đơn hàng không tồn tại!";
             }
         }
     }

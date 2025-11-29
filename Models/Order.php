@@ -8,10 +8,18 @@ class Order {
 
     // 1. Tạo đơn hàng mới (Lưu vào bảng orders)
    function createOrder($userId, $fullname, $phone, $address, $total, $payment, $note) {
-        $sql = "INSERT INTO orders (user_id, fullname, phone, address, total_money, payment_method, note, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+        // payment_status mặc định là 0 (Chưa thanh toán)
+        $sql = "INSERT INTO orders (user_id, fullname, phone, address, total_money, payment_method, payment_status, note, created_at) 
+                VALUES (?, ?, ?, ?, ?, ?, 0, ?, NOW())";
+        
         $this->db->execute($sql, [$userId, $fullname, $phone, $address, $total, $payment, $note]);
         return $this->db->getLastId();
+    }
+
+    // THÊM HÀM NÀY: Để lấy thông tin đơn hàng hiển thị ra trang QR Code
+    function getOrderById($id) {
+        $sql = "SELECT * FROM orders WHERE id = ?";
+        return $this->db->queryOne($sql, [$id]);
     }
 
     // 2. Lưu chi tiết đơn hàng (Lưu vào bảng order_details)
