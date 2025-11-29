@@ -29,14 +29,21 @@
         </div>
     </div>
     
+    // thanhbinhf1/duani-f.style/DuAnI-F.Style-Quy/Views/admin/layout_header.php
+// ... (phần CSS và Header)
+
     <div class="admin-sidebar">
         <ul>
             <li><a href="?ctrl=admin&act=dashboard" class="active">📊 Tổng quan</a></li>
-            <li><a href="#">📦 Sản phẩm</a></li>
-            <li><a href="#">📋 Đơn hàng</a></li>
-            <li><a href="#">👥 Người dùng</a></li>
-            <li><a href="#">🗃️ Danh mục</a></li>
+            <li><a href="?ctrl=admin&act=productList">📦 Sản phẩm</a></li> 
+            <li><a href="?ctrl=admin&act=orderList">📋 Đơn hàng</a></li> 
+            <li><a href="?ctrl=admin&act=userList">👥 Người dùng</a></li> 
+            <li><a href="?ctrl=admin&act=categoryList">🗃️ Danh mục</a></li> 
         </ul>
     </div>
+
+    <main class="admin-content"></main>
+</body>
+</html>
 
     <main class="admin-content"></main>
