@@ -44,5 +44,9 @@ class Database {
             echo "Lỗi SQL: " . $e->getMessage();
         }
     }
+
+    function getLastId() {
+        return $this->conn->lastInsertId();
+    }
 }
 ?>
