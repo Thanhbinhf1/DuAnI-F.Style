@@ -35,8 +35,21 @@
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                     <input type="radio" name="payment_method" value="BANK">
                     <img src="https://cdn-icons-png.flaticon.com/512/2169/2169862.png" width="30">
-                    <span><b>Chuyển khoản ngân hàng</b> <br> <small style="color: #666;">Quét mã QR VietQR, Momo, ZaloPay (Đang cập nhật).</small></span>
+                    <span><b>Chuyển khoản ngân hàng</b> <br> <small style="color: #666;">Quét mã QR để hoàn tất thanh toán.</small></span>
                 </label>
+
+                <!-- Thong tin QR Code -->
+                <div id="qr-payment-info" style="display: none; margin-top: 15px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; background: #f9f9f9;">
+                    <p style="text-align: center; font-weight: bold;">Quét mã QR để thanh toán</p>
+                    <p style="text-align: center; font-size: 14px;">Vui lòng ghi rõ <strong>Mã Đơn Hàng</strong> (sẽ nhận được sau khi đặt hàng) vào nội dung chuyển khoản.</p>
+                    <img src="./Public/Img/qr.jpg" alt="Mã QR thanh toán - Thay thế bằng mã của bạn" style="display: block; margin: 10px auto; max-width: 250px;">
+                    <div style="font-size: 14px; text-align: center;">
+                        <p><strong>Ngân hàng:</strong> [MB-Bank]</p>
+                        <p><strong>Số tài khoản:</strong> [0342266306]</p>
+                        <p><strong>Chủ tài khoản:</strong> [Lương Hữu Luyến]</p>
+                    </div>
+                    <p style="text-align: center; font-size: 13px; color: red; margin-top: 10px;">Đơn hàng sẽ được xử lý sau khi chúng tôi xác nhận đã nhận được thanh toán.</p>
+                </div>
             </div>
         </div>
 
@@ -77,3 +90,24 @@
 
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+        const qrInfoDiv = document.getElementById('qr-payment-info');
+
+        const toggleQRInfo = () => {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (selectedMethod && selectedMethod.value === 'BANK') {
+                qrInfoDiv.style.display = 'block';
+            } else {
+                qrInfoDiv.style.display = 'none';
+            }
+        };
+
+        paymentRadios.forEach(radio => radio.addEventListener('change', toggleQRInfo));
+
+        // Initial check in case the page loads with BANK pre-selected
+        toggleQRInfo();
+    });
+</script>
