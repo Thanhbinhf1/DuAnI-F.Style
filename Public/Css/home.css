@@ -87,7 +87,7 @@ header {
 .user-actions a:hover { color: #ff5722; }
 
 /* Menu chính */
-nav ul {
+nav>ul {
     display: flex;
     justify-content: center;
     gap: 40px;
@@ -753,4 +753,147 @@ nav ul li.dropdown:hover > a::after { width: 0; }
 .btn-buy-now {
     background: #d0011b !important; /* Màu đỏ đậm hơn */
     flex: 1;
+}
+/* =========================================
+   14. MAIN FOOTER (GIAO DIỆN CHÂN TRANG)
+   ========================================= */
+.main-footer {
+    background-color: #222; /* Nền tối */
+    color: #bbb; /* Chữ màu xám nhạt */
+    padding-top: 70px;
+    margin-top: auto; /* Đẩy footer xuống đáy nếu nội dung ngắn */
+    font-size: 14px;
+}
+
+.footer-widgets {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+    padding-bottom: 50px;
+}
+
+/* Cột footer */
+.footer-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Tiêu đề cột */
+.footer-col h4 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* Gạch chân dưới tiêu đề */
+.footer-col h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 2px;
+    background-color: #ff5722;
+}
+
+/* Danh sách liên kết */
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: #bbb;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: #ff5722; /* Rê chuột đổi màu cam */
+    padding-left: 5px; /* Hiệu ứng đẩy chữ */
+}
+
+/* Thông tin liên hệ */
+.contact-list li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.contact-list i {
+    color: #ff5722;
+    margin-top: 3px;
+}
+
+/* Form đăng ký nhận tin */
+.newsletter-form {
+    display: flex;
+    margin-top: 15px;
+    position: relative;
+}
+
+.newsletter-form input {
+    width: 100%;
+    padding: 12px;
+    background: #333;
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.newsletter-form button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 50px;
+    background: #ff5722;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    transition: 0.3s;
+}
+
+.newsletter-form button:hover { background: #e64a19; }
+
+/* Mạng xã hội */
+.social-icons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.social-icons a {
+    width: 35px;
+    height: 35px;
+    background: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.social-icons a:hover {
+    background: #ff5722;
+    transform: translateY(-3px);
+}
+
+/* Dòng bản quyền cuối cùng */
+.footer-bottom {
+    background-color: #111; /* Đen đậm hơn */
+    padding: 20px 0;
+    border-top: 1px solid #333;
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 768px) {
+    .footer-widgets { flex-direction: column; }
+    .footer-col { width: 100%; margin-bottom: 30px; }
 }

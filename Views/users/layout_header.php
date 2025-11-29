@@ -11,7 +11,15 @@
 <body>
     <header>
         <div class="logo-section">
-            <img src="./Public/Img/logo.png" alt="Logo" style="height: 60px;">
+            <div class="logo" style="
+            display: flex;
+             flex-direction: row;
+             align-items: center;
+             gap: 30px;
+">
+            <img src="./Public/Img/logo.png" alt="Logo" style="height: 60px;"> <h3> F.Style </h3>
+            </div>
+            
 
             <div class="search-box">
                 <form action="index.php" method="get">
@@ -43,8 +51,9 @@
         <li class="dropdown">
             <a href="?ctrl=product&act=list">Sản phẩm <span class="arrow">▼</span></a>
             <ul class="dropdown-content">
-                <li><a href="?ctrl=product&act=list&cat=1">Áo Thời Trang</a></li>
-                <li><a href="?ctrl=product&act=list&cat=3">Quần Jean & Kaki</a></li>
+                <li><a href="?ctrl=product&act=list&cat=1">Đồ nam</a></li>
+                <li><a href="?ctrl=product&act=list&cat=2">Đồ nữ</a></li>
+                <li><a href="?ctrl=product&act=list&cat=3">Quần Jeans</a></li>
                 <li><a href="?ctrl=product&act=list&cat=4">Phụ Kiện</a></li>
                 <li><a href="?ctrl=product&act=list&type=sale">Săn Sale Giá Sốc 🔥</a></li>
                 <li><a href="?ctrl=product&act=list">Tất cả sản phẩm</a></li>

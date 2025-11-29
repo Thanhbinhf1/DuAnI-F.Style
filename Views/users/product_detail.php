@@ -2,8 +2,14 @@
     <div class="product-detail-container" style="display: flex; gap: 40px;">
         
         <div class="left-column" style="width: 40%;">
-            <img src="<?=$sp['image']?>" alt="<?=$sp['name']?>" style="width: 100%; border: 1px solid #eee; border-radius: 8px;">
-        </div>
+    <?php 
+        $imgSrc = $sp['image'];
+        if (!str_contains($imgSrc, 'http')) {
+            $imgSrc = "./public/img/products/" . $imgSrc;
+        }
+    ?>
+    <img src="<?=$imgSrc?>" alt="<?=$sp['name']?>" style="width: 100%; border: 1px solid #eee; border-radius: 8px;">
+</div>
 
         <div class="right-column" style="width: 60%;">
             <h1 style="font-size: 24px; color: #333;"><?=$sp['name']?></h1>
