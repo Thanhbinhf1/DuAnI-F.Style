@@ -74,4 +74,33 @@ class UserController {
         include_once 'Views/users/profile.php';
     }
 }
+
+// HÀM MỚI: Hiển thị form sửa
+    function edit() {
+        if (!isset($_SESSION['user'])) header("Location: index.php");
+        $user = $_SESSION['user'];
+        include_once 'Views/users/edit_profile.php';
+    }
+
+    // HÀM MỚI: Xử lý cập nhật
+    function updatePost() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $id = $_SESSION['user']['id'];
+            $fullname = $_POST['fullname'];
+            $email = $_POST['email'];
+            $phone = $_POST['phone'];
+            $address = $_POST['address'];
+
+            // Gọi Model cập nhật DB
+            $this->model->updateUser($id, $fullname, $email, $phone, $address);
+
+            // Cập nhật lại Session để hiển thị ngay lập tức
+            $_SESSION['user']['fullname'] = $fullname;
+            $_SESSION['user']['email'] = $email;
+            $_SESSION['user']['phone'] = $phone;
+            $_SESSION['user']['address'] = $address;
+
+            echo "<script>alert('Cập nhật thành công!'); window.location='?ctrl=user&act=profile';</script>";
+        }
+    }
 ?>

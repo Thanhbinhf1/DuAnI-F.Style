@@ -7,10 +7,11 @@ class Order {
     }
 
     // 1. Tạo đơn hàng mới (Lưu vào bảng orders)
-    function createOrder($userId, $fullname, $phone, $address, $total) {
-        $sql = "INSERT INTO orders (user_id, fullname, phone, address, total_money, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
-        $this->db->execute($sql, [$userId, $fullname, $phone, $address, $total]);
-        return $this->db->getLastId(); // Trả về ID đơn hàng vừa tạo
+   function createOrder($userId, $fullname, $phone, $address, $total, $payment, $note) {
+        $sql = "INSERT INTO orders (user_id, fullname, phone, address, total_money, payment_method, note, created_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+        $this->db->execute($sql, [$userId, $fullname, $phone, $address, $total, $payment, $note]);
+        return $this->db->getLastId();
     }
 
     // 2. Lưu chi tiết đơn hàng (Lưu vào bảng order_details)

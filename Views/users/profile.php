@@ -12,7 +12,7 @@
                     <p><strong>Điện thoại:</strong> <?=$user['phone'] ?? 'Chưa cập nhật'?></p>
                     <p><strong>Địa chỉ:</strong> <?=$user['address'] ?? 'Chưa cập nhật'?></p>
                 </div>
-                <button style="margin-top: 15px; width: 100%; padding: 8px; border: 1px solid #333; background: white; cursor: pointer;">Chỉnh sửa thông tin</button>
+                <a href="?ctrl=user&act=edit" style="display:block; margin-top: 15px; padding: 10px; border: 1px solid #333; background: white; color: #333; cursor: pointer; text-decoration: none;">Chỉnh sửa thông tin</a>
             </div>
         </div>
 

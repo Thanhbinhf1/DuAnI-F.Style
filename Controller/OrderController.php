@@ -41,27 +41,26 @@ class OrderController {
             $fullname = $_POST['fullname'];
             $phone = $_POST['phone'];
             $address = $_POST['address'];
+            $note = $_POST['note']; // Lấy ghi chú
+            $payment = $_POST['payment_method']; // Lấy phương thức thanh toán
             
-            // Tính lại tổng tiền cho chắc chắn
+            // Tính tổng tiền
             $totalMoney = 0;
             foreach ($_SESSION['cart'] as $item) {
                 $totalMoney += $item['price'] * $item['quantity'];
             }
 
-            // A. Lưu vào bảng ORDERS
-            $orderId = $this->model->createOrder($userId, $fullname, $phone, $address, $totalMoney);
+            // Gọi hàm createOrder với đầy đủ tham số mới
+            $orderId = $this->model->createOrder($userId, $fullname, $phone, $address, $totalMoney, $payment, $note);
 
-            // B. Lưu vào bảng ORDER_DETAILS
             if ($orderId) {
                 foreach ($_SESSION['cart'] as $item) {
                     $this->model->createOrderDetail($orderId, $item['id'], $item['quantity'], $item['price']);
                 }
-
-                // C. Xóa giỏ hàng và thông báo
                 unset($_SESSION['cart']);
-                echo "<script>alert('Đặt hàng thành công!'); window.location='?ctrl=user&act=profile';</script>";
+                echo "<script>alert('Đặt hàng thành công! Mã đơn: #$orderId'); window.location='?ctrl=user&act=profile';</script>";
             } else {
-                echo "<script>alert('Lỗi khi tạo đơn hàng!'); history.back();</script>";
+                echo "<script>alert('Lỗi hệ thống!'); history.back();</script>";
             }
         }
     }

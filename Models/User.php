@@ -23,5 +23,9 @@ class User {
         $sql = "SELECT * FROM users WHERE username = ?";
         return $this->db->queryOne($sql, [$username]);
     }
+    function updateUser($id, $fullname, $email, $phone, $address) {
+        $sql = "UPDATE users SET fullname=?, email=?, phone=?, address=? WHERE id=?";
+        return $this->db->execute($sql, [$fullname, $email, $phone, $address, $id]);
+    }
 }
 ?>
