@@ -73,9 +73,8 @@ class UserController {
 
         include_once 'Views/users/profile.php';
     }
-}
 
-// HÀM MỚI: Hiển thị form sửa
+    // HÀM MỚI: Hiển thị form sửa
     function edit() {
         if (!isset($_SESSION['user'])) header("Location: index.php");
         $user = $_SESSION['user'];
@@ -103,4 +102,7 @@ class UserController {
             echo "<script>alert('Cập nhật thành công!'); window.location='?ctrl=user&act=profile';</script>";
         }
     }
+}
+
+
 ?>
