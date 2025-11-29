@@ -35,8 +35,10 @@
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                     <input type="radio" name="payment_method" value="BANK">
                     <img src="https://cdn-icons-png.flaticon.com/512/2169/2169862.png" width="30">
-                    <span><b>Chuyển khoản ngân hàng</b> <br> <small style="color: #666;">Quét mã QR VietQR, Momo, ZaloPay (Đang cập nhật).</small></span>
+                    <span><b>Chuyển khoản ngân hàng</b> <br> <small style="color: #666;">Quét mã QR để hoàn tất thanh toán.</small></span>
                 </label>
+
+                
             </div>
         </div>
 
@@ -77,3 +79,24 @@
 
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+        const qrInfoDiv = document.getElementById('qr-payment-info');
+
+        const toggleQRInfo = () => {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (selectedMethod && selectedMethod.value === 'BANK') {
+                qrInfoDiv.style.display = 'block';
+            } else {
+                qrInfoDiv.style.display = 'none';
+            }
+        };
+
+        paymentRadios.forEach(radio => radio.addEventListener('change', toggleQRInfo));
+
+        // Initial check in case the page loads with BANK pre-selected
+        toggleQRInfo();
+    });
+</script>
