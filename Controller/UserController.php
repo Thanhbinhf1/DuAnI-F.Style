@@ -55,5 +55,23 @@ class UserController {
         unset($_SESSION['user']);
         echo "<script>window.location='index.php';</script>";
     }
+    function profile() {
+        if (!isset($_SESSION['user'])) {
+            header("Location: ?ctrl=user&act=login");
+            exit;
+        }
+
+        // Gọi Model Order để lấy lịch sử
+        include_once 'Models/Order.php';
+        $orderModel = new Order();
+        $userId = $_SESSION['user']['id'];
+        
+        $orders = $orderModel->getOrdersByUser($userId);
+        
+        // Thông tin user hiện tại
+        $user = $_SESSION['user'];
+
+        include_once 'Views/users/profile.php';
+    }
 }
 ?>
