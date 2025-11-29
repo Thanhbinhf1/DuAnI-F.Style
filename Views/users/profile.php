@@ -2,7 +2,7 @@
     <div style="display: flex; gap: 40px;">
         
         <div style="width: 30%;">
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;justify-items: center;">
                 <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; border-radius: 50%; margin-bottom: 15px;">
                 <h3><?=$user['fullname']?></h3>
                 <p style="color: #666;"><?=$user['email']?></p>
