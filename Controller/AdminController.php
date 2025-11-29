@@ -1,15 +1,18 @@
 <?php 
 // Controller/AdminController.php
+
+// CẦN INCLUDE 2 MODEL ĐỂ SỬ DỤNG
 include_once 'Models/Product.php'; 
 include_once 'Models/User.php'; 
 
 class AdminController {
     private $productModel;
     private $userModel;
-    
+
     function __construct() {
         // KIỂM TRA BẢO MẬT: Phải đăng nhập và có role = 1
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 1) {
+            // Chuyển hướng về trang login nếu không phải admin
             echo "<script>alert('Bạn không có quyền truy cập trang quản trị!'); window.location='index.php?ctrl=user&act=login';</script>";
             exit();
         }
@@ -18,11 +21,11 @@ class AdminController {
     }
 
     function dashboard() {
-        // Có thể bổ sung logic lấy số liệu thống kê ở đây
+        // Logic lấy dữ liệu tổng quan cho trang quản trị 
         include_once 'Views/admin/dashboard.php';
     }
 
-    // --- USER MANAGEMENT ---
+    // --- USER MANAGEMENT (Tài khoản) ---
 
     function userList() {
         $users = $this->userModel->getAllUsers();
@@ -31,12 +34,17 @@ class AdminController {
     
     function userDelete() {
         if(isset($_GET['id'])) {
-            $this->userModel->deleteUser($_GET['id']);
-            echo "<script>alert('Đã xóa người dùng thành công!'); window.location='?ctrl=admin&act=userList';</script>";
+            $id = $_GET['id'];
+            if ($id != $_SESSION['user']['id']) { // Ngăn chặn tự xóa tài khoản đang đăng nhập
+                $this->userModel->deleteUser($id);
+                echo "<script>alert('Đã xóa người dùng thành công!'); window.location='?ctrl=admin&act=userList';</script>";
+            } else {
+                echo "<script>alert('Không thể xóa tài khoản của chính bạn!'); window.location='?ctrl=admin&act=userList';</script>";
+            }
         }
     }
 
-    // --- CATEGORY MANAGEMENT ---
+    // --- CATEGORY MANAGEMENT (Danh mục) ---
 
     function categoryList() {
         $categories = $this->productModel->getAllCategories();
@@ -69,11 +77,11 @@ class AdminController {
     function categoryDelete() {
         if(isset($_GET['id'])) {
             $this->productModel->deleteCategory($_GET['id']);
-            echo "<script>alert('Đã xóa danh mục thành công!'); window.location='?ctrl=admin&act=categoryList';</script>";
+            echo "<script>alert('Đã xóa danh mục thành công! Lưu ý: Các sản phẩm thuộc danh mục này cũng bị xóa.'); window.location='?ctrl=admin&act=categoryList';</script>";
         }
     }
 
-    // --- PRODUCT MANAGEMENT ---
+    // --- PRODUCT MANAGEMENT (Sản phẩm) ---
 
     function productList() {
         $products = $this->productModel->getAllProductsAdmin();
@@ -94,8 +102,8 @@ class AdminController {
         $categoryId = $_POST['category_id'];
         $name = $_POST['name'];
         $price = $_POST['price'];
-        $priceSale = $_POST['price_sale'];
-        $image = $_POST['image']; // Tạm thời dùng link ảnh
+        $priceSale = $_POST['price_sale'] ?? 0;
+        $image = $_POST['image']; 
         $description = $_POST['description'];
         $material = $_POST['material'];
         $brand = $_POST['brand'];
@@ -118,7 +126,7 @@ class AdminController {
         }
     }
     
-    // --- ORDER MANAGEMENT ---
+    // --- ORDER MANAGEMENT (Đơn hàng) ---
 
     function orderList() {
         $orders = $this->productModel->getAllOrders();
