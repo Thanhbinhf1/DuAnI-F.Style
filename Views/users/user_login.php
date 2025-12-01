@@ -1,22 +1,32 @@
-<div class="container" style="max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-    <h2 style="text-align: center;">Đăng Nhập</h2>
-    
-    <?php if(isset($error)) { ?>
-        <p style="color: red; text-align: center;"><?= $error ?></p>
-    <?php } ?>
+<div class="container" style="max-width: 420px; margin: 60px auto;">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h4 text-center mb-4">Đăng nhập</h2>
 
-    <form action="?ctrl=user&act=loginPost" method="post">
-        <div style="margin-bottom: 15px;">
-            <label>Tên đăng nhập:</label>
-            <input type="text" name="username" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            <?php if(isset($error)): ?>
+                <div class="alert alert-danger py-2"><?=$error?></div>
+            <?php endif; ?>
+
+            <form action="?ctrl=user&act=loginPost" method="post">
+                <input type="hidden" name="csrf_token" value="<?=htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8')?>">
+
+                <div class="mb-3">
+                    <label class="form-label">Tên đăng nhập</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-dark w-100">Đăng nhập</button>
+            </form>
+
+            <p class="text-center mt-3 mb-0">
+                Chưa có tài khoản?
+                <a href="?ctrl=user&act=register">Đăng ký ngay</a>
+            </p>
         </div>
-        <div style="margin-bottom: 15px;">
-            <label>Mật khẩu:</label>
-            <input type="password" name="password" required style="width: 100%; padding: 8px; margin-top: 5px;">
-        </div>
-        <button type="submit" style="width: 100%; padding: 10px; background: #333; color: #fff; border: none; cursor: pointer;">Đăng nhập</button>
-    </form>
-    <p style="text-align: center; margin-top: 15px;">
-        Chưa có tài khoản? <a href="?ctrl=user&act=register">Đăng ký ngay</a>
-    </p>
+    </div>
 </div>

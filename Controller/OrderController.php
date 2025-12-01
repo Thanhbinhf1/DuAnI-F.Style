@@ -36,45 +36,109 @@ class OrderController {
 
     // 2. Xử lý lưu đơn hàng
     function saveOrder() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // ... (Đoạn lấy dữ liệu giữ nguyên) ...
-            $userId = $_SESSION['user']['id'];
-            $fullname = $_POST['fullname'];
-            $phone = $_POST['phone'];
-            $address = $_POST['address'];
-            $note = $_POST['note'];
-            $payment = $_POST['payment_method']; // 'COD' hoặc 'BANK'
-            
-            // Tính tổng tiền
-            $totalMoney = 0;
-            foreach ($_SESSION['cart'] as $item) {
-                $totalMoney += $item['price'] * $item['quantity'];
-            }
-
-            // Tạo đơn hàng
-            $orderId = $this->model->createOrder($userId, $fullname, $phone, $address, $totalMoney, $payment, $note);
-
-            if ($orderId) {
-                // Lưu chi tiết
-                foreach ($_SESSION['cart'] as $item) {
-                    $this->model->createOrderDetail($orderId, $item['id'], $item['quantity'], $item['price']);
-                }
-                unset($_SESSION['cart']); // Xóa giỏ hàng
-
-                // --- LOGIC PHÂN LUỒNG ---
-                if ($payment == 'BANK') {
-                    // Nếu là chuyển khoản -> Chuyển sang trang quét mã
-                    header("Location: ?ctrl=order&act=payment&id=$orderId");
-                } else {
-                    // Nếu là COD -> Xong luôn
-                    echo "<script>alert('Đặt hàng thành công!'); window.location='?ctrl=user&act=profile';</script>";
-                }
-                // ------------------------
-            } else {
-                echo "<script>alert('Lỗi hệ thống!'); history.back();</script>";
-            }
-        }
+    // Chỉ cho phép POST
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header("Location: index.php");
+        exit;
     }
+
+    // Bắt buộc đăng nhập
+    if (!isset($_SESSION['user'])) {
+        echo "<script>alert('Vui lòng đăng nhập để đặt hàng!'); window.location='?ctrl=user&act=login';</script>";
+        exit;
+    }
+
+    // Giỏ hàng phải có sản phẩm
+    if (empty($_SESSION['cart'])) {
+        echo "<script>alert('Giỏ hàng trống!'); window.location='index.php';</script>";
+        exit;
+    }
+
+    $userId  = $_SESSION['user']['id'];
+
+    // Lấy dữ liệu từ form
+    $fullname = trim($_POST['fullname'] ?? '');
+    $phone    = trim($_POST['phone'] ?? '');
+    $address  = trim($_POST['address'] ?? '');
+    $note     = trim($_POST['note'] ?? '');
+    $payment  = $_POST['payment_method'] ?? 'COD'; // 'COD' hoặc 'BANK'
+
+    // Validate đơn giản
+    $errors = [];
+
+    if ($fullname === '') {
+        $errors[] = 'Vui lòng nhập họ và tên người nhận.';
+    }
+
+    if ($phone === '') {
+        $errors[] = 'Vui lòng nhập số điện thoại.';
+    } elseif (!preg_match('/^0[0-9]{9}$/', $phone)) {
+        // Ví dụ: 10 số, bắt đầu bằng 0
+        $errors[] = 'Số điện thoại không hợp lệ.';
+    }
+
+    if ($address === '') {
+        $errors[] = 'Vui lòng nhập địa chỉ nhận hàng.';
+    }
+
+    if (!in_array($payment, ['COD', 'BANK'])) {
+        $payment = 'COD';
+    }
+
+    // Nếu có lỗi -> báo và quay lại
+    if (!empty($errors)) {
+        $msg = implode("\\n", $errors);
+        echo "<script>alert('$msg'); history.back();</script>";
+        exit;
+    }
+
+    // Tính tổng tiền từ giỏ hàng
+    $totalMoney = 0;
+    foreach ($_SESSION['cart'] as $item) {
+        $totalMoney += $item['price'] * $item['quantity'];
+    }
+
+    // Tạo đơn hàng
+    $orderId = $this->model->createOrder(
+        $userId,
+        $fullname,
+        $phone,
+        $address,
+        $totalMoney,
+        $payment,
+        $note
+    );
+
+    if ($orderId) {
+        // Lưu chi tiết từng sản phẩm
+        foreach ($_SESSION['cart'] as $item) {
+            $this->model->createOrderDetail(
+                $orderId,
+                $item['id'],
+                $item['quantity'],
+                $item['price']
+            );
+        }
+
+        // Xóa giỏ hàng sau khi tạo đơn
+        unset($_SESSION['cart']);
+
+        // PHÂN LUỒNG THEO HÌNH THỨC THANH TOÁN
+        if ($payment === 'BANK') {
+            // Chuyển sang trang quét mã QR cho đơn hàng vừa tạo
+            header("Location: ?ctrl=order&act=payment&id=" . $orderId);
+            exit;
+        } else { // COD
+            echo "<script>alert('Đặt hàng thành công! Đơn hàng của bạn sẽ được xử lý trong thời gian sớm nhất.'); 
+                  window.location='?ctrl=user&act=profile';</script>";
+            exit;
+        }
+    } else {
+        echo "<script>alert('Lỗi hệ thống! Vui lòng thử lại sau.'); history.back();</script>";
+        exit;
+    }
+}
+
 
     // 2. THÊM HÀM MỚI: Hiển thị trang thanh toán QR
     function payment() {
