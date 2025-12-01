@@ -21,10 +21,3 @@ include_once './Controller/PageController.php';
 $crl = new PageController();
 $crl->home();
 }
-<<<<<<< HEAD
-include_once './Views/users/layout_footer.php';
-include_once './Views/layout_footer.php'; 
-=======
-
-include_once './Views/users/layout_footer.php';
->>>>>>> main
