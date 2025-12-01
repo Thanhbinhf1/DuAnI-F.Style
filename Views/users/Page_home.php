@@ -47,7 +47,7 @@
                 <img src="https://img.freepik.com/free-photo/portrait-handsome-smiling-stylish-young-man-model-dressed-red-checkered-shirt-fashion-man-posing_158538-4909.jpg"
                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
             </div>
-            <<<<<<< HEAD <div class="product-grid-right"
+            <div class="product-grid-right"
                 style="width: 60%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <?php foreach ($spMoi as $sp): 
                     $link = "?ctrl=product&act=detail&id=" . $sp['id'];
