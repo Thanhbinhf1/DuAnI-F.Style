@@ -1,69 +1,85 @@
-<h1 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-bottom: 30px;">
-    <?= isset($product) ? 'CẬP NHẬT SẢN PHẨM' : 'THÊM SẢN PHẨM MỚI' ?>
-</h1>
+<?php include_once 'layout_header.php'; ?>
+<h1><?= $product ? 'Sửa Sản Phẩm: ' . $product['name'] : 'Thêm Sản Phẩm Mới' ?></h1>
 
-<div style="background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-    <form action="?ctrl=admin&act=productPost" method="post">
-        <input type="hidden" name="id" value="<?= $product['id'] ?? 0 ?>">
+<form action="?ctrl=admin&act=productPost" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="id" value="<?= $product['id'] ?? 0 ?>">
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Tên Sản Phẩm:</label>
-                <input type="text" name="name" value="<?= $product['name'] ?? '' ?>" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Danh mục:</label>
-                <select name="category_id" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?= $cat['id'] ?>" 
-                            <?= (isset($product['category_id']) && $product['category_id'] == $cat['id']) ? 'selected' : '' ?>>
-                            <?= $cat['name'] ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Giá bán (đ):</label>
-                <input type="number" name="price" value="<?= $product['price'] ?? '' ?>" required min="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Giá Sale (đ):</label>
-                <input type="number" name="price_sale" value="<?= $product['price_sale'] ?? 0 ?>" min="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 15px; grid-column: 1 / span 2;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Link Ảnh Chính:</label>
-                <input type="text" name="image" value="<?= $product['image'] ?? '' ?>" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Chất liệu:</label>
-                <input type="text" name="material" value="<?= $product['material'] ?? '' ?>" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Thương hiệu:</label>
-                <input type="text" name="brand" value="<?= $product['brand'] ?? '' ?>" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 15px; grid-column: 1 / span 2;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Mã SKU/Code:</label>
-                <input type="text" name="sku_code" value="<?= $product['sku_code'] ?? '' ?>" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 15px; grid-column: 1 / span 2;">
-                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Mô tả chi tiết:</label>
-                <textarea name="description" rows="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"><?= $product['description'] ?? '' ?></textarea>
-            </div>
+    <div style="margin-bottom: 15px;">
+        <label for="category_id">Danh mục:</label>
+        <select name="category_id" id="category_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <?php foreach ($categories as $cat): ?>
+                <option value="<?= $cat['id'] ?>" 
+                    <?= ($product && $product['category_id'] == $cat['id']) ? 'selected' : '' ?>>
+                    <?= $cat['name'] ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label for="name">Tên sản phẩm:</label>
+        <input type="text" name="name" id="name" required 
+               value="<?= $product['name'] ?? '' ?>" 
+               style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    </div>
+    
+    <div style="display: flex; gap: 20px;">
+        <div style="margin-bottom: 15px; flex: 1;">
+            <label for="price">Giá gốc:</label>
+            <input type="number" name="price" id="price" required 
+                   value="<?= $product['price'] ?? '' ?>" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
         </div>
-        
-        <button type="submit" style="padding: 10px 20px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            <?= isset($product) ? 'Cập Nhật Sản Phẩm' : 'Thêm Sản Phẩm' ?>
-        </button>
-        <a href="?ctrl=admin&act=productList" style="margin-left: 10px; color: #7f8c8d;">Hủy</a>
-    </form>
-</div>
+        <div style="margin-bottom: 15px; flex: 1;">
+            <label for="price_sale">Giá khuyến mãi (0 nếu không có):</label>
+            <input type="number" name="price_sale" id="price_sale" 
+                   value="<?= $product['price_sale'] ?? 0 ?>" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label for="image">Ảnh (URL hoặc tên file):</label>
+        <input type="text" name="image" id="image" required 
+               value="<?= $product['image'] ?? '' ?>" 
+               style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <?php if ($product && $product['image']): ?>
+            <img src="<?= $product['image'] ?>" alt="Ảnh sản phẩm hiện tại" style="max-width: 100px; margin-top: 10px; display: block;">
+        <?php endif; ?>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label for="description">Mô tả:</label>
+        <textarea name="description" id="description" rows="5" 
+                  style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"><?= $product['description'] ?? '' ?></textarea>
+    </div>
+    
+    <div style="display: flex; gap: 20px;">
+        <div style="margin-bottom: 15px; flex: 1;">
+            <label for="material">Chất liệu:</label>
+            <input type="text" name="material" id="material" 
+                   value="<?= $product['material'] ?? '' ?>" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px; flex: 1;">
+            <label for="brand">Thương hiệu:</label>
+            <input type="text" name="brand" id="brand" 
+                   value="<?= $product['brand'] ?? 'F.Style' ?>" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px; flex: 1;">
+            <label for="sku_code">Mã SKU:</label>
+            <input type="text" name="sku_code" id="sku_code" 
+                   value="<?= $product['sku_code'] ?? '' ?>" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+    </div>
+
+
+    <button type="submit" class="btn-primary" style="padding: 10px 20px; font-size: 16px;">
+        <?= $product ? 'Cập Nhật Sản Phẩm' : 'Thêm Sản Phẩm Mới' ?>
+    </button>
+    <a href="?ctrl=admin&act=listProducts" class="btn-secondary" style="padding: 10px 20px; font-size: 16px;">Hủy</a>
+</form>
+
+<?php include_once 'layout_footer.php'; ?>
