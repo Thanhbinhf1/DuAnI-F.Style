@@ -20,4 +20,5 @@ include_once './Controller/PageController.php';
 
 $crl = new PageController();
 $crl->home();
+include_once './Views/users/layout_footer.php';
 }
