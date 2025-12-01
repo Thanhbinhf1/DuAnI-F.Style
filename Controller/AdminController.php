@@ -127,14 +127,14 @@ class AdminController {
         $name = $_POST['name'];
         $price = $_POST['price'];
         $priceSale = $_POST['price_sale'] ?? 0;
-        $image = $_POST['image']; 
+        $image = $_POST['image'];
         $description = $_POST['description'];
         $material = $_POST['material'];
         $brand = $_POST['brand'];
         $skuCode = $_POST['sku_code'];
 
         $result = false;
-        $msg = 'LỖI: Thao tác thất bại, vui lòng kiểm tra dữ liệu nhập.';
+        $msg = 'LỖI: Thao tác thất bại, vui lòng kiểm tra dữ liệu nhập.'; // Mặc định lỗi
 
         if ($id > 0) {
             // Chế độ Sửa
@@ -146,6 +146,7 @@ class AdminController {
             if ($result) { $msg = 'Thêm sản phẩm mới thành công!'; }
         }
 
+        // Đảm bảo thông báo alert là an toàn và chuyển hướng
         $safe_msg = addslashes($msg);
         echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=productList';</script>";
     }
@@ -154,7 +155,8 @@ class AdminController {
         if(isset($_GET['id'])) {
             $id = $_GET['id'];
             $result = $this->productModel->deleteProduct($id);
-            $msg = $result ? 'Đã xóa sản phẩm thành công!' : 'LỖI: Không thể xóa sản phẩm khỏi Database.';
+            
+            $msg = $result ? 'Đã xóa sản phẩm thành công!' : 'LỖI: Không thể xóa sản phẩm khỏi Database (có thể do ràng buộc khóa ngoại).';
             
             $safe_msg = addslashes($msg);
             echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=productList';</script>";
