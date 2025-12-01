@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F.Style Store</title>
-<<<<<<< HEAD
-<<<<<<< HEAD
-    <link rel="stylesheet" href="./public/Css/home.css">
-=======
-=======
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -22,9 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS của bạn -->
->>>>>>> main
     <link rel="stylesheet" href="./Public/Css/home.css">
->>>>>>> main
 </head>
 <body style="font-family: 'Inter', sans-serif;">
 <header class="border-bottom bg-white shadow-sm">
@@ -34,30 +27,11 @@
             <span class="fw-bold">F.Style</span>
         </a>
 
-<<<<<<< HEAD
-<body>
-    <header>
-        <div class="logo-section">
-<<<<<<< HEAD
-            <img src="" alt="Logo" style="height: 50px;">
-=======
-            <div class="logo" style="
-            display: flex;
-             flex-direction: row;
-             align-items: center;
-             gap: 30px;
-">
-            <img src="./Public/Img/logo.png" alt="Logo" style="height: 60px;"> <h3> F.Style </h3>
-            </div>
-            
->>>>>>> main
-=======
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#mainNavbar" aria-controls="mainNavbar"
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
->>>>>>> main
 
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
