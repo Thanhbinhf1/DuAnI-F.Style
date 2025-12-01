@@ -31,5 +31,20 @@ class User {
         $sql = "UPDATE users SET fullname=?, email=?, phone=?, address=? WHERE id=?";
         return $this->db->execute($sql, [$fullname, $email, $phone, $address, $id]);
     }
+    
+    // ===================================
+    //  BỔ SUNG CHỨC NĂNG ADMIN
+    // ===================================
+
+    function getAllUsers() {
+        // Lấy tất cả người dùng, sắp xếp theo ngày tạo
+        $sql = "SELECT * FROM users ORDER BY created_at DESC"; 
+        return $this->db->query($sql);
+    }
+    
+    function deleteUser($id) {
+        $sql = "DELETE FROM users WHERE id = ?";
+        return $this->db->execute($sql, [$id]);
+    }
 }
 ?>
