@@ -19,7 +19,7 @@ try {
 
     // Xử lý controller
     if ($ctrl === 'admin') {
-        // AdminController (chỉ include nếu file tồn tại)
+        // AdminController (nếu có)
         $adminFile = './Controller/AdminController.php';
         if (file_exists($adminFile)) {
             include_once $adminFile;
@@ -35,7 +35,7 @@ try {
         // Các controller thường: page, product, cart, order, user...
         $fileCtrl = './Controller/' . ucfirst($ctrl) . 'Controller.php';
         if (!file_exists($fileCtrl)) {
-            // Nếu không có controller được yêu cầu -> quay về trang chủ
+            // Nếu controller không tồn tại -> về home
             include_once './Controller/PageController.php';
             $controller = new PageController();
             $act = 'home';
@@ -51,7 +51,6 @@ try {
 
     // Gọi action
     if (!method_exists($controller, $act)) {
-        // Nếu action không tồn tại, dùng home nếu có
         if (method_exists($controller, 'home')) {
             $act = 'home';
         } else {
@@ -66,7 +65,7 @@ try {
         include_once './Views/users/layout_footer.php';
     }
 } catch (Exception $e) {
-    // Thông báo lỗi đơn giản cho user
+    // Thông báo lỗi đơn giản
     if ($useUserLayout) {
         echo '<div style="max-width:800px;margin:40px auto;padding:20px;border:1px solid #eee;border-radius:8px;background:#fff3f3;color:#c00;">';
         echo '<h3>Có lỗi xảy ra!</h3>';

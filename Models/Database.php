@@ -3,7 +3,7 @@ class Database {
     private $servername = "localhost";
     private $username   = "root";
     private $password   = "";
-    private $dbname     = "F.Style";
+    private $dbname     = "F.Style"; // chỉnh lại đúng tên DB của bạn
     private $conn;
 
     function __construct() {
