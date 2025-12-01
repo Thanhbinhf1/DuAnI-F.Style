@@ -16,7 +16,6 @@ if ($is_admin_area) {
     include_once './Views/users/layout_header.php';
 }
 
-<<<<<<< Updated upstream
 // 3. Xử lý Controller và Action
 if (isset($_GET['ctrl']) && isset($_GET['act'])) {
     $controller_name = ucwords($_GET['ctrl']) . 'Controller';
@@ -59,6 +58,3 @@ if ($is_admin_area) {
     include_once './Views/users/layout_footer.php';
 }
 ?>
-=======
-include_once './Views/users/layout_footer.php';
->>>>>>> Stashed changes
