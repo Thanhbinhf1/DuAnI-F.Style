@@ -14,7 +14,7 @@ class PageController {
     // Trang chủ
     public function home() {
         $spMoi    = $this->productModel->getNewProducts(8);
-        $spHot    = $this->productModel->getHotProducts(8);
+        $spHot    = $this->productModel->getHotProducts();
         $spGiaTot = $this->productModel->getSaleProducts(8);
 
         include_once 'Views/users/Page_home.php';
