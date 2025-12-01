@@ -15,7 +15,6 @@ if ($is_admin_area) {
     // Load layout User
     include_once './Views/users/layout_header.php';
 }
-
 // 3. Xử lý Controller và Action
 if (isset($_GET['ctrl']) && isset($_GET['act'])) {
     $controller_name = ucwords($_GET['ctrl']) . 'Controller';

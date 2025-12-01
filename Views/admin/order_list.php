@@ -1,40 +1,46 @@
-<h1 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-bottom: 30px;">QUẢN LÝ ĐƠN HÀNG</h1>
+<?php
+// Views/admin/order_list.php
+?>
+<h1 style="color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 10px; margin-bottom: 30px;">QUẢN LÝ ĐƠN HÀNG (<?=count($orders)?> đơn)</h1>
 
-<table style="width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: 8px;">
-    <thead>
-        <tr style="background-color: #27ae60; color: white;">
-            <th style="padding: 15px; text-align: center;">Mã ĐH</th>
-            <th style="padding: 15px; text-align: left;">Khách hàng</th>
-            <th style="padding: 15px; text-align: right;">Tổng tiền</th>
-            <th style="padding: 15px; text-align: center;">PTTT</th>
-            <th style="padding: 15px; text-align: center;">Trạng thái</th>
-            <th style="padding: 15px; text-align: center;">Ngày đặt</th>
-            <th style="padding: 15px; text-align: center;">Hành động</th>
+<table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+    <thead style="background: #e67e22; color: white;">
+        <tr>
+            <th width="5%" style="padding: 15px; text-align: left;">ID</th>
+            <th width="20%" style="padding: 15px; text-align: left;">Khách hàng</th>
+            <th width="15%" style="padding: 15px; text-align: right;">Tổng tiền</th>
+            <th width="15%" style="padding: 15px; text-align: left;">Ngày đặt</th>
+            <th width="20%" style="padding: 15px; text-align: center;">Trạng thái</th>
+            <th width="10%" style="padding: 15px; text-align: center;">Thanh toán</th>
+            <th width="15%" style="padding: 15px; text-align: center;">Chi tiết</th>
         </tr>
     </thead>
     <tbody>
         <?php 
-        $statusLabels = [
-            0 => 'Chờ xác nhận',
-            1 => 'Đang giao',
-            2 => 'Đã giao',
-            3 => 'Hủy'
+        $statusMap = [
+            0 => ['label' => 'Chờ xác nhận', 'color' => '#f1c40f'],
+            1 => ['label' => 'Đang giao', 'color' => '#3498db'],
+            2 => ['label' => 'Đã giao', 'color' => '#2ecc71'],
+            3 => ['label' => 'Hủy', 'color' => '#c0392b'],
         ];
-        
-        foreach ($orders as $order): ?>
+
+        foreach ($orders as $order): 
+        ?>
         <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 15px; text-align: center; font-weight: bold;"><?= $order['id'] ?></td>
-            <td style="padding: 15px; font-weight: 600;"><?= $order['fullname'] ?> (<?= $order['user_phone'] ?>)</td>
-            <td style="padding: 15px; text-align: right; color: #e74c3c; font-weight: bold;"><?= number_format($order['total_money']) ?> đ</td>
-            <td style="padding: 15px; text-align: center;"><?= $order['payment_method'] ?></td>
+            <td style="padding: 15px; font-weight: bold;">#<?=$order['id']?></td>
+            <td style="padding: 15px;"><?=$order['user_fullname']?></td>
+            <td style="padding: 15px; text-align: right; color: #ff5722; font-weight: bold;"><?=number_format($order['total_money'])?> đ</td>
+            <td style="padding: 15px;"><?=date('H:i d/m/Y', strtotime($order['created_at']))?></td>
             <td style="padding: 15px; text-align: center;">
-                <span style="color: <?= $order['status'] == 2 ? 'green' : ($order['status'] == 3 ? 'red' : 'orange') ?>;">
-                    <?= $statusLabels[$order['status']] ?>
+                <span style="display: inline-block; padding: 5px 10px; border-radius: 5px; background: <?=$statusMap[$order['status']]['color']?>; color: white; font-size: 12px; font-weight: 600;">
+                    <?=$statusMap[$order['status']]['label']?>
                 </span>
             </td>
-            <td style="padding: 15px; text-align: center;"><?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></td>
+            <td style="padding: 15px; text-align: center; color: <?=$order['payment_status'] == 1 ? '#2ecc71' : '#f39c12'?>;">
+                <?=$order['payment_status'] == 1 ? 'Đã TT' : 'Chưa TT'?>
+            </td>
             <td style="padding: 15px; text-align: center;">
-                <a href="?ctrl=admin&act=orderDetail&id=<?= $order['id'] ?>" style="color: #3498db; text-decoration: none;">Xem chi tiết</a>
+                <a href="?ctrl=admin&act=orderDetail&id=<?=$order['id']?>" style="color: #2980b9;">Xem chi tiết</a>
             </td>
         </tr>
         <?php endforeach; ?>
