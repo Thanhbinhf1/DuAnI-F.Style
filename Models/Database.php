@@ -36,10 +36,10 @@ class Database {
         }
     }
 
-   function execute($sql, $args = []) {
+  function execute($sql, $args = []) {
         try {
             $stmt = $this->conn->prepare($sql);
-            return $stmt->execute($args);
+            return $stmt->execute($args); // Trả về true nếu thành công
         } catch(PDOException $e) {
             echo "Lỗi SQL: " . $e->getMessage();
             // KHẮC PHỤC CỐT LÕI: Trả về false khi có lỗi

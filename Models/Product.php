@@ -119,16 +119,18 @@ class Product {
         return $this->db->query($sql);
     }
 
-    function insertProduct($categoryId, $name, $price, $image, $description, $material, $brand, $skuCode) {
-        $sql = "INSERT INTO products(category_id, name, price, image, description, material, brand, sku_code) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        return $this->db->execute($sql, [$categoryId, $name, $price, $image, $description, $material, $brand, $skuCode]);
-    }
+function insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
+    // Thêm price_sale vào SQL và danh sách tham số
+    $sql = "INSERT INTO products(category_id, name, price, price_sale, image, description, material, brand, sku_code) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
+    return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode]);
+}
 
-    function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
-        $sql = "UPDATE products SET category_id = ?, name = ?, price = ?, price_sale = ?, image = ?, description = ?, material = ?, brand = ?, sku_code = ? WHERE id = ?";
-        return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode, $id]);
-    }
+// Giữ nguyên hàm updateProduct (10 tham số)
+function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
+    $sql = "UPDATE products SET category_id = ?, name = ?, price = ?, price_sale = ?, image = ?, description = ?, material = ?, brand = ?, sku_code = ? WHERE id = ?";
+    return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode, $id]);
+}
 
     function deleteProduct($id) {
         $sql = "DELETE FROM products WHERE id = ?";
