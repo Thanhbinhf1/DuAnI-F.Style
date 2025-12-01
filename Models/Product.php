@@ -80,10 +80,41 @@ function getRelatedProducts($categoryId, $excludeId) {
         return $result ? $result['name'] : "";
     }
 
-    function searchProducts($keyword) {
-        $sql = "SELECT * FROM products WHERE name LIKE ? ORDER BY id DESC";
-        // Thêm dấu % để tìm tương đối (Ví dụ: %Jean% sẽ tìm thấy "Quần Jean Đẹp")
-        return $this->db->query($sql, ['%' . $keyword . '%']);
+    function searchProducts($keyword, $categoryId = null) {
+        $keyword = trim($keyword);
+
+        // Nếu từ khóa rỗng -> trả về mảng rỗng cho chắc
+        if ($keyword === '') {
+            return [];
+        }
+
+        $like = '%' . $keyword . '%';
+
+        if ($categoryId !== null) {
+            $sql = "SELECT * FROM products 
+                    WHERE category_id = ?
+                      AND (name LIKE ? 
+                           OR description LIKE ? 
+                           OR brand LIKE ?
+                           OR sku_code LIKE ?)
+                    ORDER BY id DESC";
+
+            return $this->db->query($sql, [
+                $categoryId,
+                $like, $like, $like, $like
+            ]);
+        } else {
+            $sql = "SELECT * FROM products 
+                    WHERE name LIKE ? 
+                       OR description LIKE ? 
+                       OR brand LIKE ?
+                       OR sku_code LIKE ?
+                    ORDER BY id DESC";
+
+            return $this->db->query($sql, [
+                $like, $like, $like, $like
+            ]);
+        }
     }
 
     function getVariantDetail($variantId) {
@@ -124,6 +155,7 @@ function getAverageRating($productId) {
         'total'      => $row ? (int)$row['total'] : 0
     ];
 }
-   
+
+
 }
 ?>

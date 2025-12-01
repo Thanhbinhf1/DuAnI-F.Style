@@ -1,5 +1,6 @@
 <?php 
 session_start();
+ob_start();
 
 include_once './Models/Database.php';
 include_once './csrf.php';
@@ -22,3 +23,4 @@ $crl->home();
 }
 
 include_once './Views/users/layout_footer.php';
+ob_end_flush();

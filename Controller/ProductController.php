@@ -68,28 +68,44 @@ class ProductController {
     
     // Hàm hiển thị danh sách tất cả sản phẩm (làm sau)
     function list() {
-        $titleMain = "DANH MỤC SẢN PHẨM"; 
-        $titleSub = "";
+        $titleMain = "DANH MỤC SẢN PHẨM";
+        $titleSub  = "";
+        $products  = [];
 
-        if (isset($_GET['cat'])) {
-            $id = $_GET['cat'];
-            $products = $this->model->getProductsByCategory($id);
-            $titleSub = $this->model->getCategoryName($id); 
-        } 
-        else if (isset($_GET['type']) && $_GET['type'] == 'sale') {
+        $cat     = isset($_GET['cat']) ? (int)$_GET['cat'] : 0;
+        $type    = $_GET['type'] ?? null;
+        $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
+
+        // ƯU TIÊN TÌM KIẾM NẾU CÓ KEYWORD
+        if ($keyword !== '') {
+            if ($cat > 0) {
+                // Tìm trong 1 danh mục (nếu muốn)
+                $products = $this->model->searchProducts($keyword, $cat);
+                $catName  = $this->model->getCategoryName($cat);
+                $titleSub = "Tìm kiếm: " . htmlspecialchars($keyword) . " (Trong: " . $catName . ")";
+            } else {
+                // Tìm toàn bộ sản phẩm
+                $products = $this->model->searchProducts($keyword);
+                $titleSub = "Tìm kiếm: " . htmlspecialchars($keyword);
+            }
+        }
+        // LỌC THEO DANH MỤC
+        elseif ($cat > 0) {
+            $products = $this->model->getProductsByCategory($cat);
+            $titleSub = $this->model->getCategoryName($cat);
+        }
+        // LỌC THEO LOẠI: SALE / HOT / NEW
+        elseif ($type === 'sale') {
             $products = $this->model->getSaleProducts();
             $titleSub = "Săn Sale Giá Sốc";
+        } elseif ($type === 'hot') {
+            $products = $this->model->getHotProducts();
+            $titleSub = "Sản phẩm Hot";
+        } elseif ($type === 'new') {
+            $products = $this->model->getNewProducts();
+            $titleSub = "Hàng Mới Về";
         }
-        // --- CẬP NHẬT ĐOẠN TÌM KIẾM NÀY ---
-        else if (isset($_GET['keyword'])) {
-         
-         
-       
-         $key = $_GET['keyword'];
-         $products = $this->model->searchProducts($key);
-         $titleSub = "Tìm kiếm: " . $key;
-    }
-        // -----------------------------------
+        // MẶC ĐỊNH: TẤT CẢ SẢN PHẨM
         else {
             $products = $this->model->getAllProductsList();
             $titleSub = "Tất cả sản phẩm";
