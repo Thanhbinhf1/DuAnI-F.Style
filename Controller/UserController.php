@@ -1,3 +1,4 @@
+
 <?php 
 include_once 'Models/User.php';
 
@@ -58,30 +59,18 @@ class UserController {
     }
 
     function loginPost() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: ?ctrl=user&act=login");
-            exit;
-        }
+        $user = $_POST['username'];
+        $pass = $_POST['password'];
 
-        if (!verify_csrf($_POST['csrf_token'] ?? null)) {
-            $error = "Phiên làm việc không hợp lệ, vui lòng thử lại.";
-            include_once 'Views/users/user_login.php';
-            return;
-        }
+        // Lấy thông tin user từ DB
+        $check = $this->model->checkUser($user);
 
-        $username = trim($_POST['username'] ?? '');
-        $password = trim($_POST['password'] ?? '');
-
-        if ($username === '' || $password === '') {
-            $error = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.";
-            include_once 'Views/users/user_login.php';
-            return;
-        }
-
-        $user = $this->model->checkUser($username);
-
-        if (!$user || !password_verify($password, $user['password'])) {
-            $error = "Tên đăng nhập hoặc mật khẩu không đúng.";
+        // Kiểm tra: Có user đó KHÔNG và Mật khẩu có khớp mã hóa KHÔNG
+        if ($check && password_verify($pass, $check['password'])) {
+            $_SESSION['user'] = $check;
+            echo "<script>alert('Đăng nhập thành công!'); window.location='index.php';</script>";
+        } else {
+            $error = "Sai tên đăng nhập hoặc mật khẩu!";
             include_once 'Views/users/user_login.php';
             return;
         }
