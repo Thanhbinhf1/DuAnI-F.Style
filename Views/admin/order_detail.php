@@ -58,7 +58,7 @@ $statusLabels = [
                         <img src="<?= $item['product_image'] ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 3px;">
                         <?= $item['product_name'] ?>
                     </td>
-                    <td style="padding: 10px; text-align: right;"><?= number_format($item['price']) ?></td>
+                    <td style="padding: 10px; text-align: right;"><?= number_format($item['price']) ?> đ</td>
                     <td style="padding: 10px; text-align: center;"><?= $item['quantity'] ?></td>
                     <td style="padding: 10px; text-align: right; font-weight: bold; color: #ff5722;">
                         <?= number_format($item['price'] * $item['quantity']) ?> đ

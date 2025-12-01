@@ -27,14 +27,14 @@ class Product {
     
     // Lấy chi tiết (giữ nguyên)
     function getProductById($id) {
-        $sql = "SELECT * FROM products WHERE id = ?";
-        return $this->db->queryOne($sql, [$id]);
+        $sql = "SELECT * FROM products WHERE id = ?"; // Sửa SQL Injection
+        return $this->db->queryOne($sql, [$id]); // Sửa SQL Injection
     }
     
     // Sản phẩm liên quan (giữ nguyên)
     function getRelatedProducts($categoryId, $excludeId) {
         $sql = "SELECT * FROM products WHERE category_id = ? AND id != ? LIMIT 4";
-        return $this->db->query($sql, [$categoryId, $excludeId]);
+        return $this->db->query($sql, [$categoryId, $excludeId]); // Sửa SQL Injection
     }
 
    function getProductVariants($productId) {

@@ -28,9 +28,13 @@
             </td>
             <td style="padding: 15px; text-align: center;"><?= date('d/m/Y', strtotime($user['created_at'])) ?></td>
             <td style="padding: 15px; text-align: center;">
-                <a href="?ctrl=admin&act=userDelete&id=<?= $user['id'] ?>" 
-                   onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?')" 
-                   style="color: #e74c3c; text-decoration: none;">Xóa</a>
+                 <?php if ($user['role'] != 1 || $user['id'] != $_SESSION['user']['id']): ?>
+                    <a href="?ctrl=admin&act=userDelete&id=<?= $user['id'] ?>" 
+                       onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?')" 
+                       style="color: #e74c3c; text-decoration: none;">Xóa</a>
+                <?php else: ?>
+                    <span style="color: #ccc;">(Không xóa)</span>
+                <?php endif; ?>
             </td>
         </tr>
         <?php endforeach; ?>

@@ -24,7 +24,7 @@
             <td style="padding: 15px;"><?= $sp['category_name'] ?></td>
             <td style="padding: 15px; text-align: right;">
                 <?= number_format($sp['price']) ?> đ
-                <?php if ($sp['price_sale'] > 0) echo ' <span style="color: red;">(Sale)</span>'; ?>
+                <?php if ($sp['price_sale'] > 0) echo ' <span style="color: red;">(Sale: ' . number_format($sp['price_sale']) . ' đ)</span>'; ?>
             </td>
             <td style="padding: 15px; text-align: right;"><?= $sp['views'] ?></td>
             <td style="padding: 15px; text-align: center;">

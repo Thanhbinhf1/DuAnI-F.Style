@@ -1,5 +1,4 @@
 <?php
-
 class User {
     private $db;
 
@@ -36,7 +35,6 @@ class User {
     }
     
     function deleteUser($id) {
-        // Xóa người dùng. ON DELETE CASCADE trong DB sẽ tự xóa Orders/Comments liên quan
         $sql = "DELETE FROM users WHERE id = ?";
         return $this->db->execute($sql, [$id]);
     }

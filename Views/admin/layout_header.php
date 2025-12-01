@@ -32,7 +32,7 @@
     // thanhbinhf1/duani-f.style/DuAnI-F.Style-Quy/Views/admin/layout_header.php
 // ... (phần CSS và Header)
 
-    <div class="admin-sidebar">
+   <div class="admin-sidebar">
         <ul>
             <li><a href="?ctrl=admin&act=dashboard" class="active">📊 Tổng quan</a></li>
             <li><a href="?ctrl=admin&act=productList">📦 Sản phẩm</a></li> 

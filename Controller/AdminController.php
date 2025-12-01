@@ -1,18 +1,16 @@
 <?php 
 // Controller/AdminController.php
 
-// CẦN INCLUDE 2 MODEL ĐỂ SỬ DỤNG
 include_once 'Models/Product.php'; 
 include_once 'Models/User.php'; 
 
 class AdminController {
     private $productModel;
     private $userModel;
-
+    
     function __construct() {
         // KIỂM TRA BẢO MẬT: Phải đăng nhập và có role = 1
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 1) {
-            // Chuyển hướng về trang login nếu không phải admin
             echo "<script>alert('Bạn không có quyền truy cập trang quản trị!'); window.location='index.php?ctrl=user&act=login';</script>";
             exit();
         }
@@ -21,11 +19,11 @@ class AdminController {
     }
 
     function dashboard() {
-        // Logic lấy dữ liệu tổng quan cho trang quản trị 
+        // Có thể bổ sung logic lấy số liệu thống kê ở đây
         include_once 'Views/admin/dashboard.php';
     }
 
-    // --- USER MANAGEMENT (Tài khoản) ---
+    // --- USER MANAGEMENT (Quản lý Tài khoản) ---
 
     function userList() {
         $users = $this->userModel->getAllUsers();
@@ -35,7 +33,7 @@ class AdminController {
     function userDelete() {
         if(isset($_GET['id'])) {
             $id = $_GET['id'];
-            if ($id != $_SESSION['user']['id']) { // Ngăn chặn tự xóa tài khoản đang đăng nhập
+             if ($id != $_SESSION['user']['id']) { // Ngăn chặn tự xóa tài khoản đang đăng nhập
                 $this->userModel->deleteUser($id);
                 echo "<script>alert('Đã xóa người dùng thành công!'); window.location='?ctrl=admin&act=userList';</script>";
             } else {
@@ -44,7 +42,7 @@ class AdminController {
         }
     }
 
-    // --- CATEGORY MANAGEMENT (Danh mục) ---
+    // --- CATEGORY MANAGEMENT (Quản lý Danh mục) ---
 
     function categoryList() {
         $categories = $this->productModel->getAllCategories();
@@ -81,7 +79,7 @@ class AdminController {
         }
     }
 
-    // --- PRODUCT MANAGEMENT (Sản phẩm) ---
+    // --- PRODUCT MANAGEMENT (Quản lý Sản phẩm) ---
 
     function productList() {
         $products = $this->productModel->getAllProductsAdmin();
@@ -103,7 +101,7 @@ class AdminController {
         $name = $_POST['name'];
         $price = $_POST['price'];
         $priceSale = $_POST['price_sale'] ?? 0;
-        $image = $_POST['image']; 
+        $image = $_POST['image']; // Tạm thời dùng link ảnh
         $description = $_POST['description'];
         $material = $_POST['material'];
         $brand = $_POST['brand'];
@@ -126,7 +124,7 @@ class AdminController {
         }
     }
     
-    // --- ORDER MANAGEMENT (Đơn hàng) ---
+    // --- ORDER MANAGEMENT (Quản lý Đơn hàng) ---
 
     function orderList() {
         $orders = $this->productModel->getAllOrders();
