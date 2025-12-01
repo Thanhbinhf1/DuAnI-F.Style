@@ -1109,3 +1109,92 @@ nav:not(.navbar) ul li.dropdown:hover > a::after { width: 0; }
         grid-template-columns: 1fr;
     }
 }
+/* Thanh filter danh mục sản phẩm */
+.product-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 15px 0 25px;
+}
+
+.filter-pill {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 13px;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+    border-color: #333;
+    color: #111;
+}
+
+.filter-pill.active {
+    background: #222;
+    color: #fff;
+    border-color: #222;
+}
+
+/* Ảnh + badge NEW / HOT */
+.thumb-wrapper {
+    position: relative;
+}
+
+.thumb-wrapper img {
+    display: block;
+}
+
+.badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.badge-new {
+    background: #28a745;
+}
+
+.badge-hot {
+    background: #e53935;
+    left: auto;
+    right: 10px;
+}
+
+/* Phân trang */
+.pagination-bar {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.page-link {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 13px;
+    color: #555;
+    text-decoration: none;
+}
+
+.page-link.active,
+.page-link:hover {
+    border-color: #222;
+    background: #222;
+    color: #fff;
+}
+
+.view-detail-btn {
+    width: 100%;
+}
+
