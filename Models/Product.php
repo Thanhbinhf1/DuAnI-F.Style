@@ -6,156 +6,151 @@ class Product {
         $this->db = new Database();
     }
 
-    // 1. Hàng mới về (Lấy 4 cái mới nhất)
-    function getNewProducts() {
-        $sql = "SELECT * FROM products ORDER BY id DESC LIMIT 4"; 
+    // 1. HÀNG MỚI VỀ
+    // - Mặc định: lấy $limit sản phẩm mới nhất (theo created_at, id)
+    // - Nếu $limit <= 0: lấy TẤT CẢ (dùng cho "Xem tất cả")
+    function getNewProducts($limit = 4) {
+        $limit = (int)$limit;
+        $sql = "SELECT * FROM products ORDER BY created_at DESC, id DESC";
+        if ($limit > 0) {
+            $sql .= " LIMIT $limit";
+        }
         return $this->db->query($sql);
     }
 
-    // 2. Sản phẩm Hot (Lấy 4 cái có nhiều lượt xem nhất)
-    function getHotProducts() {
-        $sql = "SELECT * FROM products ORDER BY views DESC LIMIT 4";
+    // 2. SẢN PHẨM HOT – dựa theo lượt xem
+    function getHotProducts($limit = 4) {
+        $limit = (int)$limit;
+        $sql = "SELECT * FROM products ORDER BY views DESC, id DESC";
+        if ($limit > 0) {
+            $sql .= " LIMIT $limit";
+        }
         return $this->db->query($sql);
     }
 
-    // 3. Sản phẩm Giá tốt (Lấy 4 cái giá rẻ nhất hoặc đang giảm giá)
-    function getSaleProducts() {
-        // Ưu tiên lấy những sản phẩm có giá < 200.000 hoặc sắp xếp giá tăng dần
-        $sql = "SELECT * FROM products ORDER BY price ASC LIMIT 4";
+    // 3. SẢN PHẨM GIÁ TỐT – ưu tiên price_sale nếu có
+    function getSaleProducts($limit = 4) {
+        $limit = (int)$limit;
+        $sql = "SELECT *, 
+                       CASE 
+                           WHEN price_sale IS NOT NULL AND price_sale > 0 THEN price_sale
+                           ELSE price
+                       END AS effective_price
+                FROM products
+                ORDER BY effective_price ASC, id DESC";
+        if ($limit > 0) {
+            $sql .= " LIMIT $limit";
+        }
         return $this->db->query($sql);
     }
-    
-    // Lấy chi tiết sản phẩm + tên danh mục
-function getProductById($id) {
-    $sql = "SELECT p.*, c.name AS category_name
-            FROM products p
-            LEFT JOIN categories c ON p.category_id = c.id
-            WHERE p.id = ?";
-    return $this->db->queryOne($sql, [$id]);
-}
 
-    
-    
-    // Sản phẩm liên quan: cùng danh mục, khác id
-function getRelatedProducts($categoryId, $excludeId) {
-    $sql = "SELECT * FROM products 
-            WHERE category_id = ? AND id != ?
-            ORDER BY id DESC
-            LIMIT 4";
-    return $this->db->query($sql, [$categoryId, $excludeId]);
-}
+    // Lấy chi tiết 1 sản phẩm
+    function getProductById($id) {
+        $sql = "SELECT * FROM products WHERE id = ?";
+        return $this->db->queryOne($sql, [$id]);
+    }
 
+    // Tăng lượt xem (để xác định HOT)
+    function increaseView($id) {
+        $sql = "UPDATE products SET views = views + 1 WHERE id = ?";
+        return $this->db->execute($sql, [$id]);
+    }
+    
+    // Sản phẩm liên quan cùng danh mục (trừ chính nó)
+    function getRelatedProducts($categoryId, $excludeId) {
+        $sql = "SELECT * FROM products WHERE category_id = ? AND id != ? ORDER BY id DESC LIMIT 8";
+        return $this->db->query($sql, [$categoryId, $excludeId]);
+    }
 
-   function getProductVariants($productId) {
+    // Danh sách biến thể của 1 sản phẩm
+    function getProductVariants($productId) {
         $sql = "SELECT * FROM product_variants 
                 WHERE product_id = ? 
-                ORDER BY color, 
-                FIELD(size, 'S', 'M', 'L', 'XL', 'XXL')"; 
-        
+                ORDER BY color,
+                FIELD(size, 'S', 'M', 'L', 'XL', 'XXL', 'FREESIZE', '28','29','30','31','32')";
         return $this->db->query($sql, [$productId]);
     }
-    
+
+    // Kiểm tra tồn kho cho 1 biến thể màu/size
     function checkStock($productId, $color, $size) {
         $sql = "SELECT quantity FROM product_variants 
                 WHERE product_id = ? AND color = ? AND size = ?";
         $result = $this->db->queryOne($sql, [$productId, $color, $size]);
-        
-        // Trả về số lượng (nếu không tìm thấy thì trả về 0)
-        return $result ? $result['quantity'] : 0;
+        return $result ? (int)$result['quantity'] : 0;
     }
-    // HÀM MỚI: Lấy sản phẩm theo Danh Mục (Category ID)
+
+    // Lấy sản phẩm theo danh mục
     function getProductsByCategory($catId) {
         $sql = "SELECT * FROM products WHERE category_id = ? ORDER BY id DESC";
         return $this->db->query($sql, [$catId]);
     }
 
-    // HÀM MỚI: Lấy tất cả sản phẩm (Có phân trang nếu muốn, tạm thời lấy hết)
+    // Lấy tất cả sản phẩm (cho trang danh mục)
     function getAllProductsList() {
         $sql = "SELECT * FROM products ORDER BY id DESC";
         return $this->db->query($sql);
     }
+
+    // Lấy tên danh mục
     function getCategoryName($id) {
         $sql = "SELECT name FROM categories WHERE id = ?";
         $result = $this->db->queryOne($sql, [$id]);
         return $result ? $result['name'] : "";
     }
 
-    function searchProducts($keyword, $categoryId = null) {
+    // Tìm kiếm sản phẩm theo tên / mô tả / brand / sku
+    function searchProducts($keyword) {
         $keyword = trim($keyword);
-
-        // Nếu từ khóa rỗng -> trả về mảng rỗng cho chắc
         if ($keyword === '') {
             return [];
         }
-
         $like = '%' . $keyword . '%';
-
-        if ($categoryId !== null) {
-            $sql = "SELECT * FROM products 
-                    WHERE category_id = ?
-                      AND (name LIKE ? 
-                           OR description LIKE ? 
-                           OR brand LIKE ?
-                           OR sku_code LIKE ?)
-                    ORDER BY id DESC";
-
-            return $this->db->query($sql, [
-                $categoryId,
-                $like, $like, $like, $like
-            ]);
-        } else {
-            $sql = "SELECT * FROM products 
-                    WHERE name LIKE ? 
-                       OR description LIKE ? 
-                       OR brand LIKE ?
-                       OR sku_code LIKE ?
-                    ORDER BY id DESC";
-
-            return $this->db->query($sql, [
-                $like, $like, $like, $like
-            ]);
-        }
+        $sql = "SELECT * FROM products 
+                WHERE name LIKE ?
+                   OR description LIKE ?
+                   OR brand LIKE ?
+                   OR sku_code LIKE ?
+                ORDER BY id DESC";
+        return $this->db->query($sql, [$like, $like, $like, $like]);
     }
 
+    // Lấy chi tiết 1 biến thể (theo id variant)
     function getVariantDetail($variantId) {
         $sql = "SELECT * FROM product_variants WHERE id = ?";
         return $this->db->queryOne($sql, [$variantId]);
     }
-    function getProductImages($productId) {
-    $sql = "SELECT * FROM product_images WHERE product_id = ? ORDER BY id ASC";
-    return $this->db->query($sql, [$productId]);
-}
 
-// Lấy danh sách comment + thông tin user
-function getCommentsByProduct($productId) {
-    $sql = "SELECT c.*, u.fullname, u.username 
-            FROM comments c
-            JOIN users u ON c.user_id = u.id
-            WHERE c.product_id = ?
-            ORDER BY c.date DESC";
-    return $this->db->query($sql, [$productId]);
-}
+    // ==========================
+    // BÌNH LUẬN SẢN PHẨM
+    // ==========================
 
-// Thêm comment mới
-function insertComment($productId, $userId, $content, $rating) {
-    $sql = "INSERT INTO comments (user_id, product_id, content, rating, date)
-            VALUES (?, ?, ?, ?, NOW())";
-    return $this->db->execute($sql, [$userId, $productId, $content, $rating]);
-}
+    // Lấy danh sách comment theo sản phẩm + thông tin user
+    function getCommentsByProduct($productId) {
+        $sql = "SELECT c.*, u.fullname, u.username 
+                FROM comments c
+                JOIN users u ON c.user_id = u.id
+                WHERE c.product_id = ?
+                ORDER BY c.date DESC";
+        return $this->db->query($sql, [$productId]);
+    }
 
-// Lấy rating trung bình & tổng số đánh giá
-function getAverageRating($productId) {
-    $sql = "SELECT AVG(rating) AS avg_rating, COUNT(*) AS total 
-            FROM comments 
-            WHERE product_id = ?";
-    $row = $this->db->queryOne($sql, [$productId]);
+    // Thêm bình luận mới
+    function insertComment($userId, $productId, $content, $rating) {
+        $sql = "INSERT INTO comments (user_id, product_id, content, rating, date)
+                VALUES (?, ?, ?, ?, NOW())";
+        return $this->db->execute($sql, [$userId, $productId, $content, $rating]);
+    }
 
-    return [
-        'avg_rating' => $row && $row['avg_rating'] ? round($row['avg_rating'], 1) : 0,
-        'total'      => $row ? (int)$row['total'] : 0
-    ];
-}
-
-
+    // Lấy rating trung bình & tổng số đánh giá
+    function getAverageRating($productId) {
+        $sql = "SELECT AVG(rating) AS avg_rating, COUNT(*) AS total 
+                FROM comments 
+                WHERE product_id = ?";
+        $row = $this->db->queryOne($sql, [$productId]);
+        return [
+            'avg_rating' => $row && $row['avg_rating'] ? round($row['avg_rating'], 1) : 0,
+            'total'      => $row ? (int)$row['total'] : 0
+        ];
+    }
 }
 ?>
