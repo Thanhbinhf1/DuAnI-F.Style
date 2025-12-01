@@ -2,6 +2,7 @@
 session_start();
 
 include_once './Models/Database.php';
+include_once './csrf.php';
 
 include_once './Views/users/layout_header.php';
 

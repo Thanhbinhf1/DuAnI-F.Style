@@ -25,17 +25,26 @@ class Product {
         return $this->db->query($sql);
     }
     
-    // Lấy chi tiết (giữ nguyên)
-    function getProductById($id) {
-        $sql = "SELECT * FROM products WHERE id = $id";
-        return $this->db->queryOne($sql);
-    }
+    // Lấy chi tiết sản phẩm + tên danh mục
+function getProductById($id) {
+    $sql = "SELECT p.*, c.name AS category_name
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.id
+            WHERE p.id = ?";
+    return $this->db->queryOne($sql, [$id]);
+}
+
     
-    // Sản phẩm liên quan (giữ nguyên)
-    function getRelatedProducts($categoryId, $excludeId) {
-        $sql = "SELECT * FROM products WHERE category_id = $categoryId AND id != $excludeId LIMIT 4";
-        return $this->db->query($sql);
-    }
+    
+    // Sản phẩm liên quan: cùng danh mục, khác id
+function getRelatedProducts($categoryId, $excludeId) {
+    $sql = "SELECT * FROM products 
+            WHERE category_id = ? AND id != ?
+            ORDER BY id DESC
+            LIMIT 4";
+    return $this->db->query($sql, [$categoryId, $excludeId]);
+}
+
 
    function getProductVariants($productId) {
         $sql = "SELECT * FROM product_variants 
@@ -81,6 +90,40 @@ class Product {
         $sql = "SELECT * FROM product_variants WHERE id = ?";
         return $this->db->queryOne($sql, [$variantId]);
     }
+    function getProductImages($productId) {
+    $sql = "SELECT * FROM product_images WHERE product_id = ? ORDER BY id ASC";
+    return $this->db->query($sql, [$productId]);
+}
+
+// Lấy danh sách comment + thông tin user
+function getCommentsByProduct($productId) {
+    $sql = "SELECT c.*, u.fullname, u.username 
+            FROM comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.product_id = ?
+            ORDER BY c.date DESC";
+    return $this->db->query($sql, [$productId]);
+}
+
+// Thêm comment mới
+function insertComment($productId, $userId, $content, $rating) {
+    $sql = "INSERT INTO comments (user_id, product_id, content, rating, date)
+            VALUES (?, ?, ?, ?, NOW())";
+    return $this->db->execute($sql, [$userId, $productId, $content, $rating]);
+}
+
+// Lấy rating trung bình & tổng số đánh giá
+function getAverageRating($productId) {
+    $sql = "SELECT AVG(rating) AS avg_rating, COUNT(*) AS total 
+            FROM comments 
+            WHERE product_id = ?";
+    $row = $this->db->queryOne($sql, [$productId]);
+
+    return [
+        'avg_rating' => $row && $row['avg_rating'] ? round($row['avg_rating'], 1) : 0,
+        'total'      => $row ? (int)$row['total'] : 0
+    ];
+}
    
 }
 ?>

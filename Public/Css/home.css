@@ -86,15 +86,15 @@ header {
 
 .user-actions a:hover { color: #ff5722; }
 
-/* Menu chính */
-nav>ul {
+/* Menu chính – CHỈ áp dụng cho nav KHÔNG phải .navbar (Bootstrap) */
+nav:not(.navbar) > ul {
     display: flex;  
     justify-content: center;
     gap: 40px;
     padding: 15px 0;
 }
 
-nav a {
+nav:not(.navbar) a {
     text-transform: uppercase;
     font-weight: 600;
     font-size: 14px;
@@ -103,10 +103,10 @@ nav a {
     position: relative;
 }
 
-nav a:hover { color: #ff5722; }
+nav:not(.navbar) a:hover { color: #ff5722; }
 
 /* Hiệu ứng gạch chân khi hover menu */
-nav a::after {
+nav:not(.navbar) a::after {
     content: '';
     display: block;
     width: 0;
@@ -114,7 +114,7 @@ nav a::after {
     background: #ff5722;
     transition: width .3s;
 }
-nav a:hover::after { width: 100%; }
+nav:not(.navbar) a:hover::after { width: 100%; }
 
 /* =========================================
    3. PRODUCT LIST (TRANG CHỦ)
@@ -471,8 +471,8 @@ input[type="number"] {
 /* =========================================
    9. NAVIGATION DROPDOWN (MENU ĐA CẤP)
    ========================================= */
-/* Cài đặt cho thẻ li chứa menu con */
-nav ul li.dropdown {
+/* Cài đặt cho thẻ li chứa menu con – chỉ cho nav thường, không dùng cho .navbar */
+nav:not(.navbar) ul li.dropdown {
     position: relative; /* Để menu con bám theo nó */
 }
 
@@ -495,7 +495,7 @@ nav ul li.dropdown {
 }
 
 /* Khi rê chuột vào li cha thì hiện menu con */
-nav ul li.dropdown:hover .dropdown-content {
+nav:not(.navbar) ul li.dropdown:hover .dropdown-content {
     display: flex;
 }
 
@@ -523,7 +523,7 @@ nav ul li.dropdown:hover .dropdown-content {
 }
 
 /* Xóa gạch chân hover của menu cha cho đỡ rối */
-nav ul li.dropdown:hover > a::after { width: 0; }
+nav:not(.navbar) ul li.dropdown:hover > a::after { width: 0; }
 
 /* =========================================
    10. CATEGORY TITLE BAR (Tiêu đề danh mục)
@@ -896,4 +896,34 @@ nav ul li.dropdown:hover > a::after { width: 0; }
 @media (max-width: 768px) {
     .footer-widgets { flex-direction: column; }
     .footer-col { width: 100%; margin-bottom: 30px; }
+}
+/* NAVBAR (Bootstrap) – chỉnh khoảng cách & kiểu chữ menu */
+.navbar-nav .nav-link {
+    padding-left: 18px;
+    padding-right: 18px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #333;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #ff5722;
+}
+
+/* Logo cách menu một chút cho thoáng */
+.navbar-brand {
+    margin-right: 30px;
+}
+/* Bỏ mọi hiệu ứng gạch chân dạng ::after trong navbar (kể cả ở profile) */
+.navbar a::after {
+    content: none !important;
+}
+/* Dropdown mở khi hover (chỉ áp dụng trên màn hình đủ rộng - desktop) */
+@media (min-width: 992px) {
+    .navbar .dropdown:hover .dropdown-menu {
+        display: block;
+        margin-top: 0;      /* dính sát dưới chữ DANH MỤC */
+    }
 }
