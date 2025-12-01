@@ -749,14 +749,39 @@ nav:not(.navbar) ul li.dropdown:hover > a::after { width: 0; }
 }
 
 /* Nút Mua ngay (Trang chi tiết) */
+/* Nút hành động ở trang chi tiết */
 .btn-actions {
     display: flex;
-    gap: 15px;
+    gap: 12px;
+    margin-top: 5px;
 }
-.btn-buy-now {
-    background: #d0011b !important; /* Màu đỏ đậm hơn */
+
+.btn-actions button {
     flex: 1;
+    padding: 12px 0;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border: none;
 }
+
+/* Thêm vào giỏ – basic, tối hơn */
+#btn-add-cart {
+    background: #333;
+    color: #fff;
+}
+
+/* Mua ngay – viền đen, nền trắng */
+.btn-buy-now {
+    background: #fff !important;
+    color: #222 !important;
+    border: 1px solid #ddd !important;
+}
+.btn-buy-now:hover {
+    border-color: #333 !important;
+}
+
 /* =========================================
    14. MAIN FOOTER (GIAO DIỆN CHÂN TRANG)
    ========================================= */
