@@ -773,11 +773,11 @@ nav:not(.navbar) ul li.dropdown:hover > a::after { width: 0; }
 }
 
 /* Mua ngay – viền đen, nền trắng */
-.btn-buy-now {
+/* .btn-buy-now {
     background: #fff !important;
     color: #222 !important;
     border: 1px solid #ddd !important;
-}
+} */
 .btn-buy-now:hover {
     border-color: #333 !important;
 }

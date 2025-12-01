@@ -116,14 +116,16 @@ $totalCmt   = $averageRating['total'] ?? 0;
 
                 <!-- NÚT -->
                 <div class="btn-actions">
-    <button type="submit" id="btn-add-cart"
-        <?= !empty($variants) ? 'disabled' : '' ?>
-        style="cursor: <?= !empty($variants) ? 'not-allowed' : 'pointer' ?>;">
+    <button type="submit"
+            id="btn-add-cart"
+            class="product-action-btn primary"
+            <?= !empty($variants) ? 'disabled' : '' ?>>
         <?= !empty($variants) ? 'Vui lòng chọn phân loại' : 'Thêm vào giỏ hàng' ?>
     </button>
 
-    <button type="submit" formaction="?ctrl=cart&act=buyNow"
-            class="btn-buy-now">
+    <button type="submit"
+            formaction="?ctrl=cart&act=buyNow"
+            class="product-action-btn secondary">
         Mua ngay
     </button>
 </div>
