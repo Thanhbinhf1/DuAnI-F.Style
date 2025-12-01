@@ -41,7 +41,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 0;
+    padding: 15px;
     border-bottom: 1px solid #f1f1f1;
 }
 
@@ -87,7 +87,7 @@ header {
 .user-actions a:hover { color: #ff5722; }
 
 /* Menu chính */
-nav ul {
+nav>ul {
     display: flex;
     justify-content: center;
     gap: 40px;
@@ -220,7 +220,7 @@ h2 {
     box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4);
     transition: transform 0.2s;
     width: auto;
-    padding: 15px 40px !important;
+    padding: 5px 20px !important;
     font-size: 18px !important;
 }
 
@@ -251,7 +251,6 @@ form button[type="submit"] {
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: bold;
-    margin-top: 10px;
 }
 
 /* =========================================
@@ -266,6 +265,7 @@ footer {
 }
 
 footer p { font-size: 14px; }
+
 /* =========================================
    7. BANNER & SECTIONS (NEW)
    ========================================= */
@@ -274,9 +274,9 @@ footer p { font-size: 14px; }
 .banner {
     position: relative;
     width: 100%;
-    height: 500px; /* Chiều cao banner */
     overflow: hidden;
     margin-bottom: 40px;
+    padding-left: 1px; 
 }
 
 .banner img {
@@ -336,3 +336,564 @@ footer p { font-size: 14px; }
     cursor: pointer;
 }
 .news-item:hover { transform: translateY(-5px); }
+
+/* =========================================
+   8. PRODUCT DETAIL & VARIANTS (NEW STYLE)
+   ========================================= */
+
+/* Khung chứa chính */
+.product-detail-container {
+    background: #fff;
+    padding: 40px;
+    border-radius: 8px; /* Bo góc nhẹ thôi cho sang */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03); /* Bóng mờ thật nhẹ */
+    margin-bottom: 50px;
+    display: flex;
+    gap: 50px; /* Tăng khoảng cách giữa ảnh và chữ */
+}
+
+/* Cột phải: Thông tin */
+.right-column h1 {
+    font-size: 26px; /* Chữ tiêu đề vừa phải, không quá to */
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 10px;
+    color: #222;
+}
+
+.right-column .price {
+    font-size: 28px;
+    color: #ff424e; /* Màu đỏ cam hiện đại */
+    font-weight: 700;
+    background: #fafafa; /* Nền xám nhẹ làm nổi bật giá */
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    display: inline-block; /* Ôm gọn giá tiền */
+    width: 100%;
+}
+
+/* Nhãn (Màu sắc, Kích thước...) */
+.right-column label {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 8px;
+    display: block; /* Xuống dòng */
+    font-weight: 500;
+}
+
+/* Group nút bấm */
+.variant-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px; /* Khoảng cách giữa các nút */
+    margin-bottom: 20px; /* Cách xa mục tiếp theo */
+}
+
+/* TẠO HÌNH NÚT BẤM (QUAN TRỌNG) */
+.variant-btn {
+    min-width: 40px; /* Độ rộng tối thiểu nhỏ lại */
+    padding: 8px 18px; /* Padding vừa đủ tạo hình chữ nhật bo tròn */
+    border: 1px solid #e0e0e0; /* Viền xám nhạt tinh tế */
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    border-radius: 4px; /* Bo góc nhẹ 4px là chuẩn đẹp */
+    font-size: 13px; /* Chữ nhỏ gọn gàng */
+    font-weight: 500;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+/* Hiệu ứng khi di chuột */
+.variant-btn:hover {
+    border-color: #ff5722;
+    color: #ffffff;
+}
+
+/* TRẠNG THÁI ĐANG CHỌN (ACTIVE) */
+.variant-btn.active {
+    border: 1px solid #ff5722;
+    background-color: #fff; /* Nền trắng */
+    color: #ffffff;
+    position: relative; /* Để tạo icon tích góc nếu cần */
+    font-weight: 600;
+    box-shadow: 0 0 0 1px #ff5722 inset; /* Viền đôi sắc nét */
+}
+
+/* TRẠNG THÁI HẾT HÀNG / DISABLED */
+.variant-btn:disabled {
+    background-color: #f5f5f5;
+    color: #ccc;
+    border-color: #f0f0f0;
+    cursor: not-allowed;
+    opacity: 0.7;
+    text-decoration: none; /* Bỏ gạch ngang nhìn cho đỡ rối */
+}
+
+/* Ô nhập số lượng */
+input[type="number"] {
+    width: 60px !important;
+    text-align: center;
+    border: 1px solid #ddd !important;
+    height: 40px;
+    font-weight: 600;
+    border-radius: 4px !important;
+    margin-right: 10px;
+}
+
+/* NÚT THÊM VÀO GIỎ (CTA) */
+#btn-add-cart {
+    width: 100%; /* Nút to full chiều ngang */
+    padding: 16px !important;
+    font-size: 16px !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    box-shadow: none !important; /* Bỏ bóng đổ cũ */
+    border-radius: 4px !important;
+    transition: background 0.3s;
+}
+
+#btn-add-cart:disabled {
+    background-color: #e0e0e0 !important;
+    color: #999 !important;
+}
+
+/* Mô tả sản phẩm */
+.description {
+    margin-top: 30px;
+    font-size: 14px;
+    color: #444;
+    line-height: 1.8; /* Giãn dòng cho dễ đọc */
+    background: #fff;
+}
+/* =========================================
+   9. NAVIGATION DROPDOWN (MENU ĐA CẤP)
+   ========================================= */
+/* Cài đặt cho thẻ li chứa menu con */
+nav ul li.dropdown {
+    position: relative; /* Để menu con bám theo nó */
+}
+
+/* Mũi tên nhỏ */
+.arrow { font-size: 10px; margin-left: 5px; vertical-align: middle; }
+
+/* Menu con (Ban đầu ẩn đi) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%; /* Hiện ngay dưới menu cha */
+    left: 0;
+    background-color: #fff;
+    min-width: 220px; /* Chiều rộng menu con */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: 0 0 5px 5px;
+    z-index: 1000;
+    padding: 10px 0;
+    flex-direction: column; /* Xếp dọc */
+}
+
+/* Khi rê chuột vào li cha thì hiện menu con */
+nav ul li.dropdown:hover .dropdown-content {
+    display: flex;
+}
+
+/* Style cho các link con */
+.dropdown-content li {
+    width: 100%;
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 10px 20px;
+    color: #333;
+    text-transform: none; /* Không viết hoa hết cho dễ đọc */
+    font-weight: 500;
+    font-size: 14px;
+    transition: 0.2s;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+/* Hiệu ứng hover menu con */
+.dropdown-content a:hover {
+    background-color: #f8f9fa;
+    color: #ff5722;
+    padding-left: 25px; /* Hiệu ứng đẩy chữ sang phải */
+}
+
+/* Xóa gạch chân hover của menu cha cho đỡ rối */
+nav ul li.dropdown:hover > a::after { width: 0; }
+
+/* =========================================
+   10. CATEGORY TITLE BAR (Tiêu đề danh mục)
+   ========================================= */
+.category-title-bar {
+    display: flex;
+    align-items: center; /* Căn giữa dòng */
+    margin-bottom: 40px;
+    border-bottom: 2px solid #ff5722; /* Gạch chân màu cam dưới cùng */
+    padding-bottom: 10px;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Chữ "DANH MỤC SẢN PHẨM" */
+.main-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+}
+
+/* Dấu gạch chéo / */
+.divider {
+    font-size: 30px;
+    color: #ff5722; /* Màu đỏ cam */
+    margin: 0 15px; /* Khoảng cách 2 bên */
+    font-weight: 300; /* Mảnh thôi cho đẹp */
+}
+
+/* Tên mục vừa ấn (Sale, Áo thun...) */
+.sub-title {
+    font-size: 28px; /* To hơn chữ chính một chút cho nổi */
+    color: #ff5722; /* Màu đỏ cam nổi bật */
+    font-weight: 600; /* Đậm vừa phải */
+    text-transform: uppercase;
+    font-style: italic; /* In nghiêng nhẹ cho nghệ thuật (tùy chọn) */
+}
+/* =========================================
+   11. SHOPPING CART (LAYOUT 7/3)
+   ========================================= */
+/* Khung bao quanh chia cột */
+.cart-layout {
+    display: flex;
+    gap: 30px; /* Khoảng cách giữa 2 cột */
+    align-items: flex-start; /* Căn hàng trên cùng */
+}
+
+/* Cột Trái (Sản phẩm) - Chiếm 70% */
+.cart-left {
+    flex: 7; 
+    width: 70%;
+}
+
+/* Cột Phải (Tổng tiền) - Chiếm 30% */
+.cart-right {
+    flex: 3;
+    width: 30%;
+    position: sticky; /* Dính thanh toán khi cuộn trang */
+    top: 100px; /* Cách mép trên 100px */
+}
+
+/* Bảng sản phẩm */
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.cart-table th {
+    background: #f8f9fa;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #555;
+    border-bottom: 2px solid #eee;
+}
+
+.cart-table td {
+    padding: 20px 15px;
+    border-bottom: 1px solid #f1f1f1;
+    vertical-align: middle;
+}
+
+.product-col {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Hộp Tổng tiền (Bên phải) */
+.cart-summary {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.summary-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 15px;
+    color: #555;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.total-price { color: #ff5722; font-size: 22px; }
+
+.btn-checkout {
+    display: block;
+    width: 100%;
+    background: #ff5722;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 20px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-checkout:hover { background: #e64a19; }
+
+/* Responsive: Trên điện thoại thì dồn thành 1 cột */
+@media (max-width: 768px) {
+    .cart-layout { flex-direction: column; }
+    .cart-left, .cart-right { width: 100%; flex: none; }
+}
+/* =========================================
+   12. NÂNG CẤP UI GIỎ HÀNG & NÚT
+   ========================================= */
+
+/* Bộ nút tăng giảm số lượng (+ -) */
+.qty-control {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: fit-content;
+    overflow: hidden;
+}
+
+.qty-control button {
+    background: #f8f9fa;
+    border: none;
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.qty-control button:hover { background: #ddd; }
+
+.qty-control input {
+    width: 40px !important;
+    text-align: center;
+    border: none !important;
+    border-left: 1px solid #ddd !important;
+    border-right: 1px solid #ddd !important;
+    margin: 0 !important;
+    height: 35px;
+    font-weight: 600;
+    appearance: none; /* Ẩn mũi tên mặc định của input number */
+}
+
+/* Nút Mua ngay khi Hover (Trang chủ) */
+.product-item {
+    position: relative; /* Để nút mua ngay bám theo */
+}
+
+.btn-buy-now-hover {
+    position: absolute;
+    bottom: -40px; /* Ẩn bên dưới */
+    left: 0;
+    width: 100%;
+    background: #ff5722;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    opacity: 0; /* Ẩn đi */
+}
+
+.product-item:hover .btn-buy-now-hover {
+    bottom: 0; /* Trượt lên */
+    opacity: 1; /* Hiện ra */
+}
+
+.product-item:hover {
+    padding-bottom: 40px; /* Tạo chỗ trống cho nút trượt lên */
+}
+
+/* Nút Mua ngay (Trang chi tiết) */
+.btn-actions {
+    display: flex;
+    gap: 15px;
+}
+.btn-buy-now {
+    background: #d0011b !important; /* Màu đỏ đậm hơn */
+    flex: 1;
+}
+/* =========================================
+   14. MAIN FOOTER (GIAO DIỆN CHÂN TRANG)
+   ========================================= */
+.main-footer {
+    background-color: #222; /* Nền tối */
+    color: #bbb; /* Chữ màu xám nhạt */
+    padding-top: 70px;
+    margin-top: auto; /* Đẩy footer xuống đáy nếu nội dung ngắn */
+    font-size: 14px;
+}
+
+.footer-widgets {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+    padding-bottom: 50px;
+}
+
+/* Cột footer */
+.footer-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Tiêu đề cột */
+.footer-col h4 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* Gạch chân dưới tiêu đề */
+.footer-col h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 2px;
+    background-color: #ff5722;
+}
+
+/* Danh sách liên kết */
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: #bbb;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: #ff5722; /* Rê chuột đổi màu cam */
+    padding-left: 5px; /* Hiệu ứng đẩy chữ */
+}
+
+/* Thông tin liên hệ */
+.contact-list li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.contact-list i {
+    color: #ff5722;
+    margin-top: 3px;
+}
+
+/* Form đăng ký nhận tin */
+.newsletter-form {
+    display: flex;
+    margin-top: 15px;
+    position: relative;
+}
+
+.newsletter-form input {
+    width: 100%;
+    padding: 12px;
+    background: #333;
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.newsletter-form button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 50px;
+    background: #ff5722;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    transition: 0.3s;
+}
+
+.newsletter-form button:hover { background: #e64a19; }
+
+/* Mạng xã hội */
+.social-icons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.social-icons a {
+    width: 35px;
+    height: 35px;
+    background: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.social-icons a:hover {
+    background: #ff5722;
+    transform: translateY(-3px);
+}
+
+/* Dòng bản quyền cuối cùng */
+.footer-bottom {
+    background-color: #111; /* Đen đậm hơn */
+    padding: 20px 0;
+    border-top: 1px solid #333;
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 768px) {
+    .footer-widgets { flex-direction: column; }
+    .footer-col { width: 100%; margin-bottom: 30px; }
+}

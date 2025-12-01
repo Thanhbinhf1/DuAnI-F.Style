@@ -11,7 +11,7 @@ class PageController {
         $spGiaTot = $productModel->getSaleProducts();
         
         // Gửi tất cả sang View
-        include_once 'Views/users/page_home.php';
+        include_once 'Views/users/Page_home.php';
     }
 }
 ?>

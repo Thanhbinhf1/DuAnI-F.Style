@@ -1,5 +1,9 @@
 <div class="banner">
+<<<<<<< HEAD
     <img src="https://dps.media/wp-content/uploads/2025/07/banner-5.png" alt="Banner Thời Trang">
+=======
+    <img src="./Public/Img/banner.jpg" alt="Banner Thời Trang">
+>>>>>>> main
     <div class="banner-content">
         <h1>THỜI TRANG & PHONG CÁCH</h1>
         <p>Bộ sưu tập mùa hè mới nhất 2025</p>
@@ -11,13 +15,15 @@
 
     <section class="section-product">
         <div class="section-header">
-            <h2>SẢN PHẨM HOT 🔥</h2>
+            <h2>SẢN PHẨM HOT </h2>
             <a href="?ctrl=product&act=list&type=hot">Xem tất cả &rarr;</a>
         </div>
         <div class="product-list">
-            <?php foreach ($spHot as $sp): 
-                $link = "?ctrl=product&act=detail&id=" . $sp['id'];
-                $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
+            <?php 
+            if(isset($spHot) && count($spHot) > 0) {
+                foreach ($spHot as $sp): 
+                    $link = "?ctrl=product&act=detail&id=" . $sp['id'];
+                    $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
             ?>
             <div class="product-item">
                 <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
@@ -25,13 +31,15 @@
                 <p><?=number_format($sp['price'])?> đ</p>
                 <a href="<?=$link?>"><button>Xem chi tiết</button></a>
             </div>
-            <?php endforeach; ?>
+            <?php endforeach; 
+            } else { echo "<p>Đang cập nhật...</p>"; }
+            ?>
         </div>
     </section>
 
     <section class="section-product">
         <div class="section-header">
-            <h2>HÀNG MỚI VỀ 🆕</h2>
+            <h2>HÀNG MỚI VỀ </h2>
             <a href="?ctrl=product&act=list&type=new">Xem tất cả &rarr;</a>
         </div>
 
@@ -40,32 +48,46 @@
                 <img src="https://img.freepik.com/free-photo/portrait-handsome-smiling-stylish-young-man-model-dressed-red-checkered-shirt-fashion-man-posing_158538-4909.jpg"
                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
             </div>
+<<<<<<< HEAD
 
             <div class="product-grid-right"
                 style="width: 60%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <?php foreach ($spMoi as $sp): 
                     $link = "?ctrl=product&act=detail&id=" . $sp['id'];
                     $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
+=======
+            
+            <div class="product-grid-right" style="width: 60%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <?php 
+                if(isset($spMoi) && count($spMoi) > 0) {
+                    foreach ($spMoi as $sp): 
+                        $link = "?ctrl=product&act=detail&id=" . $sp['id'];
+                        $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
+>>>>>>> main
                 ?>
                 <div class="product-item">
                     <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
                     <h3><a href="<?=$link?>"><?=$sp['name']?></a></h3>
                     <p><?=number_format($sp['price'])?> đ</p>
                 </div>
-                <?php endforeach; ?>
+                <?php endforeach; 
+                } else { echo "<p>Chưa có sản phẩm mới.</p>"; }
+                ?>
             </div>
         </div>
     </section>
 
     <section class="section-product">
         <div class="section-header">
-            <h2>SẢN PHẨM GIÁ TỐT 💸</h2>
+            <h2>SẢN PHẨM GIÁ TỐT </h2>
             <a href="?ctrl=product&act=list&type=sale">Xem tất cả &rarr;</a>
         </div>
         <div class="product-list">
-            <?php foreach ($spGiaTot as $sp): 
-                $link = "?ctrl=product&act=detail&id=" . $sp['id'];
-                $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
+            <?php 
+            if(isset($spGiaTot) && count($spGiaTot) > 0) {
+                foreach ($spGiaTot as $sp): 
+                    $link = "?ctrl=product&act=detail&id=" . $sp['id'];
+                    $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
             ?>
             <div class="product-item">
                 <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
@@ -73,7 +95,9 @@
                 <p><?=number_format($sp['price'])?> đ</p>
                 <a href="<?=$link?>"><button>Xem chi tiết</button></a>
             </div>
-            <?php endforeach; ?>
+            <?php endforeach; 
+            } else { echo "<p>Đang cập nhật...</p>"; }
+            ?>
         </div>
     </section>
 
