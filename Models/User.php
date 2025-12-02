@@ -6,45 +6,31 @@ class User {
         $this->db = new Database();
     }
 
-    // 1. Lấy user theo username
+    // 1. Kiểm tra user khi login
     function checkUser($username) {
         $sql = "SELECT * FROM users WHERE username = ?";
         return $this->db->queryOne($sql, [$username]);
     }
 
-    // 2. Kiểm tra tồn tại username hoặc email
-    function checkUserExist($username, $email) {
-        $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
-        return $this->db->queryOne($sql, [$username, $email]);
-    }
-
-    // 3. Đăng ký (mật khẩu HASH)
+    // 2. Đăng ký tài khoản mới
     function insertUser($username, $password, $fullname, $email) {
-        $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (username, password, fullname, email, created_at) 
-                VALUES (?, ?, ?, ?, NOW())";
-        return $this->db->execute($sql, [$username, $hashed, $fullname, $email]);
+        $sql = "INSERT INTO users (username, password, fullname, email, role)
+                VALUES (?, ?, ?, ?, 0)"; // role = 0: khách
+        return $this->db->execute($sql, [$username, $password, $fullname, $email]);
     }
 
-    // 4. Cập nhật thông tin
+    // 3. Kiểm tra username đã tồn tại chưa
+    function checkUserExist($username) {
+        $sql = "SELECT * FROM users WHERE username = ?";
+        return $this->db->queryOne($sql, [$username]);
+    }
+
+    // 4. Cập nhật thông tin hồ sơ
     function updateUser($id, $fullname, $email, $phone, $address) {
-        $sql = "UPDATE users SET fullname=?, email=?, phone=?, address=? WHERE id=?";
+        $sql = "UPDATE users 
+                SET fullname = ?, email = ?, phone = ?, address = ?
+                WHERE id = ?";
         return $this->db->execute($sql, [$fullname, $email, $phone, $address, $id]);
-    }
-    
-    // ===================================
-    //  BỔ SUNG CHỨC NĂNG ADMIN
-    // ===================================
-
-    function getAllUsers() {
-        // Lấy tất cả người dùng, sắp xếp theo ngày tạo
-        $sql = "SELECT * FROM users ORDER BY created_at DESC"; 
-        return $this->db->query($sql);
-    }
-    
-    function deleteUser($id) {
-        $sql = "DELETE FROM users WHERE id = ?";
-        return $this->db->execute($sql, [$id]);
     }
 }
 ?>
