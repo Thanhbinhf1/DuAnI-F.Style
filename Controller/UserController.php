@@ -64,7 +64,7 @@ class UserController {
             // Nếu là admin (role = 1) -> vào trang admin
             if (!empty($check['role']) && (int)$check['role'] === 1) {
                 echo "<script>alert('Đăng nhập admin thành công!'); 
-                      window.location='?ctrl=admin&act=home';</script>";
+                      window.location='?ctrl=admin&act=dashboard';</script>";
             } else {
                 // Ngược lại là khách bình thường
                 echo "<script>alert('Đăng nhập thành công!'); 
