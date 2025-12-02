@@ -77,4 +77,4 @@ try {
     }
 }
 
-include_once './Views/users/layout_footer.php';
+ob_end_flush(); 
