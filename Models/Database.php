@@ -51,5 +51,6 @@ class Database {
     function getLastId() {
         return $this->conn->lastInsertId();
     }
+    
 }
 ?>
