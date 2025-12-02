@@ -42,6 +42,7 @@ class Order {
                 ORDER BY o.created_at DESC";
         return $this->db->query($sql);
     }
+    
 
     function getOrderById($id) {
         $sql = "SELECT * FROM orders WHERE id = ?";
@@ -65,5 +66,6 @@ class Order {
         $sql = "UPDATE orders SET payment_status = ? WHERE id = ?";
         return $this->db->execute($sql, [$status, $orderId]);
     }
+    
 }
 ?>
