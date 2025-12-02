@@ -3,6 +3,7 @@ session_start();
 ob_start(); // Bật bộ đệm để tránh lỗi header already sent
 
 include_once './Models/Database.php';
+include_once './csrf.php';
 
 // Xác định controller và action
 $ctrl = isset($_GET['ctrl']) ? strtolower($_GET['ctrl']) : 'page';
