@@ -1,21 +1,22 @@
 <?php 
 class Database {
     private $servername = "localhost";
-    private $username = "root";
-    private $password = "";
-    private $dbname = "F.Style";
+    private $username   = "root";
+    private $password   = "";
+    private $dbname     = "F.Style"; // chỉnh lại đúng tên DB của bạn
     private $conn;
 
     function __construct() {
         try {
-            $this->conn = new PDO("mysql:host=$this->servername;dbname=$this->dbname;charset=utf8", $this->username, $this->password);
+            $dsn = "mysql:host={$this->servername};dbname={$this->dbname};charset=utf8";
+            $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch(PDOException $e) {
             echo "Lỗi kết nối: " . $e->getMessage();
         }
     }
 
-    // Hỗ trợ truyền tham số $args để chống hack
+    // Truy vấn nhiều dòng
     function query($sql, $args = []) {
         try {
             $stmt = $this->conn->prepare($sql);
@@ -26,6 +27,7 @@ class Database {
         }
     }
 
+    // Truy vấn 1 dòng
     function queryOne($sql, $args = []) {
         try {
             $stmt = $this->conn->prepare($sql);
@@ -36,6 +38,7 @@ class Database {
         }
     }
 
+    // Thực thi INSERT / UPDATE / DELETE
     function execute($sql, $args = []) {
         try {
             $stmt = $this->conn->prepare($sql);
