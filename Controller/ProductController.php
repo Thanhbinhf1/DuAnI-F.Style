@@ -18,25 +18,28 @@ class ProductController {
 
         // Nếu submit bình luận
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_content'])) {
-            if (!isset($_SESSION['user'])) {
-                echo "<script>alert('Bạn cần đăng nhập để bình luận!'); 
-                      window.location='?ctrl=user&act=login';</script>";
-                exit;
-            }
-
-            $userId  = $_SESSION['user']['id'];
-            $content = trim($_POST['comment_content']);
-            $rating  = isset($_POST['rating']) ? (int)$_POST['rating'] : 5;
-            if ($rating < 1 || $rating > 5) $rating = 5;
-
-            if ($content !== '') {
-                $this->model->insertComment($userId, $id, $content, $rating);
-            }
-
-            // Tránh F5 gửi lại form
-            header("Location: ?ctrl=product&act=detail&id=" . $id);
+        if (!isset($_SESSION['user'])) {
+            echo "<script>alert('Bạn cần đăng nhập để bình luận!'); 
+                  window.location='?ctrl=user&act=login';</script>";
             exit;
         }
+
+        $userId  = $_SESSION['user']['id'];
+        $content = trim($_POST['comment_content']);
+        $rating  = isset($_POST['rating']) ? (int)$_POST['rating'] : 5;
+        
+        // Validate rating
+        if ($rating < 1) $rating = 1;
+        if ($rating > 5) $rating = 5;
+
+        if ($content !== '') {
+            $this->model->insertComment($userId, $id, $content, $rating);
+        }
+
+        // [QUAN TRỌNG] Chuyển hướng để tránh gửi lại form khi F5
+        header("Location: ?ctrl=product&act=detail&id=" . $id);
+        exit;
+    }
 
         // Lấy thông tin sản phẩm
         $sp = $this->model->getProductById($id);
