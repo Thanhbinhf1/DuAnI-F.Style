@@ -17,7 +17,22 @@ $statusLabels = [
         <p><strong>Ngày đặt:</strong> <?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></p>
         <p><strong>Tổng tiền:</strong> <span style="color: red; font-weight: bold;"><?= number_format($order['total_money']) ?> đ</span></p>
         <p><strong>PT Thanh toán:</strong> <?= $order['payment_method'] ?></p>
-        <p><strong>Trạng thái TT:</strong> <?= $order['payment_status'] == 1 ? 'Đã thanh toán' : 'Chưa thanh toán' ?></p>
+        <p><strong>Trạng thái TT:</strong> 
+            <span style="color: <?= $order['payment_status'] == 1 ? '#27ae60' : '#e74c3c' ?>; font-weight: bold;">
+                <?= $order['payment_status'] == 1 ? 'Đã thanh toán' : 'Chưa thanh toán' ?>
+            </span>
+        </p>
+        
+        <?php if ($order['payment_status'] == 0): ?>
+            <div style="margin-top: 15px;">
+                <a href="?ctrl=admin&act=confirmPayment&id=<?= $order['id'] ?>" 
+                   onclick="return confirm('Bạn có chắc chắn muốn xác nhận đơn hàng #<?= $order['id'] ?> đã thanh toán? Hành động này không thể hoàn tác.');"
+                   style="display: inline-block; padding: 8px 15px; background: #27ae60; color: white; text-decoration: none; border-radius: 4px; font-size: 14px;">
+                    <i class="fas fa-check-circle"></i> Xác nhận ĐÃ THANH TOÁN
+                </a>
+            </div>
+        <?php endif; ?>
+
         <p><strong>Ghi chú:</strong> <?= !empty($order['note']) ? $order['note'] : 'Không có' ?></p>
 
         <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-top: 20px; padding-bottom: 10px; margin-bottom: 15px;">Thông tin Người nhận</h3>

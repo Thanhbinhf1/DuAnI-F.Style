@@ -19,6 +19,14 @@ class AdminController {
     }
 
     function dashboard() {
+        $stats = [
+            'products' => $this->productModel->countTotalProducts(),
+            'new_orders' => $this->productModel->countNewOrders(),
+            'users' => $this->userModel->countTotalUsers(),
+            'income' => $this->productModel->calculateTotalIncome(),
+            'monthly_income' => $this->productModel->getMonthlyIncome()
+        ];
+        $recent_activities = $this->productModel->getRecentActivityOrders();
         include_once 'Views/admin/dashboard.php';
     }
 
@@ -192,6 +200,21 @@ class AdminController {
 
             include_once 'Views/admin/order_detail.php';
             
+        } else {
+            header("Location: ?ctrl=admin&act=orderList");
+        }
+    }
+
+    function confirmPayment() {
+        if (isset($_GET['id'])) {
+            $orderId = $_GET['id'];
+            $result = $this->productModel->updatePaymentStatus($orderId, 1); // 1 = Đã thanh toán
+
+            $msg = $result ? 'Xác nhận thanh toán thành công!' : 'LỖI: Xác nhận thanh toán thất bại.';
+            $safe_msg = addslashes($msg);
+            
+            echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=orderDetail&id=$orderId';</script>";
+            exit;
         } else {
             header("Location: ?ctrl=admin&act=orderList");
         }

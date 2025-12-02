@@ -49,6 +49,10 @@ class UserController {
 
     // ======== ĐĂNG NHẬP ========
 
+    function login() {
+        include_once 'Views/users/user_login.php';
+    }
+
     function loginPost() {
         $user = $_POST['username'] ?? '';
         $pass = $_POST['password'] ?? '';

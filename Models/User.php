@@ -32,5 +32,14 @@ class User {
                 WHERE id = ?";
         return $this->db->execute($sql, [$fullname, $email, $phone, $address, $id]);
     }
+
+    // ===================================
+    //  BỔ SUNG CHO DASHBOARD
+    // ===================================
+    function countTotalUsers() {
+        $sql = "SELECT COUNT(*) as total FROM users";
+        $result = $this->db->queryOne($sql);
+        return $result ? (int)$result['total'] : 0;
+    }
 }
 ?>

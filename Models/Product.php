@@ -246,5 +246,54 @@ function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $des
         $sql = "UPDATE orders SET status = ? WHERE id = ?";
         return $this->db->execute($sql, [$status, $orderId]);
     }
+    
+    // Cập nhật trạng thái thanh toán
+    function updatePaymentStatus($orderId, $status) {
+        $sql = "UPDATE orders SET payment_status = ? WHERE id = ?";
+        return $this->db->execute($sql, [$status, $orderId]);
+    }
+
+    // ===================================
+    //  BỔ SUNG CHO DASHBOARD
+    // ===================================
+    function countTotalProducts() {
+        $sql = "SELECT COUNT(*) as total FROM products";
+        $result = $this->db->queryOne($sql);
+        return $result ? (int)$result['total'] : 0;
+    }
+
+    function countNewOrders() {
+        $sql = "SELECT COUNT(*) as total FROM orders WHERE status = 0"; // 0: Chờ xác nhận
+        $result = $this->db->queryOne($sql);
+        return $result ? (int)$result['total'] : 0;
+    }
+
+    function calculateTotalIncome() {
+        $sql = "SELECT SUM(total_money) as total FROM orders WHERE status = 2 AND payment_status = 1"; // 2: Đã giao, 1: Đã thanh toán
+        $result = $this->db->queryOne($sql);
+        return $result && $result['total'] ? (float)$result['total'] : 0;
+    }
+
+    function getMonthlyIncome() {
+        $sql = "SELECT 
+                    YEAR(created_at) as year, 
+                    MONTH(created_at) as month, 
+                    SUM(total_money) as monthly_income
+                FROM orders 
+                WHERE status = 2 AND payment_status = 1
+                AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+                GROUP BY YEAR(created_at), MONTH(created_at)
+                ORDER BY year, month";
+        return $this->db->query($sql);
+    }
+
+    function getRecentActivityOrders($limit = 5) {
+        $sql = "SELECT o.id, o.total_money, o.created_at, u.fullname 
+                FROM orders o
+                JOIN users u ON o.user_id = u.id
+                ORDER BY o.created_at DESC
+                LIMIT ?";
+        return $this->db->query($sql, [$limit]);
+    }
 }
 ?>
