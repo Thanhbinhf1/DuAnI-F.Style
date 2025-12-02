@@ -12,7 +12,9 @@ class Database {
             $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch(PDOException $e) {
-            echo "Lỗi kết nối: " . $e->getMessage();
+            error_log("Lỗi kết nối: " . $e->getMessage());
+            // Có thể thêm một trang báo lỗi chung cho người dùng
+            die("Không thể kết nối đến cơ sở dữ liệu.");
         }
     }
 
@@ -23,7 +25,8 @@ class Database {
             $stmt->execute($args);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Lỗi SQL: " . $e->getMessage();
+            error_log("Lỗi SQL: " . $e->getMessage());
+            return null; // Trả về null khi có lỗi
         }
     }
 
@@ -34,7 +37,8 @@ class Database {
             $stmt->execute($args);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Lỗi SQL: " . $e->getMessage();
+            error_log("Lỗi SQL: " . $e->getMessage());
+            return null; // Trả về null khi có lỗi
         }
     }
 
@@ -44,7 +48,8 @@ class Database {
             $stmt = $this->conn->prepare($sql);
             return $stmt->execute($args);
         } catch(PDOException $e) {
-            echo "Lỗi SQL: " . $e->getMessage();
+            error_log("Lỗi SQL: " . $e->getMessage());
+            return false; // Trả về false khi có lỗi
         }
     }
 

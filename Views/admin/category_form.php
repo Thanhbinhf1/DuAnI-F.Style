@@ -4,11 +4,12 @@
 
 <div style="max-width: 600px; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
     <form action="?ctrl=admin&act=categoryPost" method="post">
-        <input type="hidden" name="id" value="<?= $category['id'] ?? 0 ?>">
+        <input type="hidden" name="id" value="<?= isset($category['id']) ? htmlspecialchars($category['id'], ENT_QUOTES, 'UTF-8') : 0 ?>">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 
         <div style="margin-bottom: 15px;">
             <label style="display: block; font-weight: 600; margin-bottom: 5px;">Tên Danh Mục:</label>
-            <input type="text" name="name" value="<?= $category['name'] ?? '' ?>" required 
+            <input type="text" name="name" value="<?= isset($category['name']) ? htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') : '' ?>" required 
                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
         </div>
         

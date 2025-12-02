@@ -14,16 +14,18 @@
     <tbody>
         <?php foreach ($categories as $cat): ?>
         <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 15px;"><?= $cat['id'] ?></td>
-            <td style="padding: 15px; font-weight: 600;"><?= $cat['name'] ?></td>
+            <td style="padding: 15px;"><?= htmlspecialchars($cat['id'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td style="padding: 15px; font-weight: 600;"><?= htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?></td>
             <td style="padding: 15px; text-align: center;">
                 <?= $cat['status'] == 1 ? '<span style="color: green;">Hiển thị</span>' : '<span style="color: red;">Ẩn</span>' ?>
             </td>
             <td style="padding: 15px; text-align: center;">
-                <a href="?ctrl=admin&act=categoryForm&id=<?= $cat['id'] ?>" style="color: #3498db; text-decoration: none; margin-right: 10px;">Sửa</a>
-                <a href="?ctrl=admin&act=categoryDelete&id=<?= $cat['id'] ?>" 
-                   onclick="return confirm('Xóa danh mục này sẽ xóa tất cả sản phẩm thuộc nó. Bạn có chắc chắn?')" 
-                   style="color: #e74c3c; text-decoration: none;">Xóa</a>
+                <a href="?ctrl=admin&act=categoryForm&id=<?= htmlspecialchars($cat['id'], ENT_QUOTES, 'UTF-8') ?>" style="color: #3498db; text-decoration: none; margin-right: 10px;">Sửa</a>
+                <form action="?ctrl=admin&act=categoryDelete" method="POST" style="display: inline;" onsubmit="return confirm('Xóa danh mục này sẽ xóa tất cả sản phẩm thuộc nó. Bạn có chắc chắn?');">
+                    <input type="hidden" name="id" value="<?= htmlspecialchars($cat['id'], ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                    <button type="submit" style="color: #e74c3c; background: none; border: none; padding: 0; font: inherit; cursor: pointer; text-decoration: none;">Xóa</button>
+                </form>
             </td>
         </tr>
         <?php endforeach; ?>

@@ -33,6 +33,18 @@ class User {
         return $this->db->execute($sql, [$fullname, $email, $phone, $address, $id]);
     }
 
+    // Lấy tất cả user
+    function getAllUsers() {
+        $sql = "SELECT * FROM users";
+        return $this->db->query($sql);
+    }
+
+    // Xoá user
+    function deleteUser($id) {
+        $sql = "DELETE FROM users WHERE id = ?";
+        return $this->db->execute($sql, [$id]);
+    }
+
     // ===================================
     //  BỔ SUNG CHO DASHBOARD
     // ===================================

@@ -1,4 +1,4 @@
-<h1 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-bottom: 30px;">CHI TIẾT ĐƠN HÀNG #<?= $order['id'] ?></h1>
+<h1 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-bottom: 30px;">CHI TIẾT ĐƠN HÀNG #<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?></h1>
 
 <?php
 // Định nghĩa lại nhãn trạng thái (Nếu không có trong Controller)
@@ -14,9 +14,9 @@ $statusLabels = [
     
     <div style="flex: 1; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
         <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">Thông tin Đơn hàng</h3>
-        <p><strong>Ngày đặt:</strong> <?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></p>
+        <p><strong>Ngày đặt:</strong> <?= htmlspecialchars(date('d/m/Y H:i', strtotime($order['created_at'])), ENT_QUOTES, 'UTF-8') ?></p>
         <p><strong>Tổng tiền:</strong> <span style="color: red; font-weight: bold;"><?= number_format($order['total_money']) ?> đ</span></p>
-        <p><strong>PT Thanh toán:</strong> <?= $order['payment_method'] ?></p>
+        <p><strong>PT Thanh toán:</strong> <?= htmlspecialchars($order['payment_method'], ENT_QUOTES, 'UTF-8') ?></p>
         <p><strong>Trạng thái TT:</strong> 
             <span style="color: <?= $order['payment_status'] == 1 ? '#27ae60' : '#e74c3c' ?>; font-weight: bold;">
                 <?= $order['payment_status'] == 1 ? 'Đã thanh toán' : 'Chưa thanh toán' ?>
@@ -25,27 +25,28 @@ $statusLabels = [
         
         <?php if ($order['payment_status'] == 0): ?>
             <div style="margin-top: 15px;">
-                <a href="?ctrl=admin&act=confirmPayment&id=<?= $order['id'] ?>" 
-                   onclick="return confirm('Bạn có chắc chắn muốn xác nhận đơn hàng #<?= $order['id'] ?> đã thanh toán? Hành động này không thể hoàn tác.');"
+                <a href="?ctrl=admin&act=confirmPayment&id=<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?>" 
+                   onclick="return confirm('Bạn có chắc chắn muốn xác nhận đơn hàng #<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?> đã thanh toán? Hành động này không thể hoàn tác.');"
                    style="display: inline-block; padding: 8px 15px; background: #27ae60; color: white; text-decoration: none; border-radius: 4px; font-size: 14px;">
                     <i class="fas fa-check-circle"></i> Xác nhận ĐÃ THANH TOÁN
                 </a>
             </div>
         <?php endif; ?>
 
-        <p><strong>Ghi chú:</strong> <?= !empty($order['note']) ? $order['note'] : 'Không có' ?></p>
+        <p><strong>Ghi chú:</strong> <?= !empty($order['note']) ? htmlspecialchars($order['note'], ENT_QUOTES, 'UTF-8') : 'Không có' ?></p>
 
         <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-top: 20px; padding-bottom: 10px; margin-bottom: 15px;">Thông tin Người nhận</h3>
-        <p><strong>Họ tên:</strong> <?= $order['fullname'] ?></p>
-        <p><strong>SĐT:</strong> <?= $order['phone'] ?></p>
-        <p><strong>Địa chỉ:</strong> <?= $order['address'] ?></p>
+        <p><strong>Họ tên:</strong> <?= htmlspecialchars($order['fullname'], ENT_QUOTES, 'UTF-8') ?></p>
+        <p><strong>SĐT:</strong> <?= htmlspecialchars($order['phone'], ENT_QUOTES, 'UTF-8') ?></p>
+        <p><strong>Địa chỉ:</strong> <?= htmlspecialchars($order['address'], ENT_QUOTES, 'UTF-8') ?></p>
 
         <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-top: 20px; padding-bottom: 10px; margin-bottom: 15px;">Cập nhật Trạng thái</h3>
-        <form action="?ctrl=admin&act=orderDetail&id=<?= $order['id'] ?>" method="post">
+        <form action="?ctrl=admin&act=orderDetail&id=<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?>" method="post">
+            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
             <select name="new_status" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; margin-bottom: 10px;">
                 <?php foreach ($statusLabels as $value => $label): ?>
-                    <option value="<?= $value ?>" <?= $order['status'] == $value ? 'selected' : '' ?>>
-                        <?= $label ?>
+                    <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $order['status'] == $value ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -72,11 +73,11 @@ $statusLabels = [
                     <?php foreach ($orderDetails as $item): ?>
                     <tr style="border-bottom: 1px solid #f1f1f1;">
                         <td style="padding: 10px; display: flex; align-items: center; gap: 10px;">
-                            <img src="<?= $item['product_image'] ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 3px;">
-                            <?= $item['product_name'] ?>
+                            <img src="<?= htmlspecialchars($item['product_image'], ENT_QUOTES, 'UTF-8') ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 3px;">
+                            <?= htmlspecialchars($item['product_name'], ENT_QUOTES, 'UTF-8') ?>
                         </td>
                         <td style="padding: 10px; text-align: right;"><?= number_format($item['price']) ?> đ</td>
-                        <td style="padding: 10px; text-align: center;"><?= $item['quantity'] ?></td>
+                        <td style="padding: 10px; text-align: center;"><?= htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td style="padding: 10px; text-align: right; font-weight: bold; color: #ff5722;">
                             <?= number_format($item['price'] * $item['quantity']) ?> đ
                         </td>

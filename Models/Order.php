@@ -6,40 +6,64 @@ class Order {
         $this->db = new Database();
     }
 
-    // 1. Tạo đơn hàng mới (lưu vào bảng orders)
-    function createOrder($userId, $fullname, $phone, $address, $total, $payment, $note) {
-        // payment_status, status, created_at dùng giá trị mặc định trong DB
-        $sql = "INSERT INTO orders (user_id, total_money, payment_method, fullname, address, note, phone)
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $this->db->execute($sql, [$userId, $total, $payment, $fullname, $address, $note, $phone]);
-        return $this->db->getLastId();
+    function countNewOrders() {
+        $sql = "SELECT COUNT(*) as total FROM orders WHERE status = 0";
+        $result = $this->db->queryOne($sql);
+        return $result ? (int)$result['total'] : 0;
     }
 
-    // 2. Lấy thông tin đơn hàng theo id (dùng cho trang QR, lịch sử...)
+    function calculateTotalIncome() {
+        $sql = "SELECT SUM(total_money) as total FROM orders WHERE payment_status = 1";
+        $result = $this->db->queryOne($sql);
+        return $result ? (float)$result['total'] : 0;
+    }
+
+    function getMonthlyIncome() {
+        $sql = "SELECT MONTH(created_at) as month, SUM(total_money) as income
+                FROM orders 
+                WHERE payment_status = 1 AND YEAR(created_at) = YEAR(CURDATE())
+                GROUP BY MONTH(created_at)";
+        return $this->db->query($sql);
+    }
+
+    function getRecentActivityOrders() {
+        $sql = "SELECT o.id, o.total_money, o.created_at, u.fullname
+                FROM orders o
+                JOIN users u ON o.user_id = u.id
+                ORDER BY o.created_at DESC
+                LIMIT 5";
+        return $this->db->query($sql);
+    }
+
+    function getAllOrders() {
+        $sql = "SELECT o.*, u.fullname as user_fullname 
+                FROM orders o
+                LEFT JOIN users u ON o.user_id = u.id
+                ORDER BY o.created_at DESC";
+        return $this->db->query($sql);
+    }
+
     function getOrderById($id) {
         $sql = "SELECT * FROM orders WHERE id = ?";
         return $this->db->queryOne($sql, [$id]);
     }
 
-
-    function createOrderDetail($orderId, $productId, $qty, $price) {
-        $sql = "INSERT INTO order_details (order_id, product_id, quantity, price)
-                VALUES (?, ?, ?, ?)";
-        $this->db->execute($sql, [$orderId, $productId, $qty, $price]);
-    }
-
-    function getOrdersByUser($userId) {
-        $sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC";
-        return $this->db->query($sql, [$userId]);
-    }
-
-    function getOrderDetail($orderId) {
-        $sql = "SELECT od.*, p.name, p.image 
-                FROM order_details od 
-                JOIN products p ON od.product_id = p.id 
+    function getOrderDetails($orderId) {
+        $sql = "SELECT od.*, p.name as product_name, p.image as product_image
+                FROM order_details od
+                JOIN products p ON od.product_id = p.id
                 WHERE od.order_id = ?";
         return $this->db->query($sql, [$orderId]);
     }
+
+    function updateOrderStatus($orderId, $newStatus) {
+        $sql = "UPDATE orders SET status = ? WHERE id = ?";
+        return $this->db->execute($sql, [$newStatus, $orderId]);
+    }
+
+    function updatePaymentStatus($orderId, $status) {
+        $sql = "UPDATE orders SET payment_status = ? WHERE id = ?";
+        return $this->db->execute($sql, [$status, $orderId]);
+    }
 }
 ?>
-<?php

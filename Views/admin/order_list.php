@@ -27,20 +27,20 @@
         foreach ($orders as $order): 
         ?>
         <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 15px; font-weight: bold;">#<?=$order['id']?></td>
-            <td style="padding: 15px;"><?=$order['user_fullname']?></td>
-            <td style="padding: 15px; text-align: right; color: #ff5722; font-weight: bold;"><?=number_format($order['total_money'])?> đ</td>
-            <td style="padding: 15px;"><?=date('H:i d/m/Y', strtotime($order['created_at']))?></td>
+            <td style="padding: 15px; font-weight: bold;">#<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td style="padding: 15px;"><?= htmlspecialchars($order['user_fullname'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td style="padding: 15px; text-align: right; color: #ff5722; font-weight: bold;"><?= number_format($order['total_money']) ?> đ</td>
+            <td style="padding: 15px;"><?= htmlspecialchars(date('H:i d/m/Y', strtotime($order['created_at'])), ENT_QUOTES, 'UTF-8') ?></td>
             <td style="padding: 15px; text-align: center;">
-                <span style="display: inline-block; padding: 5px 10px; border-radius: 5px; background: <?=$statusMap[$order['status']]['color']?>; color: white; font-size: 12px; font-weight: 600;">
-                    <?=$statusMap[$order['status']]['label']?>
+                <span style="display: inline-block; padding: 5px 10px; border-radius: 5px; background: <?= isset($statusMap[$order['status']]['color']) ? htmlspecialchars($statusMap[$order['status']]['color'], ENT_QUOTES, 'UTF-8') : '' ?>; color: white; font-size: 12px; font-weight: 600;">
+                    <?= isset($statusMap[$order['status']]['label']) ? htmlspecialchars($statusMap[$order['status']]['label'], ENT_QUOTES, 'UTF-8') : '' ?>
                 </span>
             </td>
-            <td style="padding: 15px; text-align: center; color: <?=$order['payment_status'] == 1 ? '#2ecc71' : '#f39c12'?>;">
-                <?=$order['payment_status'] == 1 ? 'Đã TT' : 'Chưa TT'?>
+            <td style="padding: 15px; text-align: center; color: <?= $order['payment_status'] == 1 ? '#2ecc71' : '#f39c12' ?>;">
+                <?= $order['payment_status'] == 1 ? 'Đã TT' : 'Chưa TT' ?>
             </td>
             <td style="padding: 15px; text-align: center;">
-                <a href="?ctrl=admin&act=orderDetail&id=<?=$order['id']?>" style="color: #2980b9;">Xem chi tiết</a>
+                <a href="?ctrl=admin&act=orderDetail&id=<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?>" style="color: #2980b9;">Xem chi tiết</a>
             </td>
         </tr>
         <?php endforeach; ?>

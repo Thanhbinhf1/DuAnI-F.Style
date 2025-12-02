@@ -158,33 +158,6 @@ class Product {
     //  BỔ SUNG CHỨC NĂNG ADMIN
     // ===================================
     
-    // --- ADMIN CATEGORY FUNCTIONS ---
-
-    function getAllCategories() {
-        $sql = "SELECT * FROM categories ORDER BY id DESC";
-        return $this->db->query($sql);
-    }
-    
-    function getCategoryById($id) {
-        $sql = "SELECT * FROM categories WHERE id = ?";
-        return $this->db->queryOne($sql, [$id]);
-    }
-    
-    function insertCategory($name, $status) {
-        $sql = "INSERT INTO categories(name, status) VALUES (?, ?)";
-        return $this->db->execute($sql, [$name, $status]);
-    }
-    
-    function updateCategory($id, $name, $status) {
-        $sql = "UPDATE categories SET name = ?, status = ? WHERE id = ?";
-        return $this->db->execute($sql, [$name, $status, $id]);
-    }
-    
-    function deleteCategory($id) {
-        $sql = "DELETE FROM categories WHERE id = ?";
-        return $this->db->execute($sql, [$id]);
-    }
-
     // --- ADMIN PRODUCT FUNCTIONS ---
 
     function getAllProductsAdmin() {
@@ -213,87 +186,10 @@ function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $des
         return $this->db->execute($sql, [$id]);
     }
 
-    // --- ADMIN ORDER FUNCTIONS ---
-    
-    // Lấy tất cả đơn hàng, nối với tên khách hàng
-    function getAllOrders() {
-        $sql = "SELECT o.*, u.fullname as user_fullname, u.phone as user_phone
-                FROM orders o 
-                JOIN users u ON o.user_id = u.id
-                ORDER BY o.created_at DESC";
-        return $this->db->query($sql);
-    }
-
-    // Lấy chi tiết đơn hàng (các món đồ trong đơn)
-    function getOrderDetails($orderId) {
-        $sql = "SELECT od.*, p.name as product_name, p.image as product_image 
-                FROM order_details od
-                JOIN products p ON od.product_id = p.id
-                WHERE od.order_id = ?";
-        return $this->db->query($sql, [$orderId]);
-    }
-    
-    function getOrderById($orderId) {
-        $sql = "SELECT o.*, u.fullname as user_fullname, u.email, u.phone as user_phone, u.address as user_address
-                FROM orders o 
-                JOIN users u ON o.user_id = u.id
-                WHERE o.id = ?";
-        return $this->db->queryOne($sql, [$orderId]);
-    }
-    
-    // Cập nhật trạng thái đơn hàng
-    function updateOrderStatus($orderId, $status) {
-        $sql = "UPDATE orders SET status = ? WHERE id = ?";
-        return $this->db->execute($sql, [$status, $orderId]);
-    }
-    
-    // Cập nhật trạng thái thanh toán
-    function updatePaymentStatus($orderId, $status) {
-        $sql = "UPDATE orders SET payment_status = ? WHERE id = ?";
-        return $this->db->execute($sql, [$status, $orderId]);
-    }
-
-    // ===================================
-    //  BỔ SUNG CHO DASHBOARD
-    // ===================================
     function countTotalProducts() {
         $sql = "SELECT COUNT(*) as total FROM products";
         $result = $this->db->queryOne($sql);
         return $result ? (int)$result['total'] : 0;
-    }
-
-    function countNewOrders() {
-        $sql = "SELECT COUNT(*) as total FROM orders WHERE status = 0"; // 0: Chờ xác nhận
-        $result = $this->db->queryOne($sql);
-        return $result ? (int)$result['total'] : 0;
-    }
-
-    function calculateTotalIncome() {
-        $sql = "SELECT SUM(total_money) as total FROM orders WHERE status = 2 AND payment_status = 1"; // 2: Đã giao, 1: Đã thanh toán
-        $result = $this->db->queryOne($sql);
-        return $result && $result['total'] ? (float)$result['total'] : 0;
-    }
-
-    function getMonthlyIncome() {
-        $sql = "SELECT 
-                    YEAR(created_at) as year, 
-                    MONTH(created_at) as month, 
-                    SUM(total_money) as monthly_income
-                FROM orders 
-                WHERE status = 2 AND payment_status = 1
-                AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-                GROUP BY YEAR(created_at), MONTH(created_at)
-                ORDER BY year, month";
-        return $this->db->query($sql);
-    }
-
-    function getRecentActivityOrders($limit = 5) {
-        $sql = "SELECT o.id, o.total_money, o.created_at, u.fullname 
-                FROM orders o
-                JOIN users u ON o.user_id = u.id
-                ORDER BY o.created_at DESC
-                LIMIT ?";
-        return $this->db->query($sql, [$limit]);
     }
 }
 ?>
