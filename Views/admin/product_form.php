@@ -40,12 +40,18 @@
     </div>
 
     <div style="margin-bottom: 15px;">
-        <label for="image">Ảnh (URL hoặc tên file):</label>
-        <input type="text" name="image" id="image" required 
-               value="<?= isset($product['image']) ? htmlspecialchars($product['image'], ENT_QUOTES, 'UTF-8') : '' ?>" 
+        <label for="image_file">Tải lên ảnh mới (để trống nếu không muốn thay đổi):</label>
+        <input type="file" name="image_file" id="image_file" accept="image/*"
                style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        
+        <!-- Giữ lại ảnh hiện tại nếu có -->
+        <input type="hidden" name="image_current" value="<?= isset($product['image']) ? htmlspecialchars($product['image'], ENT_QUOTES, 'UTF-8') : '' ?>">
+        
         <?php if (isset($product['image']) && $product['image']): ?>
-            <img src="<?= htmlspecialchars($product['image'], ENT_QUOTES, 'UTF-8') ?>" alt="Ảnh sản phẩm hiện tại" style="max-width: 100px; margin-top: 10px; display: block;">
+            <div style="margin-top: 15px;">
+                <label>Ảnh sản phẩm hiện tại:</label>
+                <img src="<?= htmlspecialchars($product['image'], ENT_QUOTES, 'UTF-8') ?>" alt="Ảnh sản phẩm hiện tại" style="max-width: 100px; display: block; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+            </div>
         <?php endif; ?>
     </div>
 

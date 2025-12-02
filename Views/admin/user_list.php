@@ -22,16 +22,32 @@
             <td style="padding: 15px;"><?= htmlspecialchars($user['fullname'], ENT_QUOTES, 'UTF-8') ?></td>
             <td style="padding: 15px;"><?= htmlspecialchars($user['email'], ENT_QUOTES, 'UTF-8') ?></td>
             <td style="padding: 15px; text-align: center;">
-                <span style="display: inline-block; padding: 5px 10px; border-radius: 5px; background: <?= $user['role'] == 1 ? '#e74c3c' : '#2ecc71' ?>; color: white; font-size: 12px;">
-                    <?= $user['role'] == 1 ? 'ADMIN' : 'Khách hàng' ?>
-                </span>
+                <!-- FORM CẬP NHẬT VAI TRÒ -->
+                <form action="?ctrl=admin&act=userUpdateRole" method="POST" style="display: inline-flex; align-items: center; gap: 10px;">
+                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                    <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+
+                    <select name="role" style="padding: 5px; border-radius: 5px; border: 1px solid #ccc;"
+                        <?php if ($user['id'] == $_SESSION['user']['id']) echo 'disabled'; // Tự vô hiệu hóa chính mình ?>>
+                        <option value="0" <?= $user['role'] == 0 ? 'selected' : '' ?>>Khách hàng</option>
+                        <option value="1" <?= $user['role'] == 1 ? 'selected' : '' ?>>ADMIN</option>
+                    </select>
+
+                    <button type="submit" class="btn-update"
+                        <?php if ($user['id'] == $_SESSION['user']['id']) echo 'disabled'; // Tự vô hiệu hóa chính mình ?>>
+                        Lưu
+                    </button>
+                </form>
             </td>
             <td style="padding: 15px; text-align: center;">
-                <a href="#" style="color: #2980b9; margin-right: 10px;">Sửa</a>
-                <form action="?ctrl=admin&act=userDelete" method="POST" style="display: inline;" onsubmit="return confirm('Xóa người dùng này?');">
-                    <input type="hidden" name="id" value="<?= htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8') ?>">
+                <!-- FORM XÓA -->
+                <form action="?ctrl=admin&act=userDelete" method="POST" style="display: inline;" onsubmit="return confirm('Xóa người dùng này? Thao tác không thể hoàn tác!');">
+                    <input type="hidden" name="id" value="<?= $user['id'] ?>">
                     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                    <button type="submit" style="color: #c0392b; background: none; border: none; padding: 0; font: inherit; cursor: pointer;">Xóa</button>
+                    <button type="submit" class="btn-delete"
+                        <?php if ($user['id'] == $_SESSION['user']['id']) echo 'disabled'; // Tự vô hiệu hóa chính mình ?>>
+                        Xóa
+                    </button>
                 </form>
             </td>
         </tr>

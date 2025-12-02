@@ -66,6 +66,29 @@ class AdminController {
         }
     }
 
+    function userUpdateRole() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+                die('Invalid CSRF token');
+            }
+            $id = $_POST['user_id'];
+            $role = $_POST['role'];
+            $msg = 'Cập nhật vai trò thành công!';
+
+            if ($id != $_SESSION['user']['id']) { 
+                $result = $this->userModel->updateUserRole($id, $role);
+                if (!$result) {
+                    $msg = 'LỖI: Không thể cập nhật vai trò.';
+                }
+            } else {
+                $msg = 'Bạn không thể thay đổi vai trò của chính mình!';
+            }
+            
+            $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
+            echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=userList';</script>";
+        }
+    }
+
     // --- CATEGORY MANAGEMENT (Quản lý Danh mục) ---
 
     function categoryList() {
@@ -143,27 +166,58 @@ class AdminController {
             if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
                 die('Invalid CSRF token');
             }
+            
+            // --- Xử lý dữ liệu form ---
             $id = $_POST['id'] ?? 0;
             $categoryId = $_POST['category_id'];
             $name = $_POST['name'];
             $price = $_POST['price'];
-            $priceSale = $_POST['price_sale'] ?? 0; // Lấy giá sale
-            $image = $_POST['image']; 
+            $priceSale = $_POST['price_sale'] ?? 0;
             $description = $_POST['description'];
             $material = $_POST['material'];
             $brand = $_POST['brand'];
             $skuCode = $_POST['sku_code'];
+            
+            // --- Xử lý upload ảnh ---
+            $image = $_POST['image_current'] ?? ''; // Lấy ảnh hiện tại (nếu có)
 
+            if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
+                $target_dir = "Public/Uploads/Products/";
+                $allowed_types = ['jpg', 'png', 'jpeg', 'gif'];
+                $file_extension = strtolower(pathinfo($_FILES["image_file"]["name"], PATHINFO_EXTENSION));
+
+                if (!in_array($file_extension, $allowed_types)) {
+                    echo "<script>alert('LỖI: Chỉ cho phép file ảnh JPG, JPEG, PNG & GIF.'); history.back();</script>";
+                    exit;
+                }
+
+                $new_filename = uniqid('product_', true) . '.' . $file_extension;
+                $target_file = $target_dir . $new_filename;
+
+                if (move_uploaded_file($_FILES["image_file"]["tmp_name"], $target_file)) {
+                    $image = $target_file; // Cập nhật đường dẫn ảnh mới
+                } else {
+                    echo "<script>alert('LỖI: Upload file thất bại.'); history.back();</script>";
+                    exit;
+                }
+            }
+            
+            // --- Kiểm tra ảnh khi thêm mới ---
+            if ($id == 0 && $image == '') {
+                echo "<script>alert('LỖI: Vui lòng thêm ảnh cho sản phẩm mới.'); history.back();</script>";
+                exit;
+            }
+
+            // --- Tương tác với Model ---
             $result = false;
-            // Mặc định là thông báo thất bại
             $msg = 'LỖI: Thao tác thất bại, vui lòng kiểm tra kết nối Database hoặc dữ liệu nhập.'; 
 
             if ($id > 0) {
-                // Chế độ Sửa (10 tham số)
+                // Chế độ Sửa
                 $result = $this->productModel->updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode);
                 if ($result) { $msg = 'Cập nhật sản phẩm thành công!'; }
             } else {
-                // Chế độ Thêm mới (9 tham số - ĐÃ SỬA ĐỂ TRUYỀN $priceSale)
+                // Chế độ Thêm mới
                 $result = $this->productModel->insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode);
                 if ($result) { $msg = 'Thêm sản phẩm mới thành công!'; }
             }

@@ -45,6 +45,12 @@ class User {
         return $this->db->execute($sql, [$id]);
     }
 
+    // Cập nhật vai trò (admin / user)
+    function updateUserRole($id, $role) {
+        $sql = "UPDATE users SET role = ? WHERE id = ?";
+        return $this->db->execute($sql, [(int)$role, $id]);
+    }
+
     // ===================================
     //  BỔ SUNG CHO DASHBOARD
     // ===================================
