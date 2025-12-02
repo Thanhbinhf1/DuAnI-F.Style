@@ -1,0 +1,201 @@
+/* =========================================
+   F.Style Admin Dashboard CSS
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root {
+    --primary-color: #e74c3c; /* Đỏ/Cam Đậm */
+    --secondary-color: #3498db; /* Xanh Dương */
+    --text-color: #2c3e50; /* Xám Đen Đậm */
+    --sidebar-bg: #34495e; /* Nền sidebar */
+    --header-bg: #2c3e50;
+    --light-bg: #f4f4f4;
+    --card-bg: #ffffff;
+    --border-color: #ecf0f1;
+}
+
+/* =========================================
+   1. GLOBAL RESET & BASE
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex; /* Dùng flex cho header và main */
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+a { 
+    text-decoration: none; 
+    color: var(--secondary-color); 
+    transition: 0.2s; 
+}
+a:hover { 
+    color: var(--primary-color); 
+}
+
+/* =========================================
+   2. HEADER & SIDEBAR LAYOUT
+   ========================================= */
+.admin-header { 
+    background-color: var(--header-bg) !important; 
+    color: white; 
+    padding: 15px 30px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1001;
+    height: 60px;
+}
+.admin-header .logo { font-size: 20px; font-weight: 700; }
+.admin-header a { color: #f1c40f; margin-left: 15px; }
+
+.admin-sidebar { 
+    width: 250px; 
+    background-color: var(--sidebar-bg) !important; 
+    color: white; 
+    height: 100%; /* Kéo dài full chiều cao */
+    position: fixed; 
+    top: 60px; /* Dưới header */
+    left: 0; 
+    padding-top: 0;
+    z-index: 1000;
+    overflow-y: auto; /* Cho phép cuộn nếu menu dài */
+}
+
+.admin-sidebar ul { list-style: none; padding: 0; margin: 0; }
+.admin-sidebar ul li a { 
+    display: block; 
+    padding: 15px 30px; 
+    color: white; 
+    border-left: 5px solid transparent; 
+    transition: 0.2s; 
+    font-weight: 500;
+}
+.admin-sidebar ul li a:hover, 
+.admin-sidebar ul li a.active { 
+    background-color: var(--header-bg); /* Nền tối hơn */
+    border-left: 5px solid var(--primary-color); /* Gạch đỏ nổi bật */
+}
+
+.admin-content { 
+    margin-left: 250px; 
+    padding: 30px; 
+    padding-top: 90px; /* Đẩy nội dung xuống dưới header cố định */
+    flex-grow: 1; /* Cho phép nội dung lấp đầy khoảng trống */
+}
+
+.admin-footer { 
+    margin-left: 250px; 
+    padding: 15px; 
+    text-align: center; 
+    color: #777; 
+    font-size: 13px; 
+    background: var(--card-bg); 
+    border-top: 1px solid var(--border-color); 
+}
+
+/* =========================================
+   3. TYPOGRAPHY & BUTTONS
+   ========================================= */
+h1 { 
+    font-size: 28px; 
+    font-weight: 700;
+    color: var(--text-color); 
+    border-bottom: 2px solid var(--primary-color) !important;
+}
+
+table {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden; /* Quan trọng để bo góc bảng */
+}
+
+/* Nút chính */
+.btn-primary {
+    display: inline-block; 
+    padding: 10px 15px; 
+    background: var(--primary-color); 
+    color: white; 
+    border: none;
+    text-decoration: none; 
+    border-radius: 5px; 
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-primary:hover {
+    background: #c0392b;
+    color: white;
+}
+
+/* Nút phụ */
+.btn-secondary {
+    display: inline-block; 
+    padding: 8px 12px; 
+    background: #fff; 
+    color: var(--secondary-color); 
+    border: 1px solid var(--secondary-color);
+    text-decoration: none; 
+    border-radius: 5px; 
+    font-weight: 600;
+}
+.btn-secondary:hover {
+    background: var(--secondary-color);
+    color: white;
+}
+
+/* Nút cập nhật trong bảng */
+.btn-update {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+}
+.btn-update:hover {
+    background: #229954;
+}
+
+/* Nút xóa trong bảng */
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+}
+.btn-delete:hover {
+    background: #c0392b;
+}
+
+/* Trạng thái Vô hiệu hóa cho các nút */
+.btn-update[disabled],
+.btn-delete[disabled] {
+    background: #bdc3c7; /* Màu xám */
+    cursor: not-allowed;
+}
+.btn-update[disabled]:hover,
+.btn-delete[disabled]:hover {
+    background: #bdc3c7; /* Giữ nguyên màu xám khi hover */
+}
