@@ -54,53 +54,38 @@ class UserController {
     }
 
         function loginPost() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: ?ctrl=user&act=login");
-            exit;
-        }
+        $user = trim($_POST['username'] ?? '');
+        $pass = trim($_POST['password'] ?? '');
 
-        if (!verify_csrf($_POST['csrf_token'] ?? null)) {
-            $error = "Phiên làm việc không hợp lệ, vui lòng thử lại.";
+        $error = '';
+
+        if ($user === '' || $pass === '') {
+            $error = 'Vui lòng nhập tên đăng nhập và mật khẩu.';
             include_once 'Views/users/user_login.php';
             return;
         }
 
-        $username = trim($_POST['username'] ?? '');
-        $password = trim($_POST['password'] ?? '');
+        $check = $this->model->checkUser($user);
 
-        if ($username === '' || $password === '') {
-            $error = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.";
-            include_once 'Views/users/user_login.php';
-            return;
-        }
+        if ($check && password_verify($pass, $check['password'])) {
+            // Lưu thông tin user vào session
+            $_SESSION['user'] = $check;
 
-        $user = $this->model->checkUser($username);
-
-        if (!$user || !password_verify($password, $user['password'])) {
-            $error = "Tên đăng nhập hoặc mật khẩu không đúng.";
-            include_once 'Views/users/user_login.php';
-            return;
-        }
-
-        // Đăng nhập OK -> lưu đầy đủ role
-        $_SESSION['user'] = [
-            'id'       => $user['id'],
-            'username' => $user['username'],
-            'fullname' => $user['fullname'],
-            'email'    => $user['email'],
-            'phone'    => $user['phone'] ?? null,
-            'address'  => $user['address'] ?? null,
-            'role'     => $user['role'] ?? 0
-        ];
-
-        // Nếu là admin -> sang khu admin, ngược lại về trang chủ
-        if (!empty($user['role']) && (int)$user['role'] === 1) {
-            header("Location: ?ctrl=admin&act=home");
+            // Nếu là admin (role = 1) -> chuyển sang admin
+            if (!empty($check['role']) && (int)$check['role'] === 1) {
+                echo "<script>alert('Đăng nhập admin thành công!'); 
+                      window.location='?ctrl=admin&act=dashboard';</script>";
+            } else {
+                // User thường
+                echo "<script>alert('Đăng nhập thành công!'); 
+                      window.location='index.php';</script>";
+            }
         } else {
-            header("Location: index.php");
+            $error = 'Tên đăng nhập hoặc mật khẩu không đúng.';
+            include_once 'Views/users/user_login.php';
         }
-        exit;
     }
+
 
 
     // ======== ĐĂNG XUẤT ========
