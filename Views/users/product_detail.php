@@ -116,23 +116,20 @@ $totalCmt   = $averageRating['total'] ?? 0;
 
                 <!-- NÚT -->
                 <div class="btn-actions">
-                    <button type="submit" id="btn-add-cart"
-                        <?= !empty($variants) ? 'disabled' : '' ?>
-                        style="background: <?= !empty($variants) ? '#ccc' : '#ff5722' ?>;
-                               color: white; padding: 14px 20px; border: none; font-size: 15px; 
-                               font-weight: 600; text-transform: uppercase; border-radius: 4px;
-                               cursor: <?= !empty($variants) ? 'not-allowed' : 'pointer' ?>;
-                               flex: 1;">
-                        <?= !empty($variants) ? 'Vui lòng chọn phân loại' : 'Thêm vào giỏ hàng' ?>
-                    </button>
+    <button type="submit"
+            id="btn-add-cart"
+            class="product-action-btn primary"
+            <?= !empty($variants) ? 'disabled' : '' ?>>
+        <?= !empty($variants) ? 'Vui lòng chọn phân loại' : 'Thêm vào giỏ hàng' ?>
+    </button>
 
-                    <button type="submit" formaction="?ctrl=cart&act=buyNow"
-                            class="btn-buy-now"
-                            style="border: none; padding: 14px 20px; font-size: 15px; font-weight: 600;
-                                   text-transform: uppercase; border-radius: 4px; color:#fff; margin-left:10px;">
-                        Mua ngay
-                    </button>
-                </div>
+    <button type="submit"
+            formaction="?ctrl=cart&act=buyNow"
+            class="product-action-btn secondary">
+        Mua ngay
+    </button>
+</div>
+
             </form>
 
             <!-- THÔNG TIN SẢN PHẨM NGẮN -->
@@ -332,9 +329,12 @@ $totalCmt   = $averageRating['total'] ?? 0;
             variantInput.value = variant.id;
 
             btnAdd.disabled = false;
-            btnAdd.style.background = "#ff5722";
+            btnAdd.style.background = "#333";
             btnAdd.style.cursor = "pointer";
             btnAdd.innerText = "THÊM VÀO GIỎ HÀNG";
+            btnAdd.disabled = false;
+// đổi màu basic
+            
         }
     }
 </script>

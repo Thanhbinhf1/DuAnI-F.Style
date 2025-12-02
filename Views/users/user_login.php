@@ -1,32 +1,45 @@
-<div class="container" style="max-width: 420px; margin: 60px auto;">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <h2 class="h4 text-center mb-4">Đăng nhập</h2>
+<div class="container" style="max-width: 420px; margin: 60px auto 80px;">
+    <div style="
+        background:#fff;
+        border-radius: 10px;
+        padding: 30px 28px 32px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid #eee;
+    ">
+        <h2 style="text-align: center; margin-bottom: 20px; letter-spacing:1px;">
+            ĐĂNG NHẬP
+        </h2>
 
-            <?php if(isset($error)): ?>
-                <div class="alert alert-danger py-2"><?=$error?></div>
-            <?php endif; ?>
-
-            <form action="?ctrl=user&act=loginPost" method="post">
-                <input type="hidden" name="csrf_token" value="<?=htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8')?>">
-
-                <div class="mb-3">
-                    <label class="form-label">Tên đăng nhập</label>
-                    <input type="text" name="username" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Mật khẩu</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-
-                <button type="submit" class="btn btn-dark w-100">Đăng nhập</button>
-            </form>
-
-            <p class="text-center mt-3 mb-0">
-                Chưa có tài khoản?
-                <a href="?ctrl=user&act=register">Đăng ký ngay</a>
+        <?php if (!empty($error)): ?>
+            <p style="color: #e53935; text-align:center; margin-bottom:15px;">
+                <?= htmlspecialchars($error) ?>
             </p>
-        </div>
+        <?php endif; ?>
+
+        <form action="?ctrl=user&act=loginPost" method="post">
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 14px;">Tên đăng nhập</label>
+                <input type="text" name="username" required
+                       style="width:100%; padding:8px 10px; margin-top:4px;
+                              border-radius:5px; border:1px solid #ccc;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 14px;">Mật khẩu</label>
+                <input type="password" name="password" required
+                       style="width:100%; padding:8px 10px; margin-top:4px;
+                              border-radius:5px; border:1px solid #ccc;">
+            </div>
+            <button type="submit"
+                    style="width:100%; padding:10px 0; border:none;
+                           border-radius:6px; background:#222; color:#fff;
+                           font-weight:600; text-transform:uppercase;">
+                Đăng nhập
+            </button>
+        </form>
+
+        <p style="text-align:center; margin-top:18px; font-size:14px;">
+            Chưa có tài khoản?
+            <a href="?ctrl=user&act=register">Đăng ký ngay</a>
+        </p>
     </div>
 </div>
