@@ -88,6 +88,7 @@ class Order {
         $sql = "SELECT * FROM orders WHERE id = ?";
         return $this->db->queryOne($sql, [$id]);
     }
+    
 
     function getOrderDetails($orderId) {
         $sql = "SELECT od.*, p.name as product_name, p.image as product_image

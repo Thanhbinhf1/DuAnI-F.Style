@@ -46,7 +46,7 @@
                             ?>
                         </td>
                         <td style="padding: 15px; text-align: center;">
-                            <a href="#" style="color: #333; text-decoration: underline;">Xem</a>
+                           <a href="?ctrl=order&act=detail&id=<?= htmlspecialchars($dh['id'], ENT_QUOTES, 'UTF-8') ?>" style="color: #333; text-decoration: underline;">Xem</a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
