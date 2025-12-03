@@ -12,7 +12,7 @@
         <tr>
             <th width="5%" style="padding: 15px; text-align: left;">ID</th>
             <th width="10%" style="padding: 15px;">Ảnh</th>
-            <th width="30%" style="padding: 15px; text-align: left;">Tên sản phẩm</th>
+            <th width="25%" style="padding: 15px; text-align: left;">Tên sản phẩm</th>
             <th width="10%" style="padding: 15px; text-align: left;">Danh mục</th>
             <th width="10%" style="padding: 15px; text-align: right;">Giá bán</th>
             <th width="10%" style="padding: 15px; text-align: center;">Trạng thái</th>
@@ -27,13 +27,13 @@
         foreach ($products as $sp): 
             $img = !empty($sp['image']) ? htmlspecialchars($sp['image'], ENT_QUOTES, 'UTF-8') : 'https://via.placeholder.com/80';
             
-            // Lấy trạng thái (Giả định cột status đã có trong DB)
-            $status = $sp['status'] ?? 1; // Mặc định 1 nếu không tồn tại cột
+            // Logic ẩn/hiện
+            $status = $sp['status'] ?? 1; 
             $statusLabel = $status == 1 ? '<span style="color: green; font-weight: 600;">HIỆN</span>' : '<span style="color: red; font-weight: 600;">ẨN</span>';
             $buttonText = $status == 1 ? 'ẨN' : 'HIỆN';
-            $buttonClass = $status == 1 ? 'btn-delete' : 'btn-update'; // Dùng lại class CSS cũ
+            $buttonClass = $status == 1 ? 'btn-delete' : 'btn-update'; 
 
-            // Hiển thị giá khuyến mãi nếu có
+            // Hiển thị giá (sale nếu có)
             $priceDisplay = number_format($sp['price']);
             if (isset($sp['price_sale']) && $sp['price_sale'] > 0) {
                  $priceDisplay = number_format($sp['price_sale']) . ' đ ' . '(<del>' . number_format($sp['price']) . '</del>)';

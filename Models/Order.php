@@ -107,13 +107,10 @@ class Order {
         $sql = "UPDATE orders SET payment_status = ? WHERE id = ?";
         return $this->db->execute($sql, [$status, $orderId]);
     }
-   // File: Models/Order.php
-
-// ... (các hàm hiện có) ...
+  // File: Models/Order.php (Thêm vào cuối file)
 
 /**
- * Thống kê chi tiết các chỉ số Doanh thu và Đơn hàng
- * @return array Chứa các mảng dữ liệu thống kê
+ * Lấy các thống kê chi tiết về Doanh thu và Tỷ lệ Đơn hàng
  */
 function getSaleStatistics() {
     // 1. Doanh thu theo Ngày (7 ngày gần nhất)
@@ -137,9 +134,10 @@ function getSaleStatistics() {
                              JOIN products p ON od.product_id = p.id
                              JOIN categories c ON p.category_id = c.id
                              JOIN orders o ON od.order_id = o.id
-                             WHERE o.payment_status = 1 
+                             WHERE o.payment_status = 1
                              GROUP BY c.name
-                             ORDER BY revenue DESC";
+                             ORDER BY revenue DESC
+                             LIMIT 5";
     $revenueByCategory = $this->db->query($sqlRevenueByCategory);
     
     // 4. Đơn hàng theo Tỉnh/Thành phố
@@ -150,7 +148,7 @@ function getSaleStatistics() {
                             LIMIT 5";
     $ordersByProvince = $this->db->query($sqlOrdersByProvince);
     
-    // 5. Thống kê Khách hàng mới vs Khách hàng cũ (Trong 30 ngày gần nhất)
+    // 5. Thống kê Khách hàng mới vs Khách hàng cũ
     $sqlCustomerType = "SELECT 
                             CASE 
                                 WHEN (SELECT COUNT(id) FROM orders WHERE user_id = o.user_id AND id <= o.id) = 1 THEN 'New'
@@ -158,7 +156,7 @@ function getSaleStatistics() {
                             END as customer_type,
                             COUNT(o.id) as total_orders
                         FROM orders o
-                        WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+                        WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
                         GROUP BY customer_type";
     $customerTypeStats = $this->db->query($sqlCustomerType);
 
@@ -172,21 +170,12 @@ function getSaleStatistics() {
 }
 
 /**
- * Đếm tổng số đơn hàng theo Ngày/Tuần/Tháng/Năm
+ * Đếm tổng số đơn hàng theo khoảng thời gian
  */
-function countOrdersByInterval($interval = 'MONTH') {
-    $format = '';
-    if ($interval === 'DAY') {
-        $format = '%Y-%m-%d';
-    } elseif ($interval === 'WEEK') {
-        $format = '%X-%V'; 
-    } elseif ($interval === 'MONTH') {
-        $format = '%Y-%m';
-    } elseif ($interval === 'YEAR') {
-        $format = '%Y';
-    } else {
-        return [];
-    }
+function countOrdersByInterval($interval = 'DAY') {
+    $format = '%Y-%m-%d';
+    if ($interval === 'WEEK') { $format = '%X-%V'; }
+    if ($interval === 'MONTH') { $format = '%Y-%m'; }
     
     $sql = "SELECT DATE_FORMAT(created_at, '{$format}') as period, COUNT(id) as total_orders
             FROM orders
@@ -196,7 +185,6 @@ function countOrdersByInterval($interval = 'MONTH') {
     return $this->db->query($sql);
 }
 
-// ... (các hàm khác)
-
+// ...
 }
 ?>

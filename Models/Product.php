@@ -210,6 +210,11 @@ function checkProductNameExist($name, $excludeId = 0) {
  * 1. Lấy Top sản phẩm bán chạy nhất (Best Seller)
  * Dựa trên tổng số lượng sản phẩm đã bán trong order_details
  */
+// Trong class Product { ...
+
+/**
+ * Lấy Top sản phẩm bán chạy nhất (Best Seller)
+ */
 function getTopSellingProducts($limit = 10) {
     $sql = "SELECT p.id, p.name, p.image, p.price, p.price_sale, SUM(od.quantity) as sold_quantity
             FROM order_details od
@@ -221,8 +226,7 @@ function getTopSellingProducts($limit = 10) {
 }
 
 /**
- * 2. Lấy Top sản phẩm bán chậm (Slow Moving)
- * Lấy sản phẩm có tổng số lượng bán ra thấp nhất (phải có ít nhất 1 đơn hàng)
+ * Lấy Top sản phẩm bán chậm (Slow Moving)
  */
 function getSlowSellingProducts($limit = 10) {
     $sql = "SELECT p.id, p.name, p.image, p.price, p.price_sale, COALESCE(SUM(od.quantity), 0) as sold_quantity
@@ -234,7 +238,7 @@ function getSlowSellingProducts($limit = 10) {
             LIMIT ?";
     return $this->db->query($sql, [$limit]);
 }
-
-// ... các hàm hiện có khác
 }
+
+
 ?>

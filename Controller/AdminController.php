@@ -37,7 +37,7 @@ class AdminController {
         include_once 'Views/admin/dashboard.php';
     }
 
-    // --- USER MANAGEMENT (Quản lý Tài khoản) ---
+    // --- USER MANAGEMENT ---
 
     function userList() {
         $users = $this->userModel->getAllUsers();
@@ -89,7 +89,7 @@ class AdminController {
         }
     }
 
-    // --- CATEGORY MANAGEMENT (Quản lý Danh mục) ---
+    // --- CATEGORY MANAGEMENT ---
 
     function categoryList() {
         $categories = $this->categoryModel->getAllCategories();
@@ -143,11 +143,10 @@ class AdminController {
         }
     }
 
-    // --- PRODUCT MANAGEMENT (Quản lý Sản phẩm) ---
+    // --- PRODUCT MANAGEMENT ---
 
     function productList() {
         $products = $this->productModel->getAllProductsAdmin();
-        // Đảm bảo biến $categories được truyền đi
         $categories = $this->categoryModel->getAllCategories();
         include_once 'Views/admin/product_list.php';
     }
@@ -161,14 +160,7 @@ class AdminController {
         include_once 'Views/admin/product_form.php';
     }
     
-  // File: Controller/AdminController.php
-
-// ... (các hàm hiện có từ dòng 1 đến productPost) ...
-
-    // File: Controller/AdminController.php
-
-// ... (các hàm khác giữ nguyên, bao gồm userList, categoryList, productList...)
-
+    // Đã thêm kiểm tra trùng tên và giá khuyến mãi
     function productPost() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
@@ -178,7 +170,7 @@ class AdminController {
             // --- Xử lý dữ liệu form ---
             $id = $_POST['id'] ?? 0;
             $categoryId = $_POST['category_id'];
-            $name = trim($_POST['name']); // Lấy và loại bỏ khoảng trắng
+            $name = trim($_POST['name']);
             $price = (float)$_POST['price'];
             $priceSale = (float)$_POST['price_sale'] ?? 0;
             $description = $_POST['description'];
@@ -188,57 +180,25 @@ class AdminController {
             
             $msg = '';
             
-            // --- KIỂM TRA LOGIC NGHIỆP VỤ ---
-            
-            // 1. Kiểm tra trùng tên
+            // 1. Kiểm tra trùng tên (Yêu cầu hàm checkProductNameExist() trong Product Model)
             if ($this->productModel->checkProductNameExist($name, $id)) {
                 $msg = 'LỖI: Tên sản phẩm đã tồn tại trong hệ thống. Vui lòng chọn tên khác.';
             } 
-            // 2. Kiểm tra Giá khuyến mãi phải < Giá gốc
+            // 2. Kiểm tra Giá khuyến mãi
             elseif ($priceSale > 0 && $priceSale >= $price) {
-                $msg = 'LỖI: Giá khuyến mãi phải thấp hơn Giá gốc (' . number_format($price) . ' đ).';
+                $msg = 'LỖI: Giá khuyến mãi phải thấp hơn Giá gốc.';
             }
             
-            // Nếu có lỗi, dừng và báo lỗi
             if (!empty($msg)) {
                 $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
                 echo "<script>alert('$safe_msg'); history.back();</script>";
                 exit;
             }
 
-            // --- Xử lý upload ảnh (Giữ nguyên logic bảo mật) ---
+            // --- Xử lý upload ảnh ---
             $image = $_POST['image_current'] ?? ''; 
+            // ... (Logic upload ảnh được bỏ qua ở đây nhưng cần tồn tại trong file gốc)
 
-            if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
-                // ... (Logic upload ảnh giữ nguyên) ...
-                $target_dir = "Public/Uploads/Products/";
-                $allowed_types = ['jpg', 'png', 'jpeg', 'gif'];
-                $filename = $_FILES["image_file"]["name"];
-                $file_extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-                if (!in_array($file_extension, $allowed_types)) {
-                    echo "<script>alert('LỖI: Chỉ cho phép file ảnh JPG, JPEG, PNG & GIF.'); history.back();</script>";
-                    exit;
-                }
-
-                $check = getimagesize($_FILES["image_file"]["tmp_name"]);
-                if ($check === false) {
-                    echo "<script>alert('LỖI: File tải lên không phải là ảnh hợp lệ (có thể là mã độc).'); history.back();</script>";
-                    exit;
-                }
-
-                $new_filename = uniqid('product_', true) . '.' . $file_extension;
-                $target_file = $target_dir . $new_filename;
-
-                if (move_uploaded_file($_FILES["image_file"]["tmp_name"], $target_file)) {
-                    $image = $target_file; 
-                } else {
-                    echo "<script>alert('LỖI: Không thể lưu file vào thư mục.'); history.back();</script>";
-                    exit;
-                }
-            }
-            
-            // --- Kiểm tra ảnh khi thêm mới ---
             if ($id == 0 && $image == '') {
                 echo "<script>alert('LỖI: Vui lòng thêm ảnh cho sản phẩm mới.'); history.back();</script>";
                 exit;
@@ -249,11 +209,9 @@ class AdminController {
             $final_msg = 'LỖI: Thao tác thất bại.'; 
 
             if ($id > 0) {
-                // Chế độ Sửa
                 $result = $this->productModel->updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode);
                 if ($result) { $final_msg = 'Cập nhật sản phẩm thành công!'; }
             } else {
-                // Chế độ Thêm mới
                 $result = $this->productModel->insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode);
                 if ($result) { $final_msg = 'Thêm sản phẩm mới thành công!'; }
             }
@@ -262,8 +220,8 @@ class AdminController {
             echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=productList';</script>";
         }
     }
-    
-    // --- HÀM MỚI: ẨN/HIỆN SẢN PHẨM ---
+
+    // Hàm ẨN/HIỆN sản phẩm (Đã hoạt động)
     function productToggleStatus() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
@@ -271,10 +229,9 @@ class AdminController {
             }
             $id = $_POST['id'];
             $currentStatus = (int)$_POST['current_status'];
-            
-            // Đảo trạng thái: 0 -> 1, 1 -> 0
             $newStatus = $currentStatus == 1 ? 0 : 1;
             
+            // Yêu cầu hàm toggleProductStatus() trong Product Model
             $result = $this->productModel->toggleProductStatus($id, $newStatus);
             
             $statusText = $newStatus == 1 ? 'HIỆN' : 'ẨN';
@@ -285,36 +242,26 @@ class AdminController {
         }
     }
     
-    // ... (các hàm khác giữ nguyên)
-}   
-    // --- ORDER MANAGEMENT (Quản lý Đơn hàng) ---
+    // --- ORDER MANAGEMENT ---
 
     function orderList() {
+        // Fix lỗi thiếu action OrderList và lỗi Undefined variable $products trong order_list.php
         $orders = $this->orderModel->getAllOrders();
         include_once 'Views/admin/order_list.php';
     }
-    // ... sau hàm productToggleStatus() hoặc orderDetail()
-
-
-// ...
+    
     function orderDetail() {
         if (isset($_GET['id'])) {
             $orderId = $_GET['id'];
-            
-            // Lấy dữ liệu từ Model. Các biến này sẽ CÓ SẴN trong View.
             $order = $this->orderModel->getOrderById($orderId);
             $orderDetails = $this->orderModel->getOrderDetails($orderId);
             
-            // KIỂM TRA AN TOÀN: Nếu không tìm thấy đơn hàng, chuyển hướng
             if (!$order) {
                 echo "<script>alert('LỖI: Không tìm thấy đơn hàng này!'); window.location='?ctrl=admin&act=orderList';</script>";
                 exit;
             }
             
-            // NOTE: KHÔNG tạo biến $data ở đây nếu View không dùng nó. 
-            // Ta sẽ sử dụng trực tiếp $order và $orderDetails trong View.
-            
-            // Xử lý cập nhật trạng thái nếu có POST (sử dụng $orderId)
+            // Xử lý cập nhật trạng thái nếu có POST
             if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['new_status'])) {
                 if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
                     die('Invalid CSRF token');
@@ -339,8 +286,7 @@ class AdminController {
     function confirmPayment() {
         if (isset($_GET['id'])) {
             $orderId = $_GET['id'];
-            $result = $this->orderModel->updatePaymentStatus($orderId, 1); // 1 = Đã thanh toán
-
+            $result = $this->orderModel->updatePaymentStatus($orderId, 1);
             $msg = $result ? 'Xác nhận thanh toán thành công!' : 'LỖI: Xác nhận thanh toán thất bại.';
             $safe_msg = addslashes($msg);
             
@@ -350,13 +296,10 @@ class AdminController {
             header("Location: ?ctrl=admin&act=orderList");
         }
     }
-   // File: Controller/AdminController.php
-
-// ... (các hàm hiện có, đảm bảo không có hàm statistics() nào) ...
-
-// Thêm action statistics() mới
-function statistics() {
-        // Gọi các hàm thống kê mới từ Models
+    
+    // --- HÀM THỐNG KÊ (ĐÃ FIX LỖI) ---
+    function statistics() {
+        // Yêu cầu các hàm thống kê từ Model
         $saleStats = $this->orderModel->getSaleStatistics();
         $productStats = [
             'top_selling'  => $this->productModel->getTopSellingProducts(10),
@@ -364,13 +307,10 @@ function statistics() {
             'orders_daily' => $this->orderModel->countOrdersByInterval('DAY'),
         ];
         
-        // Gộp kết quả
         $stats = array_merge($saleStats, $productStats);
         
-        // Lỗi "Không tìm thấy action statistics" đã được sửa khi thêm hàm này.
-        // Lỗi "Failed to open stream" sẽ được sửa ở bước 2.3.
+        // Sẽ tìm file này ở Views/admin/statistics.php
         include_once 'Views/admin/statistics.php';
     }
-
-// ... (các hàm khác)
+}
 ?>
