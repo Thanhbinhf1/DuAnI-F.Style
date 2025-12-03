@@ -98,6 +98,8 @@
     }
     .profile-section { display: none; }
     .profile-section.active { display: block; }
+    .status-stack .badge { display: block; margin-bottom: 4px; }
+    .status-stack small { color: #475569; }
     .wishlist-card {
         position: relative;
         border: 1px solid #eef0f3;
@@ -227,9 +229,11 @@
                                             <td><?=htmlspecialchars($dh['fullname'])?></td>
                                             <td class="text-end text-danger fw-bold"><?=number_format($dh['total_money'])?> đ</td>
                                             <td class="text-center">
-                                                <div class="d-flex flex-column gap-1 align-items-center">
-                                                    <?=renderStatusBadge($dh['status'])?>
-                                                    <?=renderPaymentBadge($dh['status'] ?? 0, $dh['payment_status'] ?? 0)?>
+                                                <div class="status-stack">
+                                                    <small>Đơn:</small>
+                                                    <?php echo renderStatusBadge($dh['status']); ?>
+                                                    <small>Thanh toán:</small>
+                                                    <?php echo renderPaymentBadge($dh['status'] ?? 0, $dh['payment_status'] ?? 0); ?>
                                                 </div>
                                             </td>
                                             <td class="text-end">
