@@ -39,15 +39,18 @@
         return '<span class="badge ' . $current['class'] . ' px-3 py-2">' . $current['label'] . '</span>';
     }
 
-    function renderPaymentBadge($paymentStatus)
+    function renderPaymentBadge($orderStatus, $paymentStatus)
     {
-        $map = [
-            0 => ['label' => 'Chưa thanh toán', 'class' => 'bg-secondary'],
-            1 => ['label' => 'Đã thanh toán', 'class' => 'bg-success'],
-            2 => ['label' => 'Đã hoàn tiền', 'class' => 'bg-warning text-dark'],
-        ];
-        $current = $map[$paymentStatus] ?? ['label' => 'Không xác định', 'class' => 'bg-secondary'];
-        return '<span class="badge ' . $current['class'] . ' px-3 py-2">' . $current['label'] . '</span>';
+        // Ưu tiên hiển thị Hủy nếu đơn đã hủy
+        if ((int)$orderStatus === 3) {
+            return '<span class="badge bg-danger px-3 py-2">Đã hủy</span>';
+        }
+
+        if ((int)$paymentStatus === 1) {
+            return '<span class="badge bg-success px-3 py-2">Đã thanh toán</span>';
+        }
+
+        return '<span class="badge bg-secondary px-3 py-2">Chưa thanh toán</span>';
     }
 ?>
 
@@ -226,7 +229,7 @@
                                             <td class="text-center">
                                                 <div class="d-flex flex-column gap-1 align-items-center">
                                                     <?=renderStatusBadge($dh['status'])?>
-                                                    <?=renderPaymentBadge($dh['payment_status'] ?? 0)?>
+                                                    <?=renderPaymentBadge($dh['status'] ?? 0, $dh['payment_status'] ?? 0)?>
                                                 </div>
                                             </td>
                                             <td class="text-end">
