@@ -1,13 +1,20 @@
-<?php
+﻿<?php
     $fullName = htmlspecialchars($user['fullname'] ?? $user['username']);
     $email    = htmlspecialchars($user['email'] ?? 'Chưa cập nhật');
     $phone    = htmlspecialchars($user['phone'] ?? 'Chưa cập nhật');
     $address  = htmlspecialchars($user['address'] ?? 'Chưa cập nhật');
 
-    $orderCount      = count($orders);
-    $pendingCount    = 0;
-    $shippingCount   = 0;
-    $completedCount  = 0;
+    // Bảo vệ biến mảng tránh warning khi chưa có dữ liệu
+    $orders      = $orders ?? [];
+    $wishlist    = $wishlist ?? [];
+    $savedCarts  = $savedCarts ?? [];
+    $reviews     = $reviews ?? [];
+    $invoices    = $invoices ?? [];
+
+    $orderCount     = count($orders);
+    $pendingCount   = 0;
+    $shippingCount  = 0;
+    $completedCount = 0;
 
     foreach ($orders as $item) {
         if ($item['status'] == 0) {
@@ -75,6 +82,8 @@
         align-items: center;
         gap: 8px;
     }
+    .profile-section { display: none; }
+    .profile-section.active { display: block; }
 </style>
 
 <div class="profile-shell py-4">
@@ -110,243 +119,22 @@
                         <a class="nav-link" href="#saved-cart">Giỏ hàng đã lưu</a>
                         <a class="nav-link" href="#payments">Phương thức thanh toán</a>
                         <a class="nav-link" href="#reviews">Đánh giá</a>
-                        <a class="nav-link" href="#coupons">Mã giảm giá & Điểm</a>
+                        <a class="nav-link" href="#coupons">Mã giảm giá &amp; Điểm</a>
                         <a class="nav-link" href="#invoices">Hóa đơn</a>
                         <a class="nav-link" href="#security">Bảo mật</a>
                         <a class="nav-link" href="#settings">Cài đặt</a>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="profile-body">
-        <div class="profile-content" id="profile-content">
-            <section class="profile-section" data-section="overview">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Hồ sơ</p>
-                        <h2>Thông tin cá nhân</h2>
-                    </div>
-                </div>
-                <div class="info-grid">
-                    <div class="avatar-block">
-                        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar" class="avatar">
-                        <div class="avatar-meta">
-                            <h3><?= htmlspecialchars($user['fullname'] ?? 'Khách hàng') ?></h3>
-                            <p><?= htmlspecialchars($user['email'] ?? 'Chưa cập nhật email') ?></p>
-                        </div>
-                        <a class="ghost-btn" href="?ctrl=user&act=edit">Chỉnh sửa thông tin</a>
-                    </div>
-                    <div class="info-columns">
-                        <div class="info-box">
-                            <h4>Cơ bản</h4>
-                            <dl>
-                                <div><dt>Họ và tên</dt><dd><?= htmlspecialchars($user['fullname'] ?? 'Chưa cập nhật') ?></dd></div>
-                                <div><dt>Email</dt><dd><?= htmlspecialchars($user['email'] ?? 'Chưa cập nhật') ?></dd></div>
-                                <div><dt>Số điện thoại</dt><dd><?= htmlspecialchars($user['phone'] ?? 'Chưa cập nhật') ?></dd></div>
-                                <div><dt>Ngày sinh</dt><dd><?= htmlspecialchars($user['birthday'] ?? 'Chưa cập nhật') ?></dd></div>
-                                <div><dt>Giới tính</dt><dd><?= htmlspecialchars($user['gender'] ?? 'Chưa cập nhật') ?></dd></div>
-                                <div><dt>Mã khách hàng</dt><dd><?= htmlspecialchars($user['username'] ?? '#') ?></dd></div>
-                            </dl>
-                        </div>
-                        <div class="info-box">
-                            <h4>Địa chỉ</h4>
-                            <?php if (count($addresses) > 0): ?>
-                                <ul class="address-list">
-                                    <?php foreach ($addresses as $index => $address): ?>
-                                        <li>
-                                            <div>
-                                                <p class="address-title">Địa chỉ <?= $index + 1 ?> <?= !empty($address['is_default']) ? '(Mặc định)' : '' ?></p>
-                                                <p><?= htmlspecialchars($address['line1'] ?? '') ?></p>
-                                                <p><?= htmlspecialchars($address['line2'] ?? '') ?></p>
-                                                <p><?= htmlspecialchars($address['city'] ?? '') ?> <?= htmlspecialchars($address['district'] ?? '') ?></p>
-                                                <p><?= htmlspecialchars($address['phone'] ?? '') ?></p>
-                                            </div>
-                                            <div class="chip-row">
-                                                <?php if (!empty($address['tag'])): ?><span class="chip"><?= htmlspecialchars($address['tag']) ?></span><?php endif; ?>
-                                                <?php if (!empty($address['is_default'])): ?><span class="chip chip--primary">Mặc định</span><?php endif; ?>
-                                            </div>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php else: ?>
-                                <p class="muted">Chưa có địa chỉ nào, hãy thêm địa chỉ giao hàng mặc định.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="profile-section" data-section="orders" hidden>
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Lịch sử mua</p>
-                        <h2>Đơn hàng của tôi</h2>
-                    </div>
-                    <div class="pill-group">
-                        <span class="pill">Tổng: <?= count($orders) ?></span>
-                    </div>
-                </div>
-                <?php if (count($orders) > 0): ?>
-                    <div class="table-responsive">
-                        <table class="flat-table">
-                            <thead>
-                                <tr>
-                                    <th>Mã ĐH</th>
-                                    <th>Ngày đặt</th>
-                                    <th>Người nhận</th>
-                                    <th>Tổng tiền</th>
-                                    <th>Trạng thái</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($orders as $dh): ?>
-                                    <tr>
-                                        <td>#<?= htmlspecialchars($dh['id']) ?></td>
-                                        <td><?= date('d/m/Y', strtotime($dh['created_at'])) ?></td>
-                                        <td><?= htmlspecialchars($dh['fullname']) ?></td>
-                                        <td class="price"><?= number_format($dh['total_money']) ?> đ</td>
-                                        <td>
-                                            <?php if ($dh['status'] == 0): ?>
-                                                <span class="status status--warning">Chờ xử lý</span>
-                                            <?php elseif ($dh['status'] == 1): ?>
-                                                <span class="status status--info">Đang giao</span>
-                                            <?php elseif ($dh['status'] == 2): ?>
-                                                <span class="status status--success">Đã giao</span>
-                                            <?php else: ?>
-                                                <span class="status status--danger">Đã hủy</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="action-cell">
-                                            <a class="link" href="#">Theo dõi</a>
-                                            <?php if ($dh['status'] == 0): ?>
-                                                <a class="link link--danger" href="#">Hủy</a>
-                                            <?php endif; ?>
-                                            <?php if ($dh['status'] == 2): ?>
-                                                <a class="link" href="#">Mua lại</a>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php else: ?>
-                    <p class="muted">Bạn chưa có đơn hàng nào.</p>
-                <?php endif; ?>
-            </section>
-
-            <section class="profile-section" data-section="wishlist" hidden>
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Yêu thích</p>
-                        <h2>Danh sách yêu thích</h2>
-                    </div>
-                </div>
-                <?php if (count($wishlist) > 0): ?>
-                    <div class="card-grid">
-                        <?php foreach ($wishlist as $item): ?>
-                            <article class="product-card">
-                                <img src="<?= htmlspecialchars($item['image'] ?? 'https://via.placeholder.com/80x80') ?>" alt="<?= htmlspecialchars($item['name'] ?? 'Sản phẩm') ?>">
-                                <div>
-                                    <h4><?= htmlspecialchars($item['name'] ?? 'Sản phẩm') ?></h4>
-                                    <p class="muted">Mã: <?= htmlspecialchars($item['sku'] ?? '#') ?></p>
-                                    <div class="price-row">
-                                        <span class="price"><?= isset($item['price']) ? number_format($item['price']) . ' đ' : 'Giá liên hệ' ?></span>
-                                        <div class="action-links">
-                                            <a class="link" href="#">Thêm vào giỏ</a>
-                                            <a class="link link--danger" href="#">Xóa</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                <?php else: ?>
-                    <p class="muted">Chưa có sản phẩm yêu thích. Hãy lưu lại để mua nhanh.</p>
-                <?php endif; ?>
-            </section>
-
-            <section class="profile-section" data-section="saved-carts" hidden>
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Giỏ hàng</p>
-                        <h2>Giỏ đã lưu / Giỏ bỏ quên</h2>
-                    </div>
-                </div>
-                <?php if (count($savedCarts) > 0): ?>
-                    <ul class="list-block">
-                        <?php foreach ($savedCarts as $cart): ?>
-                            <li>
-                                <div>
-                                    <p class="address-title">Giỏ lưu ngày <?= htmlspecialchars($cart['saved_at'] ?? '') ?></p>
-                                    <p><?= htmlspecialchars($cart['note'] ?? 'Không có ghi chú') ?></p>
-                                </div>
-                                <div class="action-links">
-                                    <a class="link" href="#">Thanh toán ngay</a>
-                                    <a class="link link--danger" href="#">Xóa</a>
-                                </div>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php else: ?>
-                    <p class="muted">Chưa có giỏ hàng nào được lưu.</p>
-                <?php endif; ?>
-            </section>
-
-            <section class="profile-section" data-section="payments" hidden>
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Thanh toán</p>
-                        <h2>Phương thức thanh toán</h2>
-                    </div>
-                </div>
-                <ul class="chip-list">
-                    <li class="chip chip--primary">COD</li>
-                    <li class="chip">Momo</li>
-                    <li class="chip">VNPay</li>
-                    <li class="chip">ZaloPay</li>
-                </ul>
-                <p class="muted">Có thể lưu token thẻ an toàn nếu hệ thống hỗ trợ.</p>
-            </section>
-
-            <section class="profile-section" data-section="reviews" hidden>
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Đánh giá</p>
-                        <h2>Đánh giá của tôi</h2>
-                    </div>
-                </div>
-                <?php if (count($reviews) > 0): ?>
-                    <ul class="list-block">
-                        <?php foreach ($reviews as $review): ?>
-                            <li>
-                                <div>
-                                    <p class="address-title"><?= htmlspecialchars($review['product'] ?? 'Sản phẩm') ?></p>
-                                    <p><?= htmlspecialchars($review['content'] ?? '') ?></p>
-                                </div>
-                                <div class="action-links">
-                                    <a class="link" href="#">Sửa</a>
-                                    <a class="link link--danger" href="#">Xóa</a>
-                                </div>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php else: ?>
-                    <p class="muted">Bạn chưa có đánh giá nào.</p>
-                <?php endif; ?>
-            </section>
-
-         <div class="col-lg-9">
-                <div class="profile-card p-4 mb-4" id="personal">
+            <div class="col-lg-9">
+                <section class="profile-card p-4 mb-4 profile-section active" id="personal">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="section-title mb-1">Thông tin cá nhân</div>
                             <p class="text-muted mb-0">Quản lý hồ sơ và địa chỉ nhận hàng</p>
                         </div>
-                        <a href="?ctrl=user&act=edit" class="btn btn-dark btn-sm">Chỉnh sửa</a>
+                        <a href="?ctrl=user&amp;act=edit" class="btn btn-dark btn-sm">Chỉnh sửa</a>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -368,15 +156,15 @@
                             <div class="chip"><i class="fa-brands fa-facebook"></i> Liên kết MXH: Chưa kết nối</div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="profile-card p-4 mb-4" id="orders">
+                <section class="profile-card p-4 mb-4 profile-section" id="orders">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="section-title mb-1">Đơn hàng của tôi</div>
                             <p class="text-muted mb-0">Theo dõi trạng thái, hủy hoặc mua lại đơn hàng</p>
                         </div>
-                        <a href="?ctrl=cart&act=view" class="btn btn-outline-dark btn-sm">Tiếp tục mua sắm</a>
+                        <a href="?ctrl=cart&amp;act=view" class="btn btn-outline-dark btn-sm">Tiếp tục mua sắm</a>
                     </div>
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <span class="chip"><i class="fa-regular fa-hourglass"></i> Chờ xác nhận: <?=$pendingCount?></span>
@@ -406,9 +194,9 @@
                                             <td class="text-center"><?=renderStatusBadge($dh['status'])?></td>
                                             <td class="text-end">
                                                 <div class="d-flex gap-2 justify-content-end">
-                                                    <button type="button" class="btn btn-link btn-sm text-decoration-none">Theo dõi</button>
-                                                    <button type="button" class="btn btn-outline-danger btn-sm" <?=($dh['status'] > 0 ? 'disabled' : '')?>>Hủy</button>
-                                                    <button type="button" class="btn btn-dark btn-sm">Mua lại</button>
+                                                    <a class="btn btn-link btn-sm text-decoration-none" href="?ctrl=order&amp;act=detail&id=<?=urlencode($dh['id'])?>">Theo dõi</a>
+                                                    <a class="btn btn-outline-danger btn-sm <?=($dh['status'] > 0 ? 'disabled' : '')?>" href="?ctrl=order&amp;act=cancel&id=<?=urlencode($dh['id'])?>" <?=($dh['status'] > 0 ? 'aria-disabled="true"' : '')?> onclick="return confirm('Bạn muốn hủy đơn hàng này?');">Hủy</a>
+                                                    <a class="btn btn-dark btn-sm" href="?ctrl=order&amp;act=reorder&id=<?=urlencode($dh['id'])?>">Mua lại</a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -422,43 +210,83 @@
                                 <div class="fw-semibold">Bạn chưa có đơn hàng nào</div>
                                 <p class="text-muted mb-0">Khám phá sản phẩm và đặt hàng ngay hôm nay.</p>
                             </div>
-                            <a href="?ctrl=product&act=list" class="btn btn-dark">Mua sắm ngay</a>
+                            <a href="?ctrl=product&amp;act=list" class="btn btn-dark">Mua sắm ngay</a>
                         </div>
                     <?php endif; ?>
-                </div>
+                </section>
 
-                <div class="profile-card p-4 mb-4" id="wishlist">
+                <section class="profile-card p-4 mb-4 profile-section" id="wishlist">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <div class="section-title mb-1">Yêu thích</div>
                             <p class="text-muted mb-0">Lưu lại sản phẩm bạn muốn mua sau</p>
                         </div>
-                        <a href="?ctrl=product&act=list" class="btn btn-outline-dark btn-sm">Tiếp tục xem sản phẩm</a>
+                        <a href="?ctrl=product&amp;act=list" class="btn btn-outline-dark btn-sm">Tiếp tục xem sản phẩm</a>
                     </div>
-                    <div class="empty-state d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="fw-semibold">Danh sách yêu thích trống</div>
-                            <p class="text-muted mb-0">Thêm sản phẩm để dễ dàng mua lại.</p>
+                    <?php if (!empty($wishlist)): ?>
+                        <div class="row g-3">
+                            <?php foreach ($wishlist as $item): ?>
+                                <div class="col-md-6">
+                                    <div class="border rounded-3 p-3 h-100 d-flex gap-3">
+                                        <img src="<?=htmlspecialchars($item['image'] ?? 'https://via.placeholder.com/80x80')?>" alt="<?=htmlspecialchars($item['name'] ?? 'Sản phẩm')?>" style="width:80px;height:80px;object-fit:cover;" class="rounded-3">
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold"><?=htmlspecialchars($item['name'] ?? 'Sản phẩm')?></div>
+                                            <div class="text-muted small mb-2">Mã: <?=htmlspecialchars($item['sku'] ?? '#')?></div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="text-danger fw-bold"><?=isset($item['price']) ? number_format($item['price']).' đ' : 'Liên hệ'?></div>
+                                                <div class="d-flex gap-2">
+                                                    <a class="btn btn-outline-dark btn-sm" href="?ctrl=cart&amp;act=add&id=<?=urlencode($item['id'] ?? '')?>">Thêm vào giỏ</a>
+                                                    <a class="btn btn-outline-danger btn-sm" href="?ctrl=wishlist&amp;act=remove&id=<?=urlencode($item['id'] ?? '')?>" onclick="return confirm('Xóa khỏi danh sách yêu thích?');">Xóa</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <button class="btn btn-dark">Thêm vào giỏ</button>
-                    </div>
-                </div>
+                    <?php else: ?>
+                        <div class="empty-state d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fw-semibold">Danh sách yêu thích trống</div>
+                                <p class="text-muted mb-0">Thêm sản phẩm để dễ dàng mua lại.</p>
+                            </div>
+                            <a class="btn btn-dark" href="?ctrl=product&amp;act=list">Thêm vào giỏ</a>
+                        </div>
+                    <?php endif; ?>
+                </section>
 
-                <div class="profile-card p-4 mb-4" id="saved-cart">
+                <section class="profile-card p-4 mb-4 profile-section" id="saved-cart">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <div class="section-title mb-1">Giỏ hàng đã lưu / bỏ quên</div>
                             <p class="text-muted mb-0">Khôi phục các sản phẩm bạn đã thêm nhưng chưa thanh toán</p>
                         </div>
-                        <a href="?ctrl=cart&act=view" class="btn btn-outline-dark btn-sm">Đi tới giỏ hàng</a>
+                        <a href="?ctrl=cart&amp;act=view" class="btn btn-outline-dark btn-sm">Đi tới giỏ hàng</a>
                     </div>
-                    <div class="empty-state">
-                        <div class="fw-semibold">Chưa có sản phẩm được lưu</div>
-                        <p class="text-muted mb-0">Chúng tôi sẽ nhắc bạn nếu giỏ hàng bị bỏ quên quá lâu.</p>
-                    </div>
-                </div>
+                    <?php if (!empty($savedCarts)): ?>
+                        <div class="list-group">
+                            <?php foreach ($savedCarts as $cart): ?>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-semibold">Giỏ lưu ngày <?=htmlspecialchars($cart['saved_at'] ?? '')?></div>
+                                        <div class="text-muted small"><?=htmlspecialchars($cart['note'] ?? 'Không có ghi chú')?></div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a class="btn btn-dark btn-sm" href="?ctrl=cart&amp;act=restore&id=<?=urlencode($cart['id'] ?? '')?>">Thanh toán ngay</a>
+                                        <a class="btn btn-outline-danger btn-sm" href="?ctrl=cart&amp;act=removeSaved&id=<?=urlencode($cart['id'] ?? '')?>" onclick="return confirm('Xóa giỏ hàng đã lưu này?');">Xóa</a>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <div class="fw-semibold">Chưa có sản phẩm được lưu</div>
+                            <p class="text-muted mb-0">Chúng tôi sẽ nhắc bạn nếu giỏ hàng bị bỏ quên quá lâu.</p>
+                        </div>
+                    <?php endif; ?>
+                </section>
 
-                <div class="profile-card p-4 mb-4" id="payments">
+                <section class="profile-card p-4 mb-4 profile-section" id="payments">
                     <div class="section-title mb-3">Phương thức thanh toán</div>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -473,7 +301,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="border rounded-3 p-3 h-100">
-                                <div class="fw-semibold mb-2">Ví điện tử & Thẻ</div>
+                                <div class="fw-semibold mb-2">Ví điện tử &amp; Thẻ</div>
                                 <p class="text-muted small mb-2">Hỗ trợ Momo, VNPay, ZaloPay. Thẻ được lưu dưới dạng token an toàn.</p>
                                 <div class="d-flex gap-2 flex-wrap">
                                     <span class="chip"><i class="fa-solid fa-wallet"></i> Momo</span>
@@ -483,18 +311,36 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="profile-card p-4 mb-4" id="reviews">
+                <section class="profile-card p-4 mb-4 profile-section" id="reviews">
                     <div class="section-title mb-2">Đánh giá của tôi</div>
                     <p class="text-muted mb-3">Xem lịch sử đánh giá, sửa hoặc xóa đánh giá đã gửi.</p>
-                    <div class="empty-state">
-                        <div class="fw-semibold">Bạn chưa có đánh giá nào</div>
-                        <p class="text-muted mb-0">Hãy mua sản phẩm và chia sẻ trải nghiệm của bạn.</p>
-                    </div>
-                </div>
+                    <?php if (!empty($reviews)): ?>
+                        <div class="list-group">
+                            <?php foreach ($reviews as $review): ?>
+                                <div class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-semibold"><?=htmlspecialchars($review['product'] ?? 'Sản phẩm')?></div>
+                                        <div class="text-muted small mb-2"><?=htmlspecialchars($review['created_at'] ?? '')?></div>
+                                        <div><?=htmlspecialchars($review['content'] ?? '')?></div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a class="btn btn-outline-dark btn-sm" href="?ctrl=review&amp;act=edit&id=<?=urlencode($review['id'] ?? '')?>">Sửa</a>
+                                        <a class="btn btn-outline-danger btn-sm" href="?ctrl=review&amp;act=delete&id=<?=urlencode($review['id'] ?? '')?>" onclick="return confirm('Xóa đánh giá này?');">Xóa</a>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <div class="fw-semibold">Bạn chưa có đánh giá nào</div>
+                            <p class="text-muted mb-0">Hãy mua sản phẩm và chia sẻ trải nghiệm của bạn.</p>
+                        </div>
+                    <?php endif; ?>
+                </section>
 
-                <div class="profile-card p-4 mb-4" id="coupons">
+                <section class="profile-card p-4 mb-4 profile-section" id="coupons">
                     <div class="section-title mb-2">Mã giảm giá / Ví tích điểm</div>
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -519,25 +365,42 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="profile-card p-4 mb-4" id="invoices">
+                <section class="profile-card p-4 mb-4 profile-section" id="invoices">
                     <div class="section-title mb-2">Hóa đơn / Invoice</div>
                     <p class="text-muted mb-3">Xuất file PDF hóa đơn và xem lịch sử giao dịch thanh toán.</p>
-                    <div class="empty-state">
-                        <div class="fw-semibold">Chưa có hóa đơn</div>
-                        <p class="text-muted mb-0">Bạn sẽ thấy hóa đơn khi hoàn tất đơn hàng.</p>
-                    </div>
-                </div>
+                    <?php if (!empty($invoices)): ?>
+                        <div class="list-group">
+                            <?php foreach ($invoices as $invoice): ?>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-semibold">Hóa đơn #<?=htmlspecialchars($invoice['code'] ?? '')?></div>
+                                        <div class="text-muted small">Ngày: <?=htmlspecialchars($invoice['created_at'] ?? '')?></div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a class="btn btn-outline-dark btn-sm" href="?ctrl=invoice&amp;act=view&id=<?=urlencode($invoice['id'] ?? '')?>">Xem</a>
+                                        <a class="btn btn-dark btn-sm" href="?ctrl=invoice&amp;act=download&id=<?=urlencode($invoice['id'] ?? '')?>">Tải PDF</a>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <div class="fw-semibold">Chưa có hóa đơn</div>
+                            <p class="text-muted mb-0">Bạn sẽ thấy hóa đơn khi hoàn tất đơn hàng.</p>
+                        </div>
+                    <?php endif; ?>
+                </section>
 
-                <div class="profile-card p-4 mb-4" id="security">
+                <section class="profile-card p-4 mb-4 profile-section" id="security">
                     <div class="section-title mb-2">Bảo mật tài khoản</div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="border rounded-3 p-3 h-100">
                                 <div class="fw-semibold mb-1">Đổi mật khẩu</div>
                                 <p class="text-muted small mb-3">Cập nhật mật khẩu định kỳ để bảo vệ tài khoản.</p>
-                                <a class="btn btn-outline-dark btn-sm" href="?ctrl=user&act=edit#password">Đổi mật khẩu</a>
+                                <a class="btn btn-outline-dark btn-sm" href="?ctrl=user&amp;act=edit#password">Đổi mật khẩu</a>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -548,9 +411,9 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="profile-card p-4" id="settings">
+                <section class="profile-card p-4 profile-section" id="settings">
                     <div class="section-title mb-2">Cài đặt khác</div>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -585,11 +448,12 @@
                             <button class="btn btn-outline-danger">Yêu cầu xóa</button>
                         </div>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
-    
+    </div>
 </div>
+
 <script>
 (function() {
         const navLinks = document.querySelectorAll('.profile-sidebar .nav-link');
@@ -618,5 +482,4 @@
         const hasTarget = Array.from(sections).some((section) => section.id === initialTarget);
         activateSection(hasTarget ? initialTarget : 'personal');
     })();
-
 </script>
