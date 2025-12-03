@@ -4,12 +4,10 @@
     $phone    = htmlspecialchars($user['phone'] ?? 'Chưa cập nhật');
     $address  = htmlspecialchars($user['address'] ?? 'Chưa cập nhật');
 
-    // Bảo vệ biến mảng tránh warning khi chưa có dữ liệu
-    $orders      = $orders ?? [];
-    $wishlist    = $wishlist ?? [];
-    $savedCarts  = $savedCarts ?? [];
-    $reviews     = $reviews ?? [];
-    $invoices    = $invoices ?? [];
+    $orders     = $orders ?? [];
+    $wishlist   = $wishlist ?? [];
+    $reviews    = $reviews ?? [];
+    $invoices   = $invoices ?? [];
 
     $orderCount     = count($orders);
     $pendingCount   = 0;
@@ -41,87 +39,36 @@
 
     function renderPaymentBadge($orderStatus, $paymentStatus)
     {
-        // Ưu tiên hiển thị Hủy nếu đơn đã hủy
-        if ((int)$orderStatus === 3) {
-            return '<span class="badge bg-danger px-3 py-2">Đã hủy</span>';
-        }
-
         if ((int)$paymentStatus === 1) {
             return '<span class="badge bg-success px-3 py-2">Đã thanh toán</span>';
         }
-
+        if ((int)$paymentStatus === 2) {
+            return '<span class="badge bg-warning text-dark px-3 py-2">Đã hoàn tiền</span>';
+        }
         return '<span class="badge bg-secondary px-3 py-2">Chưa thanh toán</span>';
     }
 ?>
 
 <style>
-    .profile-shell {
-        background: linear-gradient(135deg, #fff7f0 0%, #ffffff 60%, #f1f5ff 100%);
-        min-height: 100vh;
-    }
-    .profile-card {
-        background: #fff;
-        border: 1px solid #eef0f3;
-        border-radius: 14px;
-        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.07);
-    }
-    .profile-sidebar .nav-link {
-        color: #475569;
-        font-weight: 600;
-        border-radius: 12px;
-        padding: 12px 14px;
-    }
-    .profile-sidebar .nav-link:hover,
-    .profile-sidebar .nav-link.active {
-        background: #111827;
-        color: #fff;
-    }
-    .section-title {
-        font-weight: 800;
-        color: #111827;
-    }
-    .empty-state {
-        border: 1px dashed #cbd5e1;
-        border-radius: 12px;
-        padding: 16px;
-        background: #f8fafc;
-    }
-    .chip {
-        background: #f1f5f9;
-        border-radius: 999px;
-        padding: 8px 14px;
-        font-size: 13px;
-        color: #0f172a;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
+    .profile-shell { background: linear-gradient(135deg, #fff7f0 0%, #ffffff 60%, #f1f5ff 100%); min-height: 100vh; }
+    .profile-card { background: #fff; border: 1px solid #eef0f3; border-radius: 14px; box-shadow: 0 20px 60px rgba(15, 23, 42, 0.07); }
+    .profile-sidebar .nav-link { color: #475569; font-weight: 600; border-radius: 12px; padding: 12px 14px; }
+    .profile-sidebar .nav-link:hover, .profile-sidebar .nav-link.active { background: #111827; color: #fff; }
+    .section-title { font-weight: 800; color: #111827; }
+    .empty-state { border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px; background: #f8fafc; }
+    .chip { background: #f1f5f9; border-radius: 999px; padding: 8px 14px; font-size: 13px; color: #0f172a; display: inline-flex; align-items: center; gap: 8px; }
     .profile-section { display: none; }
     .profile-section.active { display: block; }
     .status-stack .badge { display: block; margin-bottom: 4px; }
     .status-stack small { color: #475569; }
-    .wishlist-card {
-        position: relative;
-        border: 1px solid #eef0f3;
-        border-radius: 12px;
-        padding: 12px;
-    }
-    .like-btn {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        border: none;
-        background: #fff;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-        color: #e11d48;
-        text-decoration: none;
-    }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; line-height: 1.2; }
+    .bg-warning { background: #fef08a; color: #92400e; }
+    .bg-info { background: #e0f2fe; color: #075985; }
+    .bg-success { background: #bbf7d0; color: #065f46; }
+    .bg-danger { background: #fecdd3; color: #9f1239; }
+    .bg-secondary { background: #e2e8f0; color: #0f172a; }
+    .wishlist-card { position: relative; border: 1px solid #eef0f3; border-radius: 12px; padding: 12px; }
+    .like-btn { position: absolute; top: 8px; right: 8px; border: none; background: #fff; border-radius: 50%; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0,0,0,0.08); color: #e11d48; text-decoration: none; }
     .like-btn:hover { background: #ffe4e6; }
 </style>
 
@@ -174,24 +121,12 @@
                         <a href="?ctrl=user&amp;act=editProfile" class="btn btn-dark btn-sm">Chỉnh sửa</a>
                     </div>
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="chip"><i class="fa-regular fa-id-badge"></i> <?=$fullName?></div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="chip"><i class="fa-regular fa-envelope"></i> <?=$email?></div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="chip"><i class="fa-solid fa-phone"></i> <?=$phone?></div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="chip"><i class="fa-solid fa-location-dot"></i> <?=$address?></div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="chip"><i class="fa-regular fa-user"></i> Mã khách hàng: #<?=$user['id']?></div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="chip"><i class="fa-brands fa-facebook"></i> Liên kết MXH: Chưa kết nối</div>
-                        </div>
+                        <div class="col-md-6"><div class="chip"><i class="fa-regular fa-id-badge"></i> <?=$fullName?></div></div>
+                        <div class="col-md-6"><div class="chip"><i class="fa-regular fa-envelope"></i> <?=$email?></div></div>
+                        <div class="col-md-6"><div class="chip"><i class="fa-solid fa-phone"></i> <?=$phone?></div></div>
+                        <div class="col-md-6"><div class="chip"><i class="fa-solid fa-location-dot"></i> <?=$address?></div></div>
+                        <div class="col-md-6"><div class="chip"><i class="fa-regular fa-user"></i> Mã khách hàng: #<?=$user['id']?></div></div>
+                        <div class="col-md-6"><div class="chip"><i class="fa-brands fa-facebook"></i> Liên kết MXH: Chưa kết nối</div></div>
                     </div>
                 </section>
 
@@ -209,7 +144,7 @@
                         <span class="chip"><i class="fa-solid fa-circle-check"></i> Hoàn thành: <?=$completedCount?></span>
                     </div>
                     <?php if ($orderCount > 0): ?>
-                                                <div class="table-responsive">
+                        <div class="table-responsive">
                             <table class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
@@ -233,18 +168,6 @@
                                                     <small>Thanh toán:</small>
                                                     <?php echo renderPaymentBadge($dh['status'] ?? 0, $dh['payment_status'] ?? 0); ?>
                                                 </div>
-                                            </td>
-                                            <td class="text-end">
-                                                <div class="d-flex gap-2 justify-content-end">
-                                                    <a class="btn btn-link btn-sm text-decoration-none" href="?ctrl=order&act=detail&id=<?=urlencode($dh['id'])?>">Theo dõi</a>
-                                                    <a class="btn btn-dark btn-sm" href="?ctrl=order&act=reorder&id=<?=urlencode($dh['id'])?>">Mua lại</a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
                                             </td>
                                             <td class="text-end">
                                                 <div class="d-flex gap-2 justify-content-end">
@@ -481,8 +404,3 @@
         activateSection(hasTarget ? initialTarget : 'personal');
     })();
 </script>
-
-
-
-
-
