@@ -314,5 +314,29 @@ class AdminController {
             header("Location: ?ctrl=admin&act=orderList");
         }
     }
+    // Trong class AdminController { ...
+// ... các hàm hiện có ...
+
+/**
+ * Hiển thị trang Thống kê và Báo cáo chi tiết
+ */
+function statistics() {
+    // Gọi các phương thức thống kê từ Models
+    $saleStats = $this->orderModel->getSaleStatistics();
+    $productStats = [
+        'top_selling'  => $this->productModel->getTopSellingProducts(10),
+        'slow_selling' => $this->productModel->getSlowSellingProducts(10),
+        'orders_monthly' => $this->orderModel->countOrdersByInterval('MONTH'),
+        'orders_weekly' => $this->orderModel->countOrdersByInterval('WEEK'),
+        'orders_daily' => $this->orderModel->countOrdersByInterval('DAY'),
+    ];
+    
+    // Gộp tất cả kết quả vào một mảng để truyền sang view
+    $stats = array_merge($saleStats, $productStats);
+    
+    include_once 'Views/admin/statistics.php';
+}
+
+// ... các hàm hiện có khác
 }
 ?>

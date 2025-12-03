@@ -191,5 +191,37 @@ function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $des
         $result = $this->db->queryOne($sql);
         return $result ? (int)$result['total'] : 0;
     }
+    // Trong class Product { ...
+// ... các hàm hiện có ...
+
+/**
+ * 1. Lấy Top sản phẩm bán chạy nhất (Best Seller)
+ * Dựa trên tổng số lượng sản phẩm đã bán trong order_details
+ */
+function getTopSellingProducts($limit = 10) {
+    $sql = "SELECT p.id, p.name, p.image, p.price, p.price_sale, SUM(od.quantity) as sold_quantity
+            FROM order_details od
+            JOIN products p ON od.product_id = p.id
+            GROUP BY p.id, p.name, p.image, p.price, p.price_sale
+            ORDER BY sold_quantity DESC
+            LIMIT ?";
+    return $this->db->query($sql, [$limit]);
+}
+
+/**
+ * 2. Lấy Top sản phẩm bán chậm (Slow Moving)
+ * Lấy sản phẩm có tổng số lượng bán ra thấp nhất (phải có ít nhất 1 đơn hàng)
+ */
+function getSlowSellingProducts($limit = 10) {
+    $sql = "SELECT p.id, p.name, p.image, p.price, p.price_sale, COALESCE(SUM(od.quantity), 0) as sold_quantity
+            FROM products p
+            LEFT JOIN order_details od ON p.id = od.product_id
+            GROUP BY p.id, p.name, p.image, p.price, p.price_sale
+            HAVING sold_quantity > 0 
+            ORDER BY sold_quantity ASC
+            LIMIT ?";
+    return $this->db->query($sql, [$limit]);
+}
+// ... các hàm hiện có khác
 }
 ?>
