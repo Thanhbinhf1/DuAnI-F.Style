@@ -370,3 +370,33 @@
         </div>
     
 </div>
+<script>
+(function() {
+        const navLinks = document.querySelectorAll('.profile-sidebar .nav-link');
+        const sections = document.querySelectorAll('.profile-section');
+
+        function activateSection(targetId) {
+            sections.forEach((section) => {
+                section.classList.toggle('active', section.id === targetId);
+            });
+
+            navLinks.forEach((link) => {
+                const linkTarget = link.getAttribute('href').replace('#', '');
+                link.classList.toggle('active', linkTarget === targetId);
+            });
+        }
+
+        navLinks.forEach((link) => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                const targetId = this.getAttribute('href').replace('#', '');
+                activateSection(targetId);
+            });
+        });
+
+        const initialTarget = window.location.hash ? window.location.hash.replace('#', '') : 'personal';
+        const hasTarget = Array.from(sections).some((section) => section.id === initialTarget);
+        activateSection(hasTarget ? initialTarget : 'personal');
+    })();
+
+</script>
