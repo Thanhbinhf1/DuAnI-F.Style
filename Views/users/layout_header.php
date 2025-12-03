@@ -84,7 +84,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="?ctrl=user&act=profile">Tài khoản của tôi</a></li>
-                            <li><a class="dropdown-item" href="?ctrl=user&act=edit">Chỉnh sửa thông tin</a></li>
+                            <li><a class="dropdown-item" href="?ctrl=user&amp;act=editProfile">Chỉnh sửa thông tin</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="?ctrl=user&act=logout">Đăng xuất</a></li>
                         </ul>
