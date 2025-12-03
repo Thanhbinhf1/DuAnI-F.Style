@@ -13,6 +13,7 @@
     $pendingCount   = 0;
     $shippingCount  = 0;
     $completedCount = 0;
+    $cancelledCount = 0;
 
     foreach ($orders as $item) {
         if ($item['status'] == 0) {
@@ -21,6 +22,8 @@
             $shippingCount++;
         } elseif ($item['status'] == 2) {
             $completedCount++;
+        } elseif ($item['status'] == 3) {
+            $cancelledCount++;
         }
     }
 
@@ -142,6 +145,7 @@
                         <span class="chip"><i class="fa-regular fa-hourglass"></i> Chờ xác nhận: <?=$pendingCount?></span>
                         <span class="chip"><i class="fa-solid fa-truck"></i> Đang giao: <?=$shippingCount?></span>
                         <span class="chip"><i class="fa-solid fa-circle-check"></i> Hoàn thành: <?=$completedCount?></span>
+                        <span class="chip"><i class="fa-solid fa-ban"></i> Đã hủy: <?=$cancelledCount?></span>
                     </div>
                     <?php if ($orderCount > 0): ?>
                         <div class="table-responsive">
@@ -152,6 +156,7 @@
                                         <th>Ngày đặt</th>
                                         <th class="text-end">Tổng tiền</th>
                                         <th class="text-center">Trạng thái</th>
+                                        
                                         <th class="text-end">Thao tác</th>
                                     </tr>
                                 </thead>
@@ -173,6 +178,7 @@
                                                     </div>
                                                 </div>
                                             </td>
+                                            
                                             <td class="text-end">
                                                 <div class="d-flex gap-2 justify-content-end">
                                                     <a class="btn btn-link btn-sm text-decoration-none" href="?ctrl=order&amp;act=detail&id=<?=urlencode($dh['id'])?>">Theo dõi</a>
