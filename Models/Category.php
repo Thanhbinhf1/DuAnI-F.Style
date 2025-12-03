@@ -26,9 +26,19 @@ class Category {
         return $this->db->execute($sql, [$id, $name, $status]);
     }
 
+   // File: Models/Category.php
+
+// ... (các hàm khác)
+
     function deleteCategory($id) {
         $sql = "DELETE FROM categories WHERE id = ?";
-        return $this->db->execute($sql, [$id]);
+        return $this->db->execute($sql, [$id]); // Hàm này trả về true/false
+    }
+    
+// ...
+    function toggleCategoryStatus($id, $newStatus) {
+        $sql = "UPDATE categories SET status = ? WHERE id = ?";
+        return $this->db->execute($sql, [$newStatus, $id]);
     }
 }
 ?>

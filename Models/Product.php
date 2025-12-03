@@ -238,6 +238,54 @@ function getSlowSellingProducts($limit = 10) {
             LIMIT ?";
     return $this->db->query($sql, [$limit]);
 }
+function countProductsByCategoryId($categoryId) {
+        $sql = "SELECT COUNT(*) as total FROM products WHERE category_id = ?";
+        $result = $this->db->queryOne($sql, [$categoryId]);
+        return $result ? (int)$result['total'] : 0;
+    }
+    // File: Models/Product.php
+
+// ... (các hàm hiện có)
+
+    /**
+     * [MỚI] Lưu đường dẫn của các ảnh gallery vào DB
+     */
+    function insertGalleryImages($productId, $imageUrls) {
+        if (empty($imageUrls)) {
+            return true;
+        }
+        
+        $sql = "INSERT INTO product_images (product_id, image_url) VALUES ";
+        $values = [];
+        $params = [];
+
+        foreach ($imageUrls as $url) {
+            $values[] = "(?, ?)";
+            $params[] = $productId;
+            $params[] = $url;
+        }
+
+        $sql .= implode(", ", $values);
+        return $this->db->execute($sql, $params);
+    }
+    
+    /**
+     * [MỚI] Lấy tất cả ảnh gallery cho 1 sản phẩm
+     */
+    function getGalleryImages($productId) {
+        $sql = "SELECT image_url FROM product_images WHERE product_id = ?";
+        return $this->db->query($sql, [$productId]);
+    }
+    
+    /**
+     * [MỚI] Xóa tất cả ảnh gallery cũ của sản phẩm (trước khi cập nhật)
+     */
+    function deleteGalleryImages($productId) {
+        $sql = "DELETE FROM product_images WHERE product_id = ?";
+        return $this->db->execute($sql, [$productId]);
+    }
+    
+// ... (các hàm khác)
 }
 
 

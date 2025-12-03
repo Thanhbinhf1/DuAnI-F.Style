@@ -1,8 +1,9 @@
 <?php
 // Xử lý đường dẫn ảnh chính
 $mainImg = $sp['image'];
+// Giả định ảnh chính được lưu trong Public/Uploads/Products/
 if (!str_contains($mainImg, 'http')) {
-    $mainImg = "./Public/Img/products/" . $mainImg;
+    $mainImg = "./Public/Uploads/Products/" . $mainImg;
 }
 
 // Ảnh gallery (nếu có)
@@ -14,9 +15,7 @@ $totalCmt   = $averageRating['total'] ?? 0;
 ?>
 <div class="container" style="margin-top: 30px; margin-bottom: 50px;">
 
-    <!-- KHUNG CHI TIẾT SẢN PHẨM -->
     <div class="product-detail-container">
-        <!-- CỘT TRÁI: ẢNH -->
         <div class="left-column" style="flex: 0 0 40%;">
             <div class="mb-3">
                 <img id="main-product-image"
@@ -27,10 +26,16 @@ $totalCmt   = $averageRating['total'] ?? 0;
 
             <?php if (!empty($galleryImages)): ?>
                 <div class="d-flex flex-wrap gap-2">
+                    <img src="<?=$mainImg?>" 
+                         class="thumb-image active"
+                         data-src="<?=$mainImg?>"
+                         style="width: 70px; height: 70px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #eee;">
+
                     <?php foreach ($galleryImages as $img): 
                         $thumb = $img['image_url'];
+                        // Giả định ảnh gallery được lưu trong Public/Uploads/Products/
                         if (!str_contains($thumb, 'http')) {
-                            $thumb = "./Public/Img/products/" . $thumb;
+                            $thumb = "./Public/Uploads/Products/" . $thumb;
                         }
                     ?>
                         <img src="<?=$thumb?>" 
@@ -42,7 +47,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
             <?php endif; ?>
         </div>
 
-        <!-- CỘT PHẢI: THÔNG TIN & MUA HÀNG -->
         <div class="right-column" style="flex: 1;">
             <h1><?=$sp['name']?></h1>
 
@@ -53,7 +57,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
                 </span>
             </div>
 
-            <!-- Rating -->
             <div style="margin-bottom: 10px;">
                 <?php if ($totalCmt > 0): ?>
                     <span style="color: #f59e0b; font-weight: 600;">
@@ -67,7 +70,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
                 <?php endif; ?>
             </div>
 
-            <!-- GIÁ -->
             <?php
                 $hasSale = isset($sp['price_sale']) && $sp['price_sale'] > 0;
                 $priceShow = $hasSale ? $sp['price_sale'] : $sp['price'];
@@ -84,19 +86,16 @@ $totalCmt   = $averageRating['total'] ?? 0;
                 <?php endif; ?>
             </div>
 
-            <!-- FORM THÊM GIỎ -->
             <form action="?ctrl=cart&act=add" method="post">
                 <input type="hidden" name="id" value="<?=$sp['id']?>">
                 <input type="hidden" name="variant_id" id="selected_variant_id" value="">
 
                 <?php if (!empty($variants)): ?>
-                    <!-- MÀU -->
                     <div style="margin-bottom: 15px;">
                         <label style="font-weight: bold;">Màu sắc:</label>
                         <div id="color-options" class="variant-group"></div>
                     </div>
 
-                    <!-- SIZE -->
                     <div style="margin-bottom: 15px;">
                         <label style="font-weight: bold;">Kích thước:</label>
                         <div id="size-options" class="variant-group">
@@ -106,7 +105,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
                 <?php 
                 endif; ?>
 
-                <!-- SỐ LƯỢNG -->
                 <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                     <label style="margin: 0;">Số lượng:</label>
                     <input type="number" name="quantity" value="1" min="1"
@@ -114,7 +112,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
                     <span id="stock-info" style="color: #666; font-size: 14px;"></span>
                 </div>
 
-                <!-- NÚT -->
                 <div class="btn-actions">
     <button type="submit"
             id="btn-add-cart"
@@ -132,7 +129,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
 
             </form>
 
-            <!-- THÔNG TIN SẢN PHẨM NGẮN -->
             <div style="margin-top: 30px;">
                 <h5>Thông tin sản phẩm</h5>
                 <table class="table table-sm" style="max-width: 500px;">
@@ -157,13 +153,11 @@ $totalCmt   = $averageRating['total'] ?? 0;
         </div>
     </div>
 
-    <!-- MÔ TẢ CHI TIẾT -->
     <div class="description">
         <h4>Mô tả chi tiết</h4>
         <p><?=nl2br(htmlspecialchars($sp['description']))?></p>
     </div>
 
-    <!-- SẢN PHẨM LIÊN QUAN -->
     <div class="section-product">
         <div class="section-header">
             <h2>Sản phẩm liên quan</h2>
@@ -173,7 +167,7 @@ $totalCmt   = $averageRating['total'] ?? 0;
                 <?php foreach ($spLienQuan as $spc): 
                     $img = $spc['image'];
                     if (!str_contains($img, 'http')) {
-                        $img = "./Public/Img/products/" . $img;
+                        $img = "./Public/Uploads/Products/" . $img;
                     }
                 ?>
                     <div class="product-item">
@@ -193,7 +187,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
         </div>
     </div>
 
-    <!-- BÌNH LUẬN & ĐÁNH GIÁ -->
     <div style="margin-top: 40px;">
         <h4>Đánh giá & Bình luận</h4>
 
@@ -218,7 +211,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
             <p style="color:#777;">Chưa có bình luận cho sản phẩm này.</p>
         <?php endif; ?>
 
-        <!-- FORM COMMENT -->
         <div style="margin-top: 20px;">
             <?php if (isset($_SESSION['user'])): ?>
                 <form action="?ctrl=product&act=detail&id=<?=$sp['id']?>" method="post">
@@ -251,7 +243,6 @@ $totalCmt   = $averageRating['total'] ?? 0;
     </div>
 </div>
 
-<!-- JS CHO GALLERY & CHỌN VARIANT -->
 <script>
     // Đổi ảnh chính theo thumbnail
     document.querySelectorAll('.thumb-image').forEach(function (img) {
