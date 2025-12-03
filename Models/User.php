@@ -11,6 +11,11 @@ class User {
         $sql = "SELECT * FROM users WHERE username = ?";
         return $this->db->queryOne($sql, [$username]);
     }
+    function login($username) {
+        $sql = "SELECT id, username, password, fullname, email, role 
+            FROM users WHERE username = ?";
+    return $this->db->queryOne($sql, [$username]);
+}
 
     // 2. Đăng ký tài khoản mới
     function insertUser($username, $password, $fullname, $email) {

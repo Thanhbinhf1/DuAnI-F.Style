@@ -57,7 +57,7 @@ class UserController {
              return;
         }
 
-        $check = $this->model->checkUser($user);
+        $check = $this->model->login($user);
 
         if ($check && password_verify($pass, $check['password'])) {
             $_SESSION['user'] = $check;
