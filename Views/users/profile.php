@@ -173,15 +173,50 @@
                                             <td class="text-end text-danger fw-bold"><?=number_format($dh['total_money'])?> đ</td>
                                             <td class="text-center">
                                                 <div class="status-stack">
-                                                    <div class="mb-1">
-                                                        <small>Đơn:</small>
-                                                        <?php echo renderStatusBadge($dh['status']); ?>
-                                                    </div>
-                                                    <div>
-                                                        <small>Thanh toán:</small>
-                                                        <?php echo renderPaymentBadge($dh['status'] ?? 0, $dh['payment_status'] ?? 0); ?>
-                                                    </div>
-                                                </div>
+    <div class="mb-2">
+        <small style="display:block; margin-bottom:3px; color:#666;">Đơn hàng:</small>
+        <?php 
+            $stt = $dh['status'] ?? -1;
+            // Mặc định: Xám
+            $txt = 'Không xác định';
+            $bg  = '#e2e8f0'; 
+            $col = '#333'; 
+
+            if ($stt == 0) { 
+                $txt = 'Chờ xác nhận'; $bg = '#fff3cd'; $col = '#856404'; 
+            } elseif ($stt == 1) { 
+                $txt = 'Đang giao';    $bg = '#cff4fc'; $col = '#055160'; 
+            } elseif ($stt == 2) { 
+                $txt = 'Hoàn thành';   $bg = '#d1e7dd'; $col = '#0f5132'; 
+            } elseif ($stt == 3) { 
+                $txt = 'Đã hủy';       $bg = '#f8d7da'; $col = '#842029'; 
+            }
+        ?>
+        <span style=" padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: <?=$bg?>; color: <?=$col?>;">
+            <?=$txt?>
+        </span>
+    </div>
+
+    <div>
+        <small style="display:block; margin-bottom:3px; color:#666;">Thanh toán:</small>
+        <?php 
+            $pay = $dh['payment_status'] ?? 0;
+            // Mặc định: Xám
+            $txtPay = 'Chưa thanh toán';
+            $bgPay  = '#e2e8f0'; 
+            $colPay = '#333';
+
+            if ($pay == 1) { 
+                $txtPay = 'Đã thanh toán'; $bgPay = '#d1e7dd'; $colPay = '#0f5132'; // Xanh lá
+            } elseif ($pay == 2) { 
+                $txtPay = 'Đã hoàn tiền';  $bgPay = '#fff3cd'; $colPay = '#856404'; // Vàng
+            }
+        ?>
+        <span style="display:inline-block; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: <?=$bgPay?>; color: <?=$colPay?>;">
+            <?=$txtPay?>
+        </span>
+    </div>
+</div>
                                             </td>
                                             
                                             <td class="text-end">
