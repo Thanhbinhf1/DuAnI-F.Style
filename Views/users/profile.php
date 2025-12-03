@@ -47,9 +47,7 @@
         }
         return '<span class="badge bg-secondary px-3 py-2">Chưa thanh toán</span>';
     }
-?>
-
-<style>
+?><style>
     .profile-shell { background: linear-gradient(135deg, #fff7f0 0%, #ffffff 60%, #f1f5ff 100%); min-height: 100vh; }
     .profile-card { background: #fff; border: 1px solid #eef0f3; border-radius: 14px; box-shadow: 0 20px 60px rgba(15, 23, 42, 0.07); }
     .profile-sidebar .nav-link { color: #475569; font-weight: 600; border-radius: 12px; padding: 12px 14px; }
@@ -163,10 +161,14 @@
                                             <td class="text-end text-danger fw-bold"><?=number_format($dh['total_money'])?> đ</td>
                                             <td class="text-center">
                                                 <div class="status-stack">
-                                                    <small>Đơn:</small>
-                                                    <?php echo renderStatusBadge($dh['status']); ?>
-                                                    <small>Thanh toán:</small>
-                                                    <?php echo renderPaymentBadge($dh['status'] ?? 0, $dh['payment_status'] ?? 0); ?>
+                                                    <div class="mb-1">
+                                                        <small>Đơn:</small>
+                                                        <?php echo renderStatusBadge($dh['status']); ?>
+                                                    </div>
+                                                    <div>
+                                                        <small>Thanh toán:</small>
+                                                        <?php echo renderPaymentBadge($dh['status'] ?? 0, $dh['payment_status'] ?? 0); ?>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td class="text-end">
@@ -404,3 +406,5 @@
         activateSection(hasTarget ? initialTarget : 'personal');
     })();
 </script>
+
+
