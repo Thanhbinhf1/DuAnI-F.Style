@@ -171,8 +171,11 @@
                                             <td class="fw-semibold">#<?=htmlspecialchars($dh['id'])?></td>
                                             <td><?=date('d/m/Y', strtotime($dh['created_at']))?></td>
                                             <td class="text-end text-danger fw-bold"><?=number_format($dh['total_money'])?> đ</td>
-                                            <td class="text-center">
-                                                <div class="status-stack">
+                                            <td class="text-center" >
+                                                <div class="status-stack" style="
+    display: flex;
+    justify-content: center;
+">
     <div class="mb-2">
         <small style="display:block; margin-bottom:3px; color:#666;">Đơn hàng:</small>
         <?php 
@@ -192,7 +195,7 @@
                 $txt = 'Đã hủy';       $bg = '#f8d7da'; $col = '#842029'; 
             }
         ?>
-        <span style=" padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: <?=$bg?>; color: <?=$col?>;">
+        <span style="display:inline-block; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: <?=$bg?>; color: <?=$col?>;">
             <?=$txt?>
         </span>
     </div>
