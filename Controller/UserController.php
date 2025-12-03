@@ -83,20 +83,13 @@ class UserController {
         exit;
     }
 
-    // ... (Giữ nguyên các hàm profile, editProfile, updateProfile) ...
+   
     function profile() {
         if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
         include_once 'Models/Order.php';
         $orderModel = new Order();
         $user = $_SESSION['user'];
-        $orders = $orderModel->getAllOrders(); // Lưu ý: Hàm này đang lấy ALL orders, cần sửa model để lấy Order by UserID
-        // Fix tạm logic hiển thị:
-        // Bạn cần thêm hàm getOrdersByUserId vào Models/Order.php
-        // $orders = $orderModel->getOrdersByUserId($user['id']); 
-        // Hiện tại dùng tạm cái cũ nhưng cần filter
-        
-        // Giả sử trong User model bạn chưa viết hàm getOrderByUser thì dùng tạm logic cũ
-        // Nhưng đúng ra phải sửa Models/Order.php
+        $orders = $orderModel->getOrdersByUserId($user['id']);
         include_once 'Views/users/profile.php';
     }
     
