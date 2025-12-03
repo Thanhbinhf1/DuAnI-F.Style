@@ -195,7 +195,6 @@
                                             <td class="text-end">
                                                 <div class="d-flex gap-2 justify-content-end">
                                                     <a class="btn btn-link btn-sm text-decoration-none" href="?ctrl=order&amp;act=detail&id=<?=urlencode($dh['id'])?>">Theo dõi</a>
-                                                    <a class="btn btn-outline-danger btn-sm <?=($dh['status'] > 0 ? 'disabled' : '')?>" href="?ctrl=order&amp;act=cancel&id=<?=urlencode($dh['id'])?>" <?=($dh['status'] > 0 ? 'aria-disabled="true"' : '')?> onclick="return confirm('Bạn muốn hủy đơn hàng này?');">Hủy</a>
                                                     <a class="btn btn-dark btn-sm" href="?ctrl=order&amp;act=reorder&id=<?=urlencode($dh['id'])?>">Mua lại</a>
                                                 </div>
                                             </td>

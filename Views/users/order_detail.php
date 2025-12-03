@@ -21,6 +21,10 @@
         <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px; flex-wrap: wrap;">
             <a href="?ctrl=order&act=reorder&id=<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?>" style="padding: 12px 18px; background: #222; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600;">Mua lại</a>
             <?php $canPay = (int)$order['payment_status'] === 0; ?>
+            <?php $canCancel = (int)$order['status'] === 0; ?>
+            <?php if ($canCancel): ?>
+                <a href="?ctrl=order&act=cancel&id=<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?>" onclick="return confirm('Bạn muốn hủy đơn hàng này?');" style="padding: 12px 18px; background: #fff; color: #c0392b; border: 1px solid #c0392b; border-radius: 8px; text-decoration: none; font-weight: 600;">Hủy đơn</a>
+            <?php endif; ?>
             <a href="<?= $canPay ? '?ctrl=order&act=payment&id=' . htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') : '#' ?>" style="padding: 12px 18px; background: <?= $canPay ? '#ff5722' : '#ccc' ?>; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; <?= $canPay ? '' : 'pointer-events: none;' ?>">Thanh toán ngay</a>
         </div>
 

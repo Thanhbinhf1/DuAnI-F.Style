@@ -292,5 +292,26 @@ class OrderController {
 
         include_once 'Views/users/order_tracking.php';
     }
+
+    // Hủy đơn hàng: chỉ cho phép khi đơn đang "Chờ xác nhận" (status = 0)
+    function cancel() {
+        if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
+        $orderId = $_GET['id'] ?? 0;
+
+        $order = $this->model->getOrderById($orderId);
+        if (!$order || $order['user_id'] != $_SESSION['user']['id']) {
+            echo "<script>alert('Không tìm thấy đơn hàng của bạn.'); window.location='?ctrl=user&act=profile';</script>";
+            return;
+        }
+
+        // status: 0 - chờ, 1 - đang giao, 2 - hoàn thành, 3 - hủy
+        if ((int)$order['status'] !== 0) {
+            echo "<script>alert('Đơn hàng đã được xử lý, không thể hủy.'); window.location='?ctrl=order&act=detail&id={$orderId}';</script>";
+            return;
+        }
+
+        $this->model->updateOrderStatus($orderId, 3);
+        echo "<script>alert('Đã hủy đơn hàng.'); window.location='?ctrl=user&act=profile#orders';</script>";
+    }
 }
 ?>
