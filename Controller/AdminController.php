@@ -293,7 +293,10 @@ class AdminController {
         $orders = $this->orderModel->getAllOrders();
         include_once 'Views/admin/order_list.php';
     }
-    
+    // ... sau hàm productToggleStatus() hoặc orderDetail()
+
+
+// ...
     function orderDetail() {
         if (isset($_GET['id'])) {
             $orderId = $_GET['id'];
@@ -353,23 +356,21 @@ class AdminController {
 
 // Thêm action statistics() mới
 function statistics() {
-    // Gọi các phương thức thống kê từ Models
-    $saleStats = $this->orderModel->getSaleStatistics();
-    $productStats = [
-        'top_selling'  => $this->productModel->getTopSellingProducts(10),
-        'slow_selling' => $this->productModel->getSlowSellingProducts(10),
-        'orders_monthly' => $this->orderModel->countOrdersByInterval('MONTH'),
-        'orders_weekly' => $this->orderModel->countOrdersByInterval('WEEK'),
-        'orders_daily' => $this->orderModel->countOrdersByInterval('DAY'),
-    ];
-    
-    // Gộp tất cả kết quả vào một mảng để truyền sang view
-    $stats = array_merge($saleStats, $productStats);
-    
-    // Dòng gây lỗi 337:
-    include_once 'Views/admin/statistics.php'; 
-    // Sau khi tạo file này ở bước 2, lỗi sẽ biến mất
-}
+        // Gọi các hàm thống kê mới từ Models
+        $saleStats = $this->orderModel->getSaleStatistics();
+        $productStats = [
+            'top_selling'  => $this->productModel->getTopSellingProducts(10),
+            'slow_selling' => $this->productModel->getSlowSellingProducts(10),
+            'orders_daily' => $this->orderModel->countOrdersByInterval('DAY'),
+        ];
+        
+        // Gộp kết quả
+        $stats = array_merge($saleStats, $productStats);
+        
+        // Lỗi "Không tìm thấy action statistics" đã được sửa khi thêm hàm này.
+        // Lỗi "Failed to open stream" sẽ được sửa ở bước 2.3.
+        include_once 'Views/admin/statistics.php';
+    }
 
 // ... (các hàm khác)
 ?>

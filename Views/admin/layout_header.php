@@ -23,6 +23,7 @@
     $current_act = $_GET['act'] ?? 'dashboard';
     ?>
     
+ // ...
  <div class="admin-sidebar">
         <ul>
             <li><a href="?ctrl=admin&act=dashboard" class="<?= $current_act == 'dashboard' ? 'active' : '' ?>">📊 Tổng quan</a></li>

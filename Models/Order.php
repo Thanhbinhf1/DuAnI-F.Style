@@ -197,5 +197,6 @@ function countOrdersByInterval($interval = 'MONTH') {
 }
 
 // ... (các hàm khác)
+
 }
 ?>
