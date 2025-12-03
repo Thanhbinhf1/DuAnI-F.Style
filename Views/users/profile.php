@@ -26,30 +26,6 @@
             $cancelledCount++;
         }
     }
-
-    function renderStatusBadge($status)
-    {
-        $map = [
-            0 => ['label' => 'Chờ xác nhận', 'class' => 'bg-warning text-dark'],
-            1 => ['label' => 'Đang giao', 'class' => 'bg-info text-dark'],
-            2 => ['label' => 'Hoàn thành', 'class' => 'bg-success'],
-            3 => ['label' => 'Đã hủy', 'class' => 'bg-danger'],
-        ];
-
-        $current = $map[$status] ?? ['label' => 'Không xác định', 'class' => 'bg-secondary'];
-        return '<span class="badge ' . $current['class'] . ' px-3 py-2">' . $current['label'] . '</span>';
-    }
-
-    function renderPaymentBadge($orderStatus, $paymentStatus)
-    {
-        if ((int)$paymentStatus === 1) {
-            return '<span class="badge bg-success px-3 py-2">Đã thanh toán</span>';
-        }
-        if ((int)$paymentStatus === 2) {
-            return '<span class="badge bg-warning text-dark px-3 py-2">Đã hoàn tiền</span>';
-        }
-        return '<span class="badge bg-secondary px-3 py-2">Chưa thanh toán</span>';
-    }
 ?>
 
 <style>
@@ -147,6 +123,35 @@
                         <span class="chip"><i class="fa-solid fa-circle-check"></i> Hoàn thành: <?=$completedCount?></span>
                         <span class="chip"><i class="fa-solid fa-ban"></i> Đã hủy: <?=$cancelledCount?></span>
                     </div>
+                    <?php
+                        if (!function_exists('renderStatusBadge')) {
+                            function renderStatusBadge($status)
+                            {
+                                $map = [
+                                    0 => ['label' => 'Chờ xác nhận', 'class' => 'bg-warning text-dark'],
+                                    1 => ['label' => 'Đang giao', 'class' => 'bg-info text-dark'],
+                                    2 => ['label' => 'Hoàn thành', 'class' => 'bg-success'],
+                                    3 => ['label' => 'Đã hủy', 'class' => 'bg-danger'],
+                                ];
+
+                                $current = $map[$status] ?? ['label' => 'Không xác định', 'class' => 'bg-secondary'];
+                                return '<span class="badge ' . $current['class'] . ' px-3 py-2">' . $current['label'] . '</span>';
+                            }
+                        }
+
+                        if (!function_exists('renderPaymentBadge')) {
+                            function renderPaymentBadge($orderStatus, $paymentStatus)
+                            {
+                                if ((int)$paymentStatus === 1) {
+                                    return '<span class="badge bg-success px-3 py-2">Đã thanh toán</span>';
+                                }
+                                if ((int)$paymentStatus === 2) {
+                                    return '<span class="badge bg-warning text-dark px-3 py-2">Đã hoàn tiền</span>';
+                                }
+                                return '<span class="badge bg-secondary px-3 py-2">Chưa thanh toán</span>';
+                            }
+                        }
+                    ?>
                     <?php if ($orderCount > 0): ?>
                         <div class="table-responsive">
                             <table class="table align-middle">
