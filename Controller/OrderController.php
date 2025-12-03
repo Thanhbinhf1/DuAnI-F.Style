@@ -1,12 +1,16 @@
 <?php
 include_once 'Models/Order.php';
+include_once 'Models/Product.php';
 
 class OrderController {
     private $model;
+    private $productModel;
+    
 
     function __construct() {
         $this->model = new Order();
-    }
+        $this->productModel = new Product();
+    }   
 
     // 1. Hiện trang thanh toán
     function checkout() {
@@ -24,6 +28,8 @@ class OrderController {
 
         // Lấy thông tin user để điền sẵn vào form
         $user = $_SESSION['user'];
+        $cartWarnings = $_SESSION['cart_warnings'] ?? [];
+        unset($_SESSION['cart_warnings']);
         
         // Tính tổng tiền
         $totalPrice = 0;
