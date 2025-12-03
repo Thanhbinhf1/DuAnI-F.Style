@@ -209,13 +209,12 @@
                         <span class="chip"><i class="fa-solid fa-circle-check"></i> Hoàn thành: <?=$completedCount?></span>
                     </div>
                     <?php if ($orderCount > 0): ?>
-                        <div class="table-responsive">
+                                                <div class="table-responsive">
                             <table class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Mã ĐH</th>
                                         <th>Ngày đặt</th>
-                                        <th>Người nhận</th>
                                         <th class="text-end">Tổng tiền</th>
                                         <th class="text-center">Trạng thái</th>
                                         <th class="text-end">Thao tác</th>
@@ -226,7 +225,6 @@
                                         <tr>
                                             <td class="fw-semibold">#<?=htmlspecialchars($dh['id'])?></td>
                                             <td><?=date('d/m/Y', strtotime($dh['created_at']))?></td>
-                                            <td><?=htmlspecialchars($dh['fullname'])?></td>
                                             <td class="text-end text-danger fw-bold"><?=number_format($dh['total_money'])?> đ</td>
                                             <td class="text-center">
                                                 <div class="status-stack">
@@ -235,6 +233,18 @@
                                                     <small>Thanh toán:</small>
                                                     <?php echo renderPaymentBadge($dh['status'] ?? 0, $dh['payment_status'] ?? 0); ?>
                                                 </div>
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="d-flex gap-2 justify-content-end">
+                                                    <a class="btn btn-link btn-sm text-decoration-none" href="?ctrl=order&act=detail&id=<?=urlencode($dh['id'])?>">Theo dõi</a>
+                                                    <a class="btn btn-dark btn-sm" href="?ctrl=order&act=reorder&id=<?=urlencode($dh['id'])?>">Mua lại</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                                             </td>
                                             <td class="text-end">
                                                 <div class="d-flex gap-2 justify-content-end">
@@ -471,4 +481,8 @@
         activateSection(hasTarget ? initialTarget : 'personal');
     })();
 </script>
+
+
+
+
 
