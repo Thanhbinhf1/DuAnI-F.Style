@@ -161,6 +161,14 @@ class AdminController {
         include_once 'Views/admin/product_form.php';
     }
     
+  // File: Controller/AdminController.php
+
+// ... (các hàm hiện có từ dòng 1 đến productPost) ...
+
+    // File: Controller/AdminController.php
+
+// ... (các hàm khác giữ nguyên, bao gồm userList, categoryList, productList...)
+
     function productPost() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
@@ -170,49 +178,65 @@ class AdminController {
             // --- Xử lý dữ liệu form ---
             $id = $_POST['id'] ?? 0;
             $categoryId = $_POST['category_id'];
-            $name = $_POST['name'];
-            $price = $_POST['price'];
-            $priceSale = $_POST['price_sale'] ?? 0;
+            $name = trim($_POST['name']); // Lấy và loại bỏ khoảng trắng
+            $price = (float)$_POST['price'];
+            $priceSale = (float)$_POST['price_sale'] ?? 0;
             $description = $_POST['description'];
             $material = $_POST['material'];
             $brand = $_POST['brand'];
             $skuCode = $_POST['sku_code'];
             
-            $skuCode = $_POST['sku_code'];
+            $msg = '';
             
-    // --- Xử lý upload ảnh (ĐÃ SỬA BẢO MẬT) ---
-    $image = $_POST['image_current'] ?? ''; 
+            // --- KIỂM TRA LOGIC NGHIỆP VỤ ---
+            
+            // 1. Kiểm tra trùng tên
+            if ($this->productModel->checkProductNameExist($name, $id)) {
+                $msg = 'LỖI: Tên sản phẩm đã tồn tại trong hệ thống. Vui lòng chọn tên khác.';
+            } 
+            // 2. Kiểm tra Giá khuyến mãi phải < Giá gốc
+            elseif ($priceSale > 0 && $priceSale >= $price) {
+                $msg = 'LỖI: Giá khuyến mãi phải thấp hơn Giá gốc (' . number_format($price) . ' đ).';
+            }
+            
+            // Nếu có lỗi, dừng và báo lỗi
+            if (!empty($msg)) {
+                $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
+                echo "<script>alert('$safe_msg'); history.back();</script>";
+                exit;
+            }
 
-    if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
-        $target_dir = "Public/Uploads/Products/";
-        $allowed_types = ['jpg', 'png', 'jpeg', 'gif'];
-        $filename = $_FILES["image_file"]["name"];
-        $file_extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            // --- Xử lý upload ảnh (Giữ nguyên logic bảo mật) ---
+            $image = $_POST['image_current'] ?? ''; 
 
-        // 1. Kiểm tra đuôi file
-        if (!in_array($file_extension, $allowed_types)) {
-            echo "<script>alert('LỖI: Chỉ cho phép file ảnh JPG, JPEG, PNG & GIF.'); history.back();</script>";
-            exit;
-        }
+            if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
+                // ... (Logic upload ảnh giữ nguyên) ...
+                $target_dir = "Public/Uploads/Products/";
+                $allowed_types = ['jpg', 'png', 'jpeg', 'gif'];
+                $filename = $_FILES["image_file"]["name"];
+                $file_extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        // 2. [QUAN TRỌNG] Kiểm tra nội dung file có phải ảnh thật không
-        $check = getimagesize($_FILES["image_file"]["tmp_name"]);
-        if ($check === false) {
-            echo "<script>alert('LỖI: File tải lên không phải là ảnh hợp lệ (có thể là mã độc).'); history.back();</script>";
-            exit;
-        }
+                if (!in_array($file_extension, $allowed_types)) {
+                    echo "<script>alert('LỖI: Chỉ cho phép file ảnh JPG, JPEG, PNG & GIF.'); history.back();</script>";
+                    exit;
+                }
 
-        // Đặt tên file ngẫu nhiên để tránh trùng
-        $new_filename = uniqid('product_', true) . '.' . $file_extension;
-        $target_file = $target_dir . $new_filename;
+                $check = getimagesize($_FILES["image_file"]["tmp_name"]);
+                if ($check === false) {
+                    echo "<script>alert('LỖI: File tải lên không phải là ảnh hợp lệ (có thể là mã độc).'); history.back();</script>";
+                    exit;
+                }
 
-        if (move_uploaded_file($_FILES["image_file"]["tmp_name"], $target_file)) {
-            $image = $target_file; 
-        } else {
-            echo "<script>alert('LỖI: Không thể lưu file vào thư mục.'); history.back();</script>";
-            exit;
-        }
-    }
+                $new_filename = uniqid('product_', true) . '.' . $file_extension;
+                $target_file = $target_dir . $new_filename;
+
+                if (move_uploaded_file($_FILES["image_file"]["tmp_name"], $target_file)) {
+                    $image = $target_file; 
+                } else {
+                    echo "<script>alert('LỖI: Không thể lưu file vào thư mục.'); history.back();</script>";
+                    exit;
+                }
+            }
             
             // --- Kiểm tra ảnh khi thêm mới ---
             if ($id == 0 && $image == '') {
@@ -222,38 +246,47 @@ class AdminController {
 
             // --- Tương tác với Model ---
             $result = false;
-            $msg = 'LỖI: Thao tác thất bại, vui lòng kiểm tra kết nối Database hoặc dữ liệu nhập.'; 
+            $final_msg = 'LỖI: Thao tác thất bại.'; 
 
             if ($id > 0) {
                 // Chế độ Sửa
                 $result = $this->productModel->updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode);
-                if ($result) { $msg = 'Cập nhật sản phẩm thành công!'; }
+                if ($result) { $final_msg = 'Cập nhật sản phẩm thành công!'; }
             } else {
                 // Chế độ Thêm mới
                 $result = $this->productModel->insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode);
-                if ($result) { $msg = 'Thêm sản phẩm mới thành công!'; }
+                if ($result) { $final_msg = 'Thêm sản phẩm mới thành công!'; }
             }
 
-            $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
+            $safe_msg = htmlspecialchars($final_msg, ENT_QUOTES, 'UTF-8');
             echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=productList';</script>";
         }
     }
-
-    function productDelete() {
+    
+    // --- HÀM MỚI: ẨN/HIỆN SẢN PHẨM ---
+    function productToggleStatus() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
                 die('Invalid CSRF token');
             }
             $id = $_POST['id'];
-            $result = $this->productModel->deleteProduct($id);
+            $currentStatus = (int)$_POST['current_status'];
             
-            $msg = $result ? 'Đã xóa sản phẩm thành công!' : 'LỖI: Không thể xóa sản phẩm khỏi Database (có thể do ràng buộc khóa ngoại).';
+            // Đảo trạng thái: 0 -> 1, 1 -> 0
+            $newStatus = $currentStatus == 1 ? 0 : 1;
+            
+            $result = $this->productModel->toggleProductStatus($id, $newStatus);
+            
+            $statusText = $newStatus == 1 ? 'HIỆN' : 'ẨN';
+            $msg = $result ? "Đã chuyển trạng thái sản phẩm #$id sang $statusText thành công!" : 'LỖI: Không thể cập nhật trạng thái sản phẩm.';
             
             $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
             echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=productList';</script>";
         }
     }
     
+    // ... (các hàm khác giữ nguyên)
+}   
     // --- ORDER MANAGEMENT (Quản lý Đơn hàng) ---
 
     function orderList() {
@@ -314,12 +347,11 @@ class AdminController {
             header("Location: ?ctrl=admin&act=orderList");
         }
     }
-    // Trong class AdminController { ...
-// ... các hàm hiện có ...
+   // File: Controller/AdminController.php
 
-/**
- * Hiển thị trang Thống kê và Báo cáo chi tiết
- */
+// ... (các hàm hiện có, đảm bảo không có hàm statistics() nào) ...
+
+// Thêm action statistics() mới
 function statistics() {
     // Gọi các phương thức thống kê từ Models
     $saleStats = $this->orderModel->getSaleStatistics();
@@ -334,9 +366,10 @@ function statistics() {
     // Gộp tất cả kết quả vào một mảng để truyền sang view
     $stats = array_merge($saleStats, $productStats);
     
-    include_once 'Views/admin/statistics.php';
+    // Dòng gây lỗi 337:
+    include_once 'Views/admin/statistics.php'; 
+    // Sau khi tạo file này ở bước 2, lỗi sẽ biến mất
 }
 
-// ... các hàm hiện có khác
-}
+// ... (các hàm khác)
 ?>

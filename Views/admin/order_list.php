@@ -1,46 +1,58 @@
 <?php
-// Views/admin/order_list.php
+// Views/admin/product_list.php
 ?>
-<h1 style="color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 10px; margin-bottom: 30px;">QUẢN LÝ ĐƠN HÀNG (<?=count($orders)?> đơn)</h1>
+<h1 style="color: #2c3e50; border-bottom: 2px solid #27ae60; padding-bottom: 10px; margin-bottom: 30px;">QUẢN LÝ SẢN PHẨM (<?=count($products)?> sản phẩm)</h1>
+
+<div style="margin-bottom: 20px;">
+    <a href="?ctrl=admin&act=productForm" style="background: #27ae60; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">+ Thêm Sản Phẩm Mới</a>
+</div>
 
 <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-    <thead style="background: #e67e22; color: white;">
+    <thead style="background: #27ae60; color: white;">
         <tr>
             <th width="5%" style="padding: 15px; text-align: left;">ID</th>
-            <th width="20%" style="padding: 15px; text-align: left;">Khách hàng</th>
-            <th width="15%" style="padding: 15px; text-align: right;">Tổng tiền</th>
-            <th width="15%" style="padding: 15px; text-align: left;">Ngày đặt</th>
-            <th width="20%" style="padding: 15px; text-align: center;">Trạng thái</th>
-            <th width="10%" style="padding: 15px; text-align: center;">Thanh toán</th>
-            <th width="15%" style="padding: 15px; text-align: center;">Chi tiết</th>
+            <th width="10%" style="padding: 15px;">Ảnh</th>
+            <th width="30%" style="padding: 15px; text-align: left;">Tên sản phẩm</th>
+            <th width="10%" style="padding: 15px; text-align: left;">Danh mục</th>
+            <th width="10%" style="padding: 15px; text-align: right;">Giá bán</th>
+            <th width="10%" style="padding: 15px; text-align: center;">Trạng thái</th>
+            <th width="15%" style="padding: 15px; text-align: center;">Thao tác</th>
         </tr>
     </thead>
     <tbody>
         <?php 
-        $statusMap = [
-            0 => ['label' => 'Chờ xác nhận', 'color' => '#f1c40f'],
-            1 => ['label' => 'Đang giao', 'color' => '#3498db'],
-            2 => ['label' => 'Đã giao', 'color' => '#2ecc71'],
-            3 => ['label' => 'Hủy', 'color' => '#c0392b'],
-        ];
+        $categoryNames = [];
+        foreach ($categories as $cat) { $categoryNames[$cat['id']] = $cat['name']; }
 
-        foreach ($orders as $order): 
+        foreach ($products as $sp): 
+            $img = !empty($sp['image']) ? htmlspecialchars($sp['image'], ENT_QUOTES, 'UTF-8') : 'https://via.placeholder.com/80';
+            
+            // Giả định sản phẩm có cột 'status' (1: Hiện, 0: Ẩn)
+            $status = $sp['status'] ?? 1; // Mặc định là 1 nếu cột chưa tồn tại
+            $statusLabel = $status == 1 ? '<span style="color: green; font-weight: 600;">HIỆN</span>' : '<span style="color: red; font-weight: 600;">ẨN</span>';
+            $buttonText = $status == 1 ? 'ẨN' : 'HIỆN';
+            $buttonClass = $status == 1 ? 'btn-delete' : 'btn-update';
         ?>
         <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 15px; font-weight: bold;">#<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?></td>
-            <td style="padding: 15px;"><?= htmlspecialchars($order['user_fullname'], ENT_QUOTES, 'UTF-8') ?></td>
-            <td style="padding: 15px; text-align: right; color: #ff5722; font-weight: bold;"><?= number_format($order['total_money']) ?> đ</td>
-            <td style="padding: 15px;"><?= htmlspecialchars(date('H:i d/m/Y', strtotime($order['created_at'])), ENT_QUOTES, 'UTF-8') ?></td>
+            <td style="padding: 15px;"><?= htmlspecialchars($sp['id'], ENT_QUOTES, 'UTF-8') ?></td>
             <td style="padding: 15px; text-align: center;">
-                <span style="display: inline-block; padding: 5px 10px; border-radius: 5px; background: <?= isset($statusMap[$order['status']]['color']) ? htmlspecialchars($statusMap[$order['status']]['color'], ENT_QUOTES, 'UTF-8') : '' ?>; color: white; font-size: 12px; font-weight: 600;">
-                    <?= isset($statusMap[$order['status']]['label']) ? htmlspecialchars($statusMap[$order['status']]['label'], ENT_QUOTES, 'UTF-8') : '' ?>
-                </span>
+                <img src="<?= $img ?>" alt="<?= htmlspecialchars($sp['name'], ENT_QUOTES, 'UTF-8') ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 3px;">
             </td>
-            <td style="padding: 15px; text-align: center; color: <?= $order['payment_status'] == 1 ? '#2ecc71' : '#f39c12' ?>;">
-                <?= $order['payment_status'] == 1 ? 'Đã TT' : 'Chưa TT' ?>
-            </td>
+            <td style="padding: 15px; font-weight: bold;"><?= htmlspecialchars($sp['name'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td style="padding: 15px;"><?= isset($sp['category_id']) ? htmlspecialchars($categoryNames[$sp['category_id']], ENT_QUOTES, 'UTF-8') : 'Khác' ?></td>
+            <td style="padding: 15px; text-align: right; color: #e67e22;"><?= number_format($sp['price']) ?> đ</td>
+            <td style="padding: 15px; text-align: center;"><?= $statusLabel ?></td>
             <td style="padding: 15px; text-align: center;">
-                <a href="?ctrl=admin&act=orderDetail&id=<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?>" style="color: #2980b9;">Xem chi tiết</a>
+                <a href="?ctrl=admin&act=productForm&id=<?= htmlspecialchars($sp['id'], ENT_QUOTES, 'UTF-8') ?>" style="color: #2980b9; margin-right: 10px;">Sửa</a>
+                
+                <form action="?ctrl=admin&act=productToggleStatus" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn chuyển trạng thái sản phẩm này sang <?= $buttonText ?>?');">
+                    <input type="hidden" name="id" value="<?= htmlspecialchars($sp['id'], ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="current_status" value="<?= $status ?>">
+                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                    <button type="submit" class="<?= $buttonClass ?>">
+                        <?= $buttonText ?>
+                    </button>
+                </form>
             </td>
         </tr>
         <?php endforeach; ?>

@@ -107,8 +107,9 @@ class Order {
         $sql = "UPDATE orders SET payment_status = ? WHERE id = ?";
         return $this->db->execute($sql, [$status, $orderId]);
     }
-    // Trong class Order { ...
-// ... các hàm hiện có ...
+   // File: Models/Order.php
+
+// ... (các hàm hiện có) ...
 
 /**
  * Thống kê chi tiết các chỉ số Doanh thu và Đơn hàng
@@ -116,7 +117,6 @@ class Order {
  */
 function getSaleStatistics() {
     // 1. Doanh thu theo Ngày (7 ngày gần nhất)
-    // Dữ liệu này có thể dùng để vẽ biểu đồ Line Chart
     $sqlDailyRevenue = "SELECT DATE(created_at) as date, SUM(total_money) as revenue
                         FROM orders
                         WHERE payment_status = 1 
@@ -125,27 +125,24 @@ function getSaleStatistics() {
                         LIMIT 7";
     $dailyRevenue = $this->db->query($sqlDailyRevenue);
     
-    // 2. Tỷ lệ Trạng thái Đơn hàng (Đã hoàn thành / Đang giao / Hủy)
-    // Dữ liệu này có thể dùng để vẽ biểu đồ Pie Chart
+    // 2. Tỷ lệ Trạng thái Đơn hàng
     $sqlStatusRatio = "SELECT status, COUNT(*) as total
                        FROM orders
                        GROUP BY status";
     $statusRatio = $this->db->query($sqlStatusRatio);
     
     // 3. Doanh thu theo Danh mục
-    // Yêu cầu JOIN 4 bảng: orders -> order_details -> products -> categories
     $sqlRevenueByCategory = "SELECT c.name as category_name, SUM(od.price * od.quantity) as revenue
                              FROM order_details od
                              JOIN products p ON od.product_id = p.id
                              JOIN categories c ON p.category_id = c.id
                              JOIN orders o ON od.order_id = o.id
-                             WHERE o.payment_status = 1  /* Chỉ tính đơn đã thanh toán */
+                             WHERE o.payment_status = 1 
                              GROUP BY c.name
                              ORDER BY revenue DESC";
     $revenueByCategory = $this->db->query($sqlRevenueByCategory);
     
     // 4. Đơn hàng theo Tỉnh/Thành phố
-    // Giả định địa chỉ được nhập: [Chi tiết], [Phường/Xã], [Quận/Huyện], [Tỉnh/Thành phố]
     $sqlOrdersByProvince = "SELECT TRIM(SUBSTRING_INDEX(address, ',', -1)) as province, COUNT(*) as count
                             FROM orders
                             GROUP BY province
@@ -153,9 +150,7 @@ function getSaleStatistics() {
                             LIMIT 5";
     $ordersByProvince = $this->db->query($sqlOrdersByProvince);
     
-    // 5. Thống kê Khách hàng mới vs Khách hàng cũ
-    // Đây là thống kê phức tạp, cần dùng Subquery hoặc Common Table Expression.
-    // Cách đơn giản hơn: Thống kê số lượng đơn hàng đầu tiên của mỗi user trong tháng.
+    // 5. Thống kê Khách hàng mới vs Khách hàng cũ (Trong 30 ngày gần nhất)
     $sqlCustomerType = "SELECT 
                             CASE 
                                 WHEN (SELECT COUNT(id) FROM orders WHERE user_id = o.user_id AND id <= o.id) = 1 THEN 'New'
@@ -163,7 +158,7 @@ function getSaleStatistics() {
                             END as customer_type,
                             COUNT(o.id) as total_orders
                         FROM orders o
-                        WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) /* Trong 30 ngày gần nhất */
+                        WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
                         GROUP BY customer_type";
     $customerTypeStats = $this->db->query($sqlCustomerType);
 
@@ -177,7 +172,7 @@ function getSaleStatistics() {
 }
 
 /**
- * Bổ sung: Hàm lấy tổng số đơn hàng theo Ngày/Tuần/Tháng để vẽ biểu đồ số đơn
+ * Đếm tổng số đơn hàng theo Ngày/Tuần/Tháng/Năm
  */
 function countOrdersByInterval($interval = 'MONTH') {
     $format = '';
@@ -201,7 +196,6 @@ function countOrdersByInterval($interval = 'MONTH') {
     return $this->db->query($sql);
 }
 
-// ... các hàm hiện có khác (getMonthlyIncome, getOrdersByUserId, etc.)
-    
+// ... (các hàm khác)
 }
 ?>
