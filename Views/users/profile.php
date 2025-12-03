@@ -118,6 +118,226 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="profile-body">
+        <div class="profile-content" id="profile-content">
+            <section class="profile-section" data-section="overview">
+                <div class="section-header">
+                    <div>
+                        <p class="eyebrow">Hồ sơ</p>
+                        <h2>Thông tin cá nhân</h2>
+                    </div>
+                </div>
+                <div class="info-grid">
+                    <div class="avatar-block">
+                        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar" class="avatar">
+                        <div class="avatar-meta">
+                            <h3><?= htmlspecialchars($user['fullname'] ?? 'Khách hàng') ?></h3>
+                            <p><?= htmlspecialchars($user['email'] ?? 'Chưa cập nhật email') ?></p>
+                        </div>
+                        <a class="ghost-btn" href="?ctrl=user&act=edit">Chỉnh sửa thông tin</a>
+                    </div>
+                    <div class="info-columns">
+                        <div class="info-box">
+                            <h4>Cơ bản</h4>
+                            <dl>
+                                <div><dt>Họ và tên</dt><dd><?= htmlspecialchars($user['fullname'] ?? 'Chưa cập nhật') ?></dd></div>
+                                <div><dt>Email</dt><dd><?= htmlspecialchars($user['email'] ?? 'Chưa cập nhật') ?></dd></div>
+                                <div><dt>Số điện thoại</dt><dd><?= htmlspecialchars($user['phone'] ?? 'Chưa cập nhật') ?></dd></div>
+                                <div><dt>Ngày sinh</dt><dd><?= htmlspecialchars($user['birthday'] ?? 'Chưa cập nhật') ?></dd></div>
+                                <div><dt>Giới tính</dt><dd><?= htmlspecialchars($user['gender'] ?? 'Chưa cập nhật') ?></dd></div>
+                                <div><dt>Mã khách hàng</dt><dd><?= htmlspecialchars($user['username'] ?? '#') ?></dd></div>
+                            </dl>
+                        </div>
+                        <div class="info-box">
+                            <h4>Địa chỉ</h4>
+                            <?php if (count($addresses) > 0): ?>
+                                <ul class="address-list">
+                                    <?php foreach ($addresses as $index => $address): ?>
+                                        <li>
+                                            <div>
+                                                <p class="address-title">Địa chỉ <?= $index + 1 ?> <?= !empty($address['is_default']) ? '(Mặc định)' : '' ?></p>
+                                                <p><?= htmlspecialchars($address['line1'] ?? '') ?></p>
+                                                <p><?= htmlspecialchars($address['line2'] ?? '') ?></p>
+                                                <p><?= htmlspecialchars($address['city'] ?? '') ?> <?= htmlspecialchars($address['district'] ?? '') ?></p>
+                                                <p><?= htmlspecialchars($address['phone'] ?? '') ?></p>
+                                            </div>
+                                            <div class="chip-row">
+                                                <?php if (!empty($address['tag'])): ?><span class="chip"><?= htmlspecialchars($address['tag']) ?></span><?php endif; ?>
+                                                <?php if (!empty($address['is_default'])): ?><span class="chip chip--primary">Mặc định</span><?php endif; ?>
+                                            </div>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
+                                <p class="muted">Chưa có địa chỉ nào, hãy thêm địa chỉ giao hàng mặc định.</p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="profile-section" data-section="orders" hidden>
+                <div class="section-header">
+                    <div>
+                        <p class="eyebrow">Lịch sử mua</p>
+                        <h2>Đơn hàng của tôi</h2>
+                    </div>
+                    <div class="pill-group">
+                        <span class="pill">Tổng: <?= count($orders) ?></span>
+                    </div>
+                </div>
+                <?php if (count($orders) > 0): ?>
+                    <div class="table-responsive">
+                        <table class="flat-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã ĐH</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Người nhận</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($orders as $dh): ?>
+                                    <tr>
+                                        <td>#<?= htmlspecialchars($dh['id']) ?></td>
+                                        <td><?= date('d/m/Y', strtotime($dh['created_at'])) ?></td>
+                                        <td><?= htmlspecialchars($dh['fullname']) ?></td>
+                                        <td class="price"><?= number_format($dh['total_money']) ?> đ</td>
+                                        <td>
+                                            <?php if ($dh['status'] == 0): ?>
+                                                <span class="status status--warning">Chờ xử lý</span>
+                                            <?php elseif ($dh['status'] == 1): ?>
+                                                <span class="status status--info">Đang giao</span>
+                                            <?php elseif ($dh['status'] == 2): ?>
+                                                <span class="status status--success">Đã giao</span>
+                                            <?php else: ?>
+                                                <span class="status status--danger">Đã hủy</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="action-cell">
+                                            <a class="link" href="#">Theo dõi</a>
+                                            <?php if ($dh['status'] == 0): ?>
+                                                <a class="link link--danger" href="#">Hủy</a>
+                                            <?php endif; ?>
+                                            <?php if ($dh['status'] == 2): ?>
+                                                <a class="link" href="#">Mua lại</a>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="muted">Bạn chưa có đơn hàng nào.</p>
+                <?php endif; ?>
+            </section>
+
+            <section class="profile-section" data-section="wishlist" hidden>
+                <div class="section-header">
+                    <div>
+                        <p class="eyebrow">Yêu thích</p>
+                        <h2>Danh sách yêu thích</h2>
+                    </div>
+                </div>
+                <?php if (count($wishlist) > 0): ?>
+                    <div class="card-grid">
+                        <?php foreach ($wishlist as $item): ?>
+                            <article class="product-card">
+                                <img src="<?= htmlspecialchars($item['image'] ?? 'https://via.placeholder.com/80x80') ?>" alt="<?= htmlspecialchars($item['name'] ?? 'Sản phẩm') ?>">
+                                <div>
+                                    <h4><?= htmlspecialchars($item['name'] ?? 'Sản phẩm') ?></h4>
+                                    <p class="muted">Mã: <?= htmlspecialchars($item['sku'] ?? '#') ?></p>
+                                    <div class="price-row">
+                                        <span class="price"><?= isset($item['price']) ? number_format($item['price']) . ' đ' : 'Giá liên hệ' ?></span>
+                                        <div class="action-links">
+                                            <a class="link" href="#">Thêm vào giỏ</a>
+                                            <a class="link link--danger" href="#">Xóa</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p class="muted">Chưa có sản phẩm yêu thích. Hãy lưu lại để mua nhanh.</p>
+                <?php endif; ?>
+            </section>
+
+            <section class="profile-section" data-section="saved-carts" hidden>
+                <div class="section-header">
+                    <div>
+                        <p class="eyebrow">Giỏ hàng</p>
+                        <h2>Giỏ đã lưu / Giỏ bỏ quên</h2>
+                    </div>
+                </div>
+                <?php if (count($savedCarts) > 0): ?>
+                    <ul class="list-block">
+                        <?php foreach ($savedCarts as $cart): ?>
+                            <li>
+                                <div>
+                                    <p class="address-title">Giỏ lưu ngày <?= htmlspecialchars($cart['saved_at'] ?? '') ?></p>
+                                    <p><?= htmlspecialchars($cart['note'] ?? 'Không có ghi chú') ?></p>
+                                </div>
+                                <div class="action-links">
+                                    <a class="link" href="#">Thanh toán ngay</a>
+                                    <a class="link link--danger" href="#">Xóa</a>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="muted">Chưa có giỏ hàng nào được lưu.</p>
+                <?php endif; ?>
+            </section>
+
+            <section class="profile-section" data-section="payments" hidden>
+                <div class="section-header">
+                    <div>
+                        <p class="eyebrow">Thanh toán</p>
+                        <h2>Phương thức thanh toán</h2>
+                    </div>
+                </div>
+                <ul class="chip-list">
+                    <li class="chip chip--primary">COD</li>
+                    <li class="chip">Momo</li>
+                    <li class="chip">VNPay</li>
+                    <li class="chip">ZaloPay</li>
+                </ul>
+                <p class="muted">Có thể lưu token thẻ an toàn nếu hệ thống hỗ trợ.</p>
+            </section>
+
+            <section class="profile-section" data-section="reviews" hidden>
+                <div class="section-header">
+                    <div>
+                        <p class="eyebrow">Đánh giá</p>
+                        <h2>Đánh giá của tôi</h2>
+                    </div>
+                </div>
+                <?php if (count($reviews) > 0): ?>
+                    <ul class="list-block">
+                        <?php foreach ($reviews as $review): ?>
+                            <li>
+                                <div>
+                                    <p class="address-title"><?= htmlspecialchars($review['product'] ?? 'Sản phẩm') ?></p>
+                                    <p><?= htmlspecialchars($review['content'] ?? '') ?></p>
+                                </div>
+                                <div class="action-links">
+                                    <a class="link" href="#">Sửa</a>
+                                    <a class="link link--danger" href="#">Xóa</a>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="muted">Bạn chưa có đánh giá nào.</p>
+                <?php endif; ?>
+            </section>
 
          <div class="col-lg-9">
                 <div class="profile-card p-4 mb-4" id="personal">
