@@ -138,9 +138,13 @@ class CartController {
                 exit; // Dừng ngay lập tức để không in thêm Footer
             }
         }
-    } 
+        
+        // Fallback nếu không thành công
+        echo json_encode(['status' => 'error', 'message' => 'Lỗi cập nhật.']);
+        exit; 
     
     
+}
 }
 
 ?>
