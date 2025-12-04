@@ -1,5 +1,6 @@
 <?php
 // Views/admin/order_list.php
+// Lỗi Fatal Error sẽ được sửa khi thay $products bằng $orders
 ?>
 <h1 style="color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 10px; margin-bottom: 30px;">QUẢN LÝ ĐƠN HÀNG (<?=count($orders)?> đơn)</h1>
 
@@ -24,11 +25,12 @@
             3 => ['label' => 'Hủy', 'color' => '#c0392b'],
         ];
 
+        // Đảm bảo biến là $orders
         foreach ($orders as $order): 
         ?>
         <tr style="border-bottom: 1px solid #eee;">
             <td style="padding: 15px; font-weight: bold;">#<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?></td>
-            <td style="padding: 15px;"><?= htmlspecialchars($order['user_fullname'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td style="padding: 15px;"><?= htmlspecialchars($order['user_fullname'] ?? 'User #' . $order['user_id'], ENT_QUOTES, 'UTF-8') ?></td>
             <td style="padding: 15px; text-align: right; color: #ff5722; font-weight: bold;"><?= number_format($order['total_money']) ?> đ</td>
             <td style="padding: 15px;"><?= htmlspecialchars(date('H:i d/m/Y', strtotime($order['created_at'])), ENT_QUOTES, 'UTF-8') ?></td>
             <td style="padding: 15px; text-align: center;">

@@ -166,7 +166,8 @@ class Product {
     
     // --- ADMIN PRODUCT FUNCTIONS ---
 
-    function getAllProductsAdmin() {
+ function getAllProductsAdmin() {
+        // Giả sử cột status đã được thêm vào bảng products
         $sql = "SELECT p.*, c.name as category_name 
                 FROM products p 
                 JOIN categories c ON p.category_id = c.id
@@ -174,6 +175,39 @@ class Product {
         return $this->db->query($sql);
     }
 
+<<<<<<< HEAD
+function insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
+    // Thêm price_sale vào SQL và danh sách tham số
+    $sql = "INSERT INTO products(category_id, name, price, price_sale, image, description, material, brand, sku_code) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
+    
+    // THAY ĐỔI: GỌI execute() và sau đó gọi getLastId() trên đối tượng Database
+    $result = $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode]);
+    
+    // Nếu chèn thành công, trả về ID vừa chèn, nếu không trả về false (hoặc 0)
+    if ($result) {
+        return $this->db->getLastId(); // <--- TRẢ VỀ ID VỪA CHÈN
+    }
+    return false;
+}
+
+// Giữ nguyên hàm updateProduct (10 tham số)
+function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
+        $sql = "UPDATE products 
+                SET category_id = ?, name = ?, price = ?, price_sale = ?, image = ?, description = ?, material = ?, brand = ?, sku_code = ? 
+                WHERE id = ?";
+        return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode, $id]);
+    }
+
+// Trong Models/Product.php
+
+// 1. Hàm cập nhật trạng thái (thay thế logic DELETE)
+function toggleProductStatus($id, $newStatus) {
+    // Giả định bạn đã thêm cột 'status' (1: Hiển thị, 0: Ẩn) vào bảng products
+    $sql = "UPDATE products SET status = ? WHERE id = ?";
+    return $this->db->execute($sql, [$newStatus, $id]);
+}
+=======
     function insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
         // Thêm price_sale vào SQL và danh sách tham số
         $sql = "INSERT INTO products(category_id, name, price, price_sale, image, description, material, brand, sku_code) 
@@ -186,16 +220,103 @@ class Product {
         $sql = "UPDATE products SET category_id = ?, name = ?, price = ?, price_sale = ?, image = ?, description = ?, material = ?, brand = ?, sku_code = ? WHERE id = ?";
         return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode, $id]);
     }
+>>>>>>> main
 
-    function deleteProduct($id) {
-        $sql = "DELETE FROM products WHERE id = ?";
-        return $this->db->execute($sql, [$id]);
-    }
+// 2. Hàm kiểm tra trùng tên sản phẩm (đã thêm vào productPost)
+function checkProductNameExist($name, $excludeId = 0) {
+    $sql = "SELECT id FROM products WHERE name = ? AND id != ?";
+    return $this->db->queryOne($sql, [$name, $excludeId]);
+}
 
     function countTotalProducts() {
         $sql = "SELECT COUNT(*) as total FROM products";
         $result = $this->db->queryOne($sql);
         return $result ? (int)$result['total'] : 0;
     }
+    // Trong class Product { ...
+// ... các hàm hiện có ...
+
+/**
+ * 1. Lấy Top sản phẩm bán chạy nhất (Best Seller)
+ * Dựa trên tổng số lượng sản phẩm đã bán trong order_details
+ */
+// Trong class Product { ...
+
+/**
+ * Lấy Top sản phẩm bán chạy nhất (Best Seller)
+ */
+function getTopSellingProducts($limit = 10) {
+    $sql = "SELECT p.id, p.name, p.image, p.price, p.price_sale, SUM(od.quantity) as sold_quantity
+            FROM order_details od
+            JOIN products p ON od.product_id = p.id
+            GROUP BY p.id, p.name, p.image, p.price, p.price_sale
+            ORDER BY sold_quantity DESC
+            LIMIT ?";
+    return $this->db->query($sql, [$limit]);
 }
+
+/**
+ * Lấy Top sản phẩm bán chậm (Slow Moving)
+ */
+function getSlowSellingProducts($limit = 10) {
+    $sql = "SELECT p.id, p.name, p.image, p.price, p.price_sale, COALESCE(SUM(od.quantity), 0) as sold_quantity
+            FROM products p
+            LEFT JOIN order_details od ON p.id = od.product_id
+            GROUP BY p.id, p.name, p.image, p.price, p.price_sale
+            HAVING sold_quantity > 0 
+            ORDER BY sold_quantity ASC
+            LIMIT ?";
+    return $this->db->query($sql, [$limit]);
+}
+function countProductsByCategoryId($categoryId) {
+        $sql = "SELECT COUNT(*) as total FROM products WHERE category_id = ?";
+        $result = $this->db->queryOne($sql, [$categoryId]);
+        return $result ? (int)$result['total'] : 0;
+    }
+    // File: Models/Product.php
+
+// ... (các hàm hiện có)
+
+    /**
+     * [MỚI] Lưu đường dẫn của các ảnh gallery vào DB
+     */
+    function insertGalleryImages($productId, $imageUrls) {
+        if (empty($imageUrls)) {
+            return true;
+        }
+        
+        $sql = "INSERT INTO product_images (product_id, image_url) VALUES ";
+        $values = [];
+        $params = [];
+
+        foreach ($imageUrls as $url) {
+            $values[] = "(?, ?)";
+            $params[] = $productId;
+            $params[] = $url;
+        }
+
+        $sql .= implode(", ", $values);
+        return $this->db->execute($sql, $params);
+    }
+    
+    /**
+     * [MỚI] Lấy tất cả ảnh gallery cho 1 sản phẩm
+     */
+    function getGalleryImages($productId) {
+        $sql = "SELECT image_url FROM product_images WHERE product_id = ?";
+        return $this->db->query($sql, [$productId]);
+    }
+    
+    /**
+     * [MỚI] Xóa tất cả ảnh gallery cũ của sản phẩm (trước khi cập nhật)
+     */
+    function deleteGalleryImages($productId) {
+        $sql = "DELETE FROM product_images WHERE product_id = ?";
+        return $this->db->execute($sql, [$productId]);
+    }
+    
+// ... (các hàm khác)
+}
+
+
 ?>

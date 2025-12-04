@@ -12,10 +12,10 @@
         <tr>
             <th width="5%" style="padding: 15px; text-align: left;">ID</th>
             <th width="10%" style="padding: 15px;">Ảnh</th>
-            <th width="30%" style="padding: 15px; text-align: left;">Tên sản phẩm</th>
-            <th width="15%" style="padding: 15px; text-align: left;">Danh mục</th>
-            <th width="15%" style="padding: 15px; text-align: right;">Giá bán</th>
-            <th width="10%" style="padding: 15px; text-align: center;">Lượt xem</th>
+            <th width="25%" style="padding: 15px; text-align: left;">Tên sản phẩm</th>
+            <th width="10%" style="padding: 15px; text-align: left;">Danh mục</th>
+            <th width="10%" style="padding: 15px; text-align: right;">Giá bán</th>
+            <th width="10%" style="padding: 15px; text-align: center;">Trạng thái</th>
             <th width="15%" style="padding: 15px; text-align: center;">Thao tác</th>
         </tr>
     </thead>
@@ -26,6 +26,18 @@
 
         foreach ($products as $sp): 
             $img = !empty($sp['image']) ? htmlspecialchars($sp['image'], ENT_QUOTES, 'UTF-8') : 'https://via.placeholder.com/80';
+            
+            // Logic ẩn/hiện
+            $status = $sp['status'] ?? 1; 
+            $statusLabel = $status == 1 ? '<span style="color: green; font-weight: 600;">HIỆN</span>' : '<span style="color: red; font-weight: 600;">ẨN</span>';
+            $buttonText = $status == 1 ? 'ẨN' : 'HIỆN';
+            $buttonClass = $status == 1 ? 'btn-delete' : 'btn-update'; 
+
+            // Hiển thị giá (sale nếu có)
+            $priceDisplay = number_format($sp['price']);
+            if (isset($sp['price_sale']) && $sp['price_sale'] > 0) {
+                 $priceDisplay = number_format($sp['price_sale']) . ' đ ' . '(<del>' . number_format($sp['price']) . '</del>)';
+            }
         ?>
         <tr style="border-bottom: 1px solid #eee;">
             <td style="padding: 15px;"><?= htmlspecialchars($sp['id'], ENT_QUOTES, 'UTF-8') ?></td>
@@ -34,14 +46,18 @@
             </td>
             <td style="padding: 15px; font-weight: bold;"><?= htmlspecialchars($sp['name'], ENT_QUOTES, 'UTF-8') ?></td>
             <td style="padding: 15px;"><?= isset($sp['category_id']) ? htmlspecialchars($categoryNames[$sp['category_id']], ENT_QUOTES, 'UTF-8') : 'Khác' ?></td>
-            <td style="padding: 15px; text-align: right; color: #e67e22;"><?= number_format($sp['price']) ?> đ</td>
-            <td style="padding: 15px; text-align: center;"><?= htmlspecialchars($sp['views'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td style="padding: 15px; text-align: right; color: #e67e22;"><?= $priceDisplay ?></td>
+            <td style="padding: 15px; text-align: center;"><?= $statusLabel ?></td>
             <td style="padding: 15px; text-align: center;">
                 <a href="?ctrl=admin&act=productForm&id=<?= htmlspecialchars($sp['id'], ENT_QUOTES, 'UTF-8') ?>" style="color: #2980b9; margin-right: 10px;">Sửa</a>
-                <form action="?ctrl=admin&act=productDelete" method="POST" style="display: inline;" onsubmit="return confirm('Xóa sản phẩm này?');">
+                
+                <form action="?ctrl=admin&act=productToggleStatus" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn chuyển trạng thái sản phẩm này sang <?= $buttonText ?>?');">
                     <input type="hidden" name="id" value="<?= htmlspecialchars($sp['id'], ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="current_status" value="<?= $status ?>">
                     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                    <button type="submit" style="color: #c0392b; background: none; border: none; padding: 0; font: inherit; cursor: pointer;">Xóa</button>
+                    <button type="submit" class="<?= $buttonClass ?>">
+                        <?= $buttonText ?>
+                    </button>
                 </form>
             </td>
         </tr>

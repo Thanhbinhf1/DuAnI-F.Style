@@ -107,6 +107,84 @@ class Order {
         $sql = "UPDATE orders SET payment_status = ? WHERE id = ?";
         return $this->db->execute($sql, [$status, $orderId]);
     }
+  // File: Models/Order.php (Thêm vào cuối file)
+
+/**
+ * Lấy các thống kê chi tiết về Doanh thu và Tỷ lệ Đơn hàng
+ */
+function getSaleStatistics() {
+    // 1. Doanh thu theo Ngày (7 ngày gần nhất)
+    $sqlDailyRevenue = "SELECT DATE(created_at) as date, SUM(total_money) as revenue
+                        FROM orders
+                        WHERE payment_status = 1 
+                        GROUP BY DATE(created_at)
+                        ORDER BY date DESC
+                        LIMIT 7";
+    $dailyRevenue = $this->db->query($sqlDailyRevenue);
     
+    // 2. Tỷ lệ Trạng thái Đơn hàng
+    $sqlStatusRatio = "SELECT status, COUNT(*) as total
+                       FROM orders
+                       GROUP BY status";
+    $statusRatio = $this->db->query($sqlStatusRatio);
+    
+    // 3. Doanh thu theo Danh mục
+    $sqlRevenueByCategory = "SELECT c.name as category_name, SUM(od.price * od.quantity) as revenue
+                             FROM order_details od
+                             JOIN products p ON od.product_id = p.id
+                             JOIN categories c ON p.category_id = c.id
+                             JOIN orders o ON od.order_id = o.id
+                             WHERE o.payment_status = 1
+                             GROUP BY c.name
+                             ORDER BY revenue DESC
+                             LIMIT 5";
+    $revenueByCategory = $this->db->query($sqlRevenueByCategory);
+    
+    // 4. Đơn hàng theo Tỉnh/Thành phố
+    $sqlOrdersByProvince = "SELECT TRIM(SUBSTRING_INDEX(address, ',', -1)) as province, COUNT(*) as count
+                            FROM orders
+                            GROUP BY province
+                            ORDER BY count DESC
+                            LIMIT 5";
+    $ordersByProvince = $this->db->query($sqlOrdersByProvince);
+    
+    // 5. Thống kê Khách hàng mới vs Khách hàng cũ
+    $sqlCustomerType = "SELECT 
+                            CASE 
+                                WHEN (SELECT COUNT(id) FROM orders WHERE user_id = o.user_id AND id <= o.id) = 1 THEN 'New'
+                                ELSE 'Returning'
+                            END as customer_type,
+                            COUNT(o.id) as total_orders
+                        FROM orders o
+                        WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                        GROUP BY customer_type";
+    $customerTypeStats = $this->db->query($sqlCustomerType);
+
+    return [
+        'daily_revenue'         => $dailyRevenue,
+        'status_ratio'          => $statusRatio,
+        'revenue_by_category'   => $revenueByCategory,
+        'orders_by_province'    => $ordersByProvince,
+        'customer_type_stats'   => $customerTypeStats,
+    ];
+}
+
+/**
+ * Đếm tổng số đơn hàng theo khoảng thời gian
+ */
+function countOrdersByInterval($interval = 'DAY') {
+    $format = '%Y-%m-%d';
+    if ($interval === 'WEEK') { $format = '%X-%V'; }
+    if ($interval === 'MONTH') { $format = '%Y-%m'; }
+    
+    $sql = "SELECT DATE_FORMAT(created_at, '{$format}') as period, COUNT(id) as total_orders
+            FROM orders
+            GROUP BY period
+            ORDER BY period DESC
+            LIMIT 12";
+    return $this->db->query($sql);
+}
+
+// ...
 }
 ?>

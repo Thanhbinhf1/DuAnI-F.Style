@@ -37,7 +37,7 @@ class AdminController {
         include_once 'Views/admin/dashboard.php';
     }
 
-    // --- USER MANAGEMENT (Quản lý Tài khoản) ---
+    // --- USER MANAGEMENT ---
 
     function userList() {
         $users = $this->userModel->getAllUsers();
@@ -89,7 +89,7 @@ class AdminController {
         }
     }
 
-    // --- CATEGORY MANAGEMENT (Quản lý Danh mục) ---
+    // --- CATEGORY MANAGEMENT ---
 
     function categoryList() {
         $categories = $this->categoryModel->getAllCategories();
@@ -129,25 +129,47 @@ class AdminController {
         }
     }
 
+ // File: Controller/AdminController.php
+
+// ... (các hàm khác)
+
+// File: Controller/AdminController.php
+
+// ... (các hàm khác)
+
     function categoryDelete() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
                 die('Invalid CSRF token');
             }
             $id = $_POST['id'];
-            $result = $this->categoryModel->deleteCategory($id);
-            $msg = $result ? 'Đã xóa danh mục thành công! Lưu ý: Các sản phẩm thuộc danh mục này cũng bị xóa.' : 'LỖI: Không thể xóa danh mục khỏi Database (do ràng buộc khóa ngoại).';
+            $msg = '';
+            
+            // BƯỚC 1: KIỂM TRA RÀNG BUỘC SẢN PHẨM
+            // Sử dụng hàm countProductsByCategoryId() vừa thêm
+            $productCount = $this->productModel->countProductsByCategoryId($id);
+            
+            if ($productCount > 0) {
+                // Nếu có sản phẩm, KHÔNG cho phép xóa và trả về lỗi
+                $msg = 'LỖI: Không thể xóa danh mục này. Hiện còn ' . $productCount . ' sản phẩm đang thuộc danh mục này.';
+                $result = false;
+            } else {
+                // BƯỚC 2: TIẾN HÀNH XÓA (Nếu không có sản phẩm)
+                $result = $this->categoryModel->deleteCategory($id);
+                $msg = $result ? 'Đã xóa danh mục thành công!' : 'LỖI: Xóa danh mục thất bại. Vui lòng kiểm tra Database.';
+            }
             
             $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
             echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=categoryList';</script>";
         }
     }
 
-    // --- PRODUCT MANAGEMENT (Quản lý Sản phẩm) ---
+// ...
+
+    // --- PRODUCT MANAGEMENT ---
 
     function productList() {
         $products = $this->productModel->getAllProductsAdmin();
-        // Đảm bảo biến $categories được truyền đi
         $categories = $this->categoryModel->getAllCategories();
         include_once 'Views/admin/product_list.php';
     }
@@ -161,25 +183,30 @@ class AdminController {
         include_once 'Views/admin/product_form.php';
     }
     
+    // Đã thêm kiểm tra trùng tên và giá khuyến mãi
+    // File: Controller/AdminController.php
+
+// ... (phần code khác)
+
     function productPost() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
-                die('Invalid CSRF token');
-            }
-            
-            // --- Xử lý dữ liệu form ---
-            $id = $_POST['id'] ?? 0;
-            $categoryId = $_POST['category_id'];
-            $name = $_POST['name'];
-            $price = $_POST['price'];
-            $priceSale = $_POST['price_sale'] ?? 0;
-            $description = $_POST['description'];
-            $material = $_POST['material'];
-            $brand = $_POST['brand'];
-            $skuCode = $_POST['sku_code'];
-            
-            $skuCode = $_POST['sku_code'];
-            
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+            die('Invalid CSRF token');
+        }
+        
+        // --- Xử lý dữ liệu form ---
+        $id = $_POST['id'] ?? 0;
+        $categoryId = $_POST['category_id'];
+        $name = $_POST['name'];
+        $price = $_POST['price'];
+        $priceSale = $_POST['price_sale'] ?? 0;
+        $description = $_POST['description'];
+        $material = $_POST['material'];
+        $brand = $_POST['brand'];
+        $skuCode = $_POST['sku_code'];
+        
+        $skuCode = $_POST['sku_code'];
+        
     // --- Xử lý upload ảnh (ĐÃ SỬA BẢO MẬT) ---
     $image = $_POST['image_current'] ?? ''; 
 
@@ -238,56 +265,98 @@ class AdminController {
             echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=productList';</script>";
         }
     }
-
-    function productDelete() {
+// ... (các hàm khác)
+    // Hàm ẨN/HIỆN sản phẩm (Đã hoạt động)
+    function productToggleStatus() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
                 die('Invalid CSRF token');
             }
             $id = $_POST['id'];
-            $result = $this->productModel->deleteProduct($id);
+            $currentStatus = (int)$_POST['current_status'];
+            $newStatus = $currentStatus == 1 ? 0 : 1;
             
-            $msg = $result ? 'Đã xóa sản phẩm thành công!' : 'LỖI: Không thể xóa sản phẩm khỏi Database (có thể do ràng buộc khóa ngoại).';
+            // Yêu cầu hàm toggleProductStatus() trong Product Model
+            $result = $this->productModel->toggleProductStatus($id, $newStatus);
+            
+            $statusText = $newStatus == 1 ? 'HIỆN' : 'ẨN';
+            $msg = $result ? "Đã chuyển trạng thái sản phẩm #$id sang $statusText thành công!" : 'LỖI: Không thể cập nhật trạng thái sản phẩm.';
             
             $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
             echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=productList';</script>";
         }
     }
     
-    // --- ORDER MANAGEMENT (Quản lý Đơn hàng) ---
+    // --- ORDER MANAGEMENT ---
 
     function orderList() {
+        // Fix lỗi thiếu action OrderList và lỗi Undefined variable $products trong order_list.php
         $orders = $this->orderModel->getAllOrders();
         include_once 'Views/admin/order_list.php';
     }
     
+    // File: Controller/AdminController.php
+
+// ... (các hàm khác)
+
     function orderDetail() {
         if (isset($_GET['id'])) {
             $orderId = $_GET['id'];
-            
-            // Lấy dữ liệu từ Model. Các biến này sẽ CÓ SẴN trong View.
             $order = $this->orderModel->getOrderById($orderId);
             $orderDetails = $this->orderModel->getOrderDetails($orderId);
             
-            // KIỂM TRA AN TOÀN: Nếu không tìm thấy đơn hàng, chuyển hướng
             if (!$order) {
                 echo "<script>alert('LỖI: Không tìm thấy đơn hàng này!'); window.location='?ctrl=admin&act=orderList';</script>";
                 exit;
             }
             
-            // NOTE: KHÔNG tạo biến $data ở đây nếu View không dùng nó. 
-            // Ta sẽ sử dụng trực tiếp $order và $orderDetails trong View.
-            
-            // Xử lý cập nhật trạng thái nếu có POST (sử dụng $orderId)
+            // --- Xử lý cập nhật trạng thái nếu có POST ---
             if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['new_status'])) {
                 if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
                     die('Invalid CSRF token');
                 }
+                
+                $currentStatus = (int)$order['status'];
                 $newStatus = (int)$_POST['new_status'];
-                $result = $this->orderModel->updateOrderStatus($orderId, $newStatus);
+                $isValidTransition = true;
+                $errorMsg = '';
+                
+                // --- BẮT ĐẦU KIỂM TRA QUY TẮC WORKFLOW ---
 
-                $msg = $result ? 'Cập nhật trạng thái đơn hàng thành công!' : 'LỖI: Cập nhật trạng thái thất bại.';
+                // 1. Nếu đơn đã Hủy (3) hoặc đã Giao (2) thì không thay đổi
+                if ($currentStatus >= 2 && $currentStatus == 3) {
+                    $isValidTransition = false;
+                    $errorMsg = 'LỖI: Đơn hàng đã bị HỦY, không thể thay đổi trạng thái.';
+                }
+                elseif ($currentStatus == 2 && $newStatus != 2) {
+                     $isValidTransition = false;
+                    $errorMsg = 'LỖI: Đơn hàng đã HOÀN TẤT, không thể quay lại trạng thái trước.';
+                }
+                // 2. Chặn chuyển đổi ngược chiều (0 <- 1, 1 <- 2)
+                elseif ($newStatus < $currentStatus && $newStatus != 3) { // Cho phép chuyển sang Hủy (3) từ mọi trạng thái
+                    $isValidTransition = false;
+                    $errorMsg = 'LỖI: Không thể quay lại trạng thái trước (Ví dụ: Đang giao -> Chờ xác nhận).';
+                }
+                // 3. Chặn bỏ qua bước (0 -> 2)
+                elseif ($currentStatus == 0 && $newStatus == 2) {
+                    $isValidTransition = false;
+                    $errorMsg = 'LỖI: Cần chuyển sang Đang giao (1) trước khi chuyển sang Đã giao (2).';
+                }
+                
+                // --- KẾT THÚC KIỂM TRA ---
+
+                if ($isValidTransition) {
+                    $result = $this->orderModel->updateOrderStatus($orderId, $newStatus);
+                    $msg = $result ? 'Cập nhật trạng thái đơn hàng thành công!' : 'LỖI: Cập nhật trạng thái thất bại.';
+                } else {
+                    $msg = $errorMsg;
+                    $result = false; // Đánh dấu là lỗi để hiển thị thông báo
+                }
+
                 $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
+                
+                // Tải lại dữ liệu $order sau khi update (để view hiển thị trạng thái mới)
+                $order = $this->orderModel->getOrderById($orderId);
                 
                 echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=orderDetail&id=$orderId';</script>";
                 exit;
@@ -300,11 +369,12 @@ class AdminController {
         }
     }
 
+// ...
+
     function confirmPayment() {
         if (isset($_GET['id'])) {
             $orderId = $_GET['id'];
-            $result = $this->orderModel->updatePaymentStatus($orderId, 1); // 1 = Đã thanh toán
-
+            $result = $this->orderModel->updatePaymentStatus($orderId, 1);
             $msg = $result ? 'Xác nhận thanh toán thành công!' : 'LỖI: Xác nhận thanh toán thất bại.';
             $safe_msg = addslashes($msg);
             
@@ -314,5 +384,48 @@ class AdminController {
             header("Location: ?ctrl=admin&act=orderList");
         }
     }
+    
+    // --- HÀM THỐNG KÊ (ĐÃ FIX LỖI) ---
+    function statistics() {
+        // Yêu cầu các hàm thống kê từ Model
+        $saleStats = $this->orderModel->getSaleStatistics();
+        $productStats = [
+            'top_selling'  => $this->productModel->getTopSellingProducts(10),
+            'slow_selling' => $this->productModel->getSlowSellingProducts(10),
+            'orders_daily' => $this->orderModel->countOrdersByInterval('DAY'),
+        ];
+        
+        $stats = array_merge($saleStats, $productStats);
+        
+        // Sẽ tìm file này ở Views/admin/statistics.php
+        include_once 'Views/admin/statistics.php';
+    }
+    // File: Controller/AdminController.php
+
+// ... (sau hàm categoryPost hoặc categoryDelete) ...
+
+    // --- HÀM MỚI: ẨN/HIỆN DANH MỤC ---
+    function categoryToggleStatus() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+                die('Invalid CSRF token');
+            }
+            $id = $_POST['id'];
+            $currentStatus = (int)$_POST['current_status'];
+            
+            // Đảo trạng thái: 1 -> 0, 0 -> 1
+            $newStatus = $currentStatus == 1 ? 0 : 1;
+            
+            $result = $this->categoryModel->toggleCategoryStatus($id, $newStatus);
+            
+            $statusText = $newStatus == 1 ? 'HIỆN' : 'ẨN';
+            $msg = $result ? "Đã chuyển trạng thái danh mục #$id sang $statusText thành công!" : 'LỖI: Không thể cập nhật trạng thái danh mục.';
+            
+            $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
+            echo "<script>alert('$safe_msg'); window.location='?ctrl=admin&act=categoryList';</script>";
+        }
+    }
+
+// ...
 }
 ?>

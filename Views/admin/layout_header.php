@@ -23,6 +23,7 @@
     $current_act = $_GET['act'] ?? 'dashboard';
     ?>
     
+ // ...
  <div class="admin-sidebar">
         <ul>
             <li><a href="<?= BASE_URL ?>?ctrl=admin&act=dashboard" class="<?= $current_act == 'dashboard' ? 'active' : '' ?>">📊 Tổng quan</a></li>
@@ -33,7 +34,13 @@
             
             <li><a href="<?= BASE_URL ?>?ctrl=admin&act=userList" class="<?= $current_act == 'userList' ? 'active' : '' ?>">👥 Người dùng</a></li> 
             
+<<<<<<< HEAD
+            <li><a href="?ctrl=admin&act=categoryList" class="<?= $current_act == 'categoryList' || $current_act == 'categoryForm' ? 'active' : '' ?>">🗃️ Danh mục</a></li> 
+            
+            <li><a href="?ctrl=admin&act=statistics" class="<?= $current_act == 'statistics' ? 'active' : '' ?>">📈 Thống kê & Báo cáo</a></li>
+=======
             <li><a href="<?= BASE_URL ?>?ctrl=admin&act=categoryList" class="<?= $current_act == 'categoryList' || $current_act == 'categoryForm' ? 'active' : '' ?>">🗃️ Danh mục</a></li> 
+>>>>>>> main
         </ul>
     </div>
     <main class="admin-content">
