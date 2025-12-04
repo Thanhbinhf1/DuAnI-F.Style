@@ -10,13 +10,19 @@ class Product {
     // - Mặc định: lấy $limit sản phẩm mới nhất (theo created_at, id)
     // - Nếu $limit <= 0: lấy TẤT CẢ (dùng cho "Xem tất cả")
     function getNewProducts($limit = 4) {
-        $limit = (int)$limit;
-        $sql = "SELECT * FROM products ORDER BY created_at DESC, id DESC";
-        if ($limit > 0) {
-            $sql .= " LIMIT $limit";
-        }
-        return $this->db->query($sql);
+    $limit = (int)$limit;
+    // Câu lệnh SQL mới lấy thêm SAO và LƯỢT MUA
+    $sql = "SELECT p.*, 
+           (SELECT COALESCE(AVG(rating), 0) FROM comments WHERE product_id = p.id) as avg_rating,
+           (SELECT COALESCE(SUM(quantity), 0) FROM order_details WHERE product_id = p.id) as sold_count
+           FROM products p 
+           ORDER BY p.created_at DESC, p.id DESC";
+    
+    if ($limit > 0) {
+        $sql .= " LIMIT $limit";
     }
+    return $this->db->query($sql);
+}
 
     // 2. SẢN PHẨM HOT – dựa theo lượt xem
     function getHotProducts($limit = 4) {
