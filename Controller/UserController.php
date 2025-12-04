@@ -103,7 +103,7 @@ class UserController {
 
         include_once 'Views/users/profile.php';
     }
-
+    
     function editProfile() {
         if (!isset($_SESSION['user'])) {
             header("Location: ?ctrl=user&act=login");

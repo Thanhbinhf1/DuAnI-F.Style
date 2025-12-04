@@ -60,4 +60,5 @@ class User {
         return $result ? (int)$result['total'] : 0;
     }
 }
+
 ?>
