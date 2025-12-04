@@ -64,34 +64,22 @@ $totalPages = isset($totalPages) ? $totalPages : 1;
                 $isHot = isset($sp['views']) && $sp['views'] >= 20;
         ?>
             <div class="product-item">
-                <div class="thumb-wrapper">
-                    <a href="<?=$link?>">
-                        <img src="<?=$img?>" alt="<?=$sp['name']?>">
-                    </a>
-                    <?php if ($isNew): ?>
-                        <span class="badge badge-new">NEW</span>
-                    <?php endif; ?>
-                    <?php if ($isHot): ?>
-                        <span class="badge badge-hot">HOT</span>
-                    <?php endif; ?>
-                </div>
-                <div class="product-info">
-                    <h3><a href="<?=$link?>"><?=$sp['name']?></a></h3>
-                    <p class="price"><?=number_format($sp['price'])?> đ</p>
-                    <div class="product-buttons">
-                        <a href="<?=$link?>" class="btn-view-detail">Xem chi tiết</a>
-                        <button 
-                            type="button" 
-                            class="btn-favorite <?= isset($sp['is_favorited']) && $sp['is_favorited'] ? 'is-favorited' : '' ?>" 
-                            data-product-id="<?=$sp['id']?>"
-                            title="Yêu thích sản phẩm">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
-                                <path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div class="thumb-wrapper">
+        <a href="<?=$link?>">
+            <img src="<?=$img?>" alt="<?=$sp['name']?>">
+        </a>
+        <?php if ($isNew): ?><span class="badge badge-new">NEW</span><?php endif; ?>
+        <?php if ($isHot): ?><span class="badge badge-hot">HOT</span><?php endif; ?>
+    </div>
+
+    <div class="product-info">
+        <h3><a href="<?=$link?>"><?=$sp['name']?></a></h3>
+        <p class="price"><?=number_format($sp['price'])?> đ</p>
+        <div class="product-buttons">
+            <a href="<?=$link?>" class="btn-view-detail">Xem chi tiết</a>
+        </div>
+    </div>
+    </div>
         <?php 
             endforeach; 
         } else { 

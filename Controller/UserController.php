@@ -87,9 +87,14 @@ class UserController {
     function profile() {
         if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
         include_once 'Models/Order.php';
+
         $orderModel = new Order();
         $user = $_SESSION['user'];
         $orders = $orderModel->getOrdersByUserId($user['id']);
+
+        $reviews = []; 
+        $invoices = [];
+        
         include_once 'Views/users/profile.php';
     }
     
