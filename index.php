@@ -1,145 +1,109 @@
 <?php
 session_start();
-<<<<<<< HEAD
 ob_start(); // Bật bộ đệm đầu ra
-=======
-ob_start();
 
-// BASE_URL: Thư mục gốc của ứng dụng
 define('BASE_URL', '/DuAnI-F.Style/');
->>>>>>> main
 
+// Include các file cấu hình quan trọng
 include_once './Models/Database.php';
 include_once './csrf.php';
 
-<<<<<<< HEAD
-// Xác định controller và action
-// Nếu không có ctrl, mặc định là 'page'. Nếu không có act, mặc định là 'home'
-=======
-// Xác định controller & action
->>>>>>> main
+// 1. Xác định Controller và Action
 $ctrl = isset($_GET['ctrl']) ? strtolower($_GET['ctrl']) : 'page';
 $act  = $_GET['act'] ?? 'home';
 
+// Biến cờ xác định đây là trang Admin hay User
 $is_admin = ($ctrl === 'admin');
 
 try {
-<<<<<<< HEAD
-    // 1. Include Layout Header (Trừ trang Admin)
-    if ($ctrl !== 'admin') {
-        include_once './Views/users/layout_header.php';
-    }
+    $controller = null;
 
-    // 2. Xử lý logic chọn Controller
-    if ($ctrl === 'admin') {
-        // --- LOGIC ADMIN ---
-        $adminFile = './Controller/AdminController.php';
-        if (file_exists($adminFile)) {
-            include_once $adminFile;
-            if (class_exists('AdminController')) {
-                $controller = new AdminController();
-                // Admin Header thường load sau khi khởi tạo controller (để check login)
-                include_once './Views/admin/layout_header.php';
-            } else {
-                throw new Exception('Không tìm thấy class AdminController');
-            }
-        } else {
-            throw new Exception('Không tìm thấy file AdminController.php');
-=======
-    // Chọn controller
+    // 2. Routing - Chọn Controller
     if ($is_admin) {
+        // --- LOGIC ADMIN ---
         $ctrlFile = './Controller/AdminController.php';
-        if (!file_exists($ctrlFile)) {
-            throw new Exception('Không tìm thấy AdminController.php');
->>>>>>> main
-        }
-        include_once $ctrlFile;
-        if (!class_exists('AdminController')) {
-            throw new Exception('Không tìm thấy class AdminController');
-        }
-        $controller = new AdminController();
-    } else {
-<<<<<<< HEAD
-        // --- LOGIC USER (Page, Product, Cart...) ---
-        // Viết hoa chữ cái đầu: product -> ProductController
-        $fileCtrl = './Controller/' . ucfirst($ctrl) . 'Controller.php';
+        $className = 'AdminController';
         
-        if (!file_exists($fileCtrl)) {
-            // Nếu Controller không tồn tại -> Chuyển về PageController (Trang chủ)
-=======
-        $ctrlFile = './Controller/' . ucfirst($ctrl) . 'Controller.php';
         if (!file_exists($ctrlFile)) {
-            // Sai ctrl -> về trang chủ
->>>>>>> main
-            include_once './Controller/PageController.php';
-            $controller = new PageController();
-            $act = 'home'; 
-        } else {
-            include_once $ctrlFile;
-            $className = ucfirst($ctrl) . 'Controller';
+            throw new Exception('File AdminController.php không tồn tại.');
+        }
+        
+        include_once $ctrlFile;
+        
+        if (!class_exists($className)) {
+            throw new Exception('Class AdminController không tồn tại.');
+        }
+        
+        $controller = new $className();
+
+    } else {
+        // --- LOGIC USER ---
+        // Viết hoa chữ cái đầu: product -> ProductController
+        $ctrlFile = './Controller/' . ucfirst($ctrl) . 'Controller.php';
+        $className = ucfirst($ctrl) . 'Controller';
+
+        // Nếu Controller không tồn tại -> Chuyển về PageController (Trang chủ) hoặc báo lỗi
+        if (!file_exists($ctrlFile)) {
+            // Option 1: Báo lỗi
+            // throw new Exception("Không tìm thấy controller: $ctrl"); 
             
-            if (!class_exists($className)) {
-                throw new Exception('Không tìm thấy class ' . $className);
-            }
-            $controller = new $className();
+            // Option 2: Fallback về trang chủ (An toàn hơn cho người dùng)
+            $ctrlFile = './Controller/PageController.php';
+            $className = 'PageController';
+            $act = 'home'; 
+        }
+
+        include_once $ctrlFile;
+
+        if (!class_exists($className)) {
+            throw new Exception("Class $className không tồn tại.");
+        }
+
+        $controller = new $className();
+    }
+
+    // 3. Kiểm tra Action có tồn tại không
+    if (!method_exists($controller, $act)) {
+        // Nếu action không có, thử về 'home' hoặc báo lỗi
+        if (method_exists($controller, 'home')) {
+            $act = 'home';
+        } else {
+            throw new Exception("Action '$act' không tồn tại trong $className.");
         }
     }
 
-<<<<<<< HEAD
-    // 3. Gọi Action (Hàm)
-=======
-    // Load layout tương ứng
+    // 4. Hiển thị Giao diện (Header -> Action -> Footer)
+    
+    // A. Load Header
     if ($is_admin) {
         include_once './Views/admin/layout_header.php';
     } else {
         include_once './Views/users/layout_header.php';
     }
 
-    // Gọi action
->>>>>>> main
-    if (!method_exists($controller, $act)) {
-        // Nếu action không tồn tại, thử về action 'home' của controller đó
-        if (method_exists($controller, 'home')) {
-            $act = 'home';
-        } else {
-            throw new Exception("Không tìm thấy action '$act' trong controller");
-        }
-    }
-<<<<<<< HEAD
-
-    // Chạy hành động
+    // B. Chạy Action (Nội dung chính)
     $controller->$act();
 
-    // 4. Include Footer (Chỉ hiện cho User)
-    if ($ctrl !== 'admin') {
-        include_once './Views/users/layout_footer.php';
-    }
-
-} catch (Throwable $e) {
-    // --- ĐÂY LÀ PHẦN CATCH BẠN BỊ THIẾU ---
-    // Phần này bắt lỗi và hiện ra màn hình thay vì làm sập web
-    echo "<div style='color:red; background:#ffe6e6; padding:20px; text-align:center; border:1px solid red; margin:20px;'>";
-    echo "<h3>Đã xảy ra lỗi hệ thống:</h3>";
-    echo "<p>" . $e->getMessage() . "</p>";
-    echo "</div>";
-=======
-    $controller->$act();
-
-    // Footer
+    // C. Load Footer
     if ($is_admin) {
         include_once './Views/admin/layout_footer.php';
     } else {
         include_once './Views/users/layout_footer.php';
     }
 
-} catch (Exception $e) {
-    echo '<div style="max-width:800px;margin:40px auto;padding:16px;
-                     border:1px solid #eee;border-radius:8px;background:#fff3f3;color:#c00;">
-            <h3>Có lỗi xảy ra</h3>
-            <p>' . htmlspecialchars($e->getMessage()) . '</p>
-          </div>';
->>>>>>> main
+} catch (Throwable $e) {
+    // Bắt tất cả lỗi (Exception và Error)
+    
+    // Nếu chưa load header (do lỗi xảy ra sớm), có thể load một layout đơn giản hoặc header ở đây để thông báo lỗi đẹp hơn
+    // Tuy nhiên, để đơn giản ta hiển thị thông báo lỗi trực tiếp:
+    
+    echo "<div style='max-width:800px; margin:50px auto; padding:20px; background:#fff3f3; border:1px solid #ffcccc; color:#cc0000; font-family:sans-serif; border-radius:8px;'>";
+    echo "<h3 style='margin-top:0;'>🚫 Đã xảy ra lỗi hệ thống</h3>";
+    echo "<p><strong>Chi tiết:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
+    echo "<p><small>Vui lòng kiểm tra lại đường dẫn hoặc liên hệ quản trị viên.</small></p>";
+    echo "<a href='".BASE_URL."' style='text-decoration:none; background:#cc0000; color:#fff; padding:8px 16px; border-radius:4px;'>Về trang chủ</a>";
+    echo "</div>";
 }
 
-ob_end_flush(); // Kết thúc bộ đệm
+ob_end_flush(); 
 ?>
