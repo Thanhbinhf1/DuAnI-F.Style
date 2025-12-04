@@ -170,10 +170,19 @@ class Product {
     }
 
 function insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
-        $sql = "INSERT INTO products(category_id, name, price, price_sale, image, description, material, brand, sku_code) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
-        return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode]);
+    // Thêm price_sale vào SQL và danh sách tham số
+    $sql = "INSERT INTO products(category_id, name, price, price_sale, image, description, material, brand, sku_code) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
+    
+    // THAY ĐỔI: GỌI execute() và sau đó gọi getLastId() trên đối tượng Database
+    $result = $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode]);
+    
+    // Nếu chèn thành công, trả về ID vừa chèn, nếu không trả về false (hoặc 0)
+    if ($result) {
+        return $this->db->getLastId(); // <--- TRẢ VỀ ID VỪA CHÈN
     }
+    return false;
+}
 
 // Giữ nguyên hàm updateProduct (10 tham số)
 function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
