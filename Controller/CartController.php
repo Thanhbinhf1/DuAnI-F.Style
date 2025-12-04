@@ -39,7 +39,11 @@ class CartController {
 
             $product = $this->model->getProductById($id);
             $name = $product['name'];
+            if (isset($product['price_sale']) && $product['price_sale'] > 0) {
+            $price = $product['price_sale'];
+            } else {
             $price = $product['price'];
+            }
             $image = $product['image'];
             $info = ""; 
             $stock = 100; // Mặc định nếu không check được
@@ -134,9 +138,13 @@ class CartController {
                 exit; // Dừng ngay lập tức để không in thêm Footer
             }
         }
-    } 
+        
+        // Fallback nếu không thành công
+        echo json_encode(['status' => 'error', 'message' => 'Lỗi cập nhật.']);
+        exit; 
     
     
+}
 }
 
 ?>

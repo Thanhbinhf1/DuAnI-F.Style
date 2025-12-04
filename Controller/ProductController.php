@@ -1,11 +1,32 @@
 <?php
 include_once 'Models/Product.php';
+include_once 'Models/Favorite.php';
 
 class ProductController {
     private $model;
 
     function __construct() {
         $this->model = new Product();
+    }
+
+    /**
+     * Helper function to enrich products with favorite status.
+     * @param array $products The list of products to enrich.
+     * @param array $favoriteIds The list of favorite product IDs for the current user.
+     */
+    private function _enrichProductsWithFavorites(&$products, $favoriteIds) {
+        if (empty($products)) return;
+
+        // Ensure it's an array of arrays
+        $isSingle = !is_array(reset($products));
+        if ($isSingle) {
+            $products['is_favorited'] = in_array($products['id'], $favoriteIds);
+        } else {
+            foreach ($products as &$product) {
+                $product['is_favorited'] = in_array($product['id'], $favoriteIds);
+            }
+            unset($product);
+        }
     }
 
     // Trang chi tiết sản phẩm + bình luận
@@ -27,15 +48,23 @@ class ProductController {
             $userId  = $_SESSION['user']['id'];
             $content = trim($_POST['comment_content']);
             $rating  = isset($_POST['rating']) ? (int)$_POST['rating'] : 5;
-            if ($rating < 1 || $rating > 5) $rating = 5;
+            
+            if ($rating < 1) $rating = 1;
+            if ($rating > 5) $rating = 5;
 
             if ($content !== '') {
                 $this->model->insertComment($userId, $id, $content, $rating);
             }
 
-            // Tránh F5 gửi lại form
             header("Location: ?ctrl=product&act=detail&id=" . $id);
             exit;
+        }
+
+        // Lấy danh sách ID sản phẩm yêu thích của user
+        $favModel = new Favorite();
+        $favoriteIds = [];
+        if (isset($_SESSION['user']['id'])) {
+            $favoriteIds = $favModel->getFavoriteProductIds($_SESSION['user']['id']);
         }
 
         // Lấy thông tin sản phẩm
@@ -44,17 +73,14 @@ class ProductController {
             header("Location: index.php");
             exit;
         }
+        $this->_enrichProductsWithFavorites($sp, $favoriteIds);
 
-        // Tăng lượt xem để xác định HOT
         $this->model->increaseView($id);
 
-        // Biến thể (Màu/Size)
         $variants = $this->model->getProductVariants($id);
-
-        // Sản phẩm liên quan
         $spLienQuan = $this->model->getRelatedProducts($sp['category_id'], $id);
+        $this->_enrichProductsWithFavorites($spLienQuan, $favoriteIds);
 
-        // Bình luận + rating
         $comments   = $this->model->getCommentsByProduct($id);
         $ratingInfo = $this->model->getAverageRating($id);
 
@@ -67,22 +93,17 @@ class ProductController {
         $titleSub  = "";
 
         $cat     = isset($_GET['cat']) ? (int)$_GET['cat'] : 0;
-        $type    = isset($_GET['type']) ? $_GET['type'] : null; // new, hot, sale
+        $type    = isset($_GET['type']) ? $_GET['type'] : null;
         $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
 
-        // 1. Lọc theo keyword (ưu tiên nhất)
         if ($keyword !== '') {
             $allProducts = $this->model->searchProducts($keyword);
             $titleSub = "Tìm kiếm: " . htmlspecialchars($keyword);
-        }
-        // 2. Lọc theo danh mục
-        elseif ($cat > 0) {
+        } elseif ($cat > 0) {
             $allProducts = $this->model->getProductsByCategory($cat);
             $titleSub = $this->model->getCategoryName($cat);
-        }
-        // 3. Theo loại sản phẩm
-        elseif ($type === 'sale') {
-            $allProducts = $this->model->getSaleProducts(0); // 0 = không giới hạn
+        } elseif ($type === 'sale') {
+            $allProducts = $this->model->getSaleProducts(0);
             $titleSub = "Sản phẩm giá tốt";
         } elseif ($type === 'hot') {
             $allProducts = $this->model->getHotProducts(0);
@@ -90,14 +111,20 @@ class ProductController {
         } elseif ($type === 'new') {
             $allProducts = $this->model->getNewProducts(0);
             $titleSub = "Hàng mới về";
-        }
-        // 4. Mặc định: tất cả
-        else {
+        } else {
             $allProducts = $this->model->getAllProductsList();
             $titleSub = "Tất cả sản phẩm";
         }
 
-        // Phân trang (12 sản phẩm / trang)
+        // Lấy ds ID yêu thích và gán trạng thái
+        $favModel = new Favorite();
+        $favoriteIds = [];
+        if (isset($_SESSION['user']['id'])) {
+            $favoriteIds = $favModel->getFavoriteProductIds($_SESSION['user']['id']);
+        }
+        $this->_enrichProductsWithFavorites($allProducts, $favoriteIds);
+
+        // Phân trang
         $perPage = 12;
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         if ($page < 1) $page = 1;
@@ -109,7 +136,6 @@ class ProductController {
         $offset   = ($page - 1) * $perPage;
         $products = array_slice($allProducts, $offset, $perPage);
 
-        // Truyền tất cả sang View
         include_once 'Views/users/product_list.php';
     }
 }

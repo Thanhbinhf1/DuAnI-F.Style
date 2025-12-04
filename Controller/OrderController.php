@@ -1,12 +1,16 @@
 <?php
 include_once 'Models/Order.php';
+include_once 'Models/Product.php';
 
 class OrderController {
     private $model;
+    private $productModel;
+    
 
     function __construct() {
         $this->model = new Order();
-    }
+        $this->productModel = new Product();
+    }   
 
     // 1. Hiện trang thanh toán
     function checkout() {
@@ -24,6 +28,8 @@ class OrderController {
 
         // Lấy thông tin user để điền sẵn vào form
         $user = $_SESSION['user'];
+        $cartWarnings = $_SESSION['cart_warnings'] ?? [];
+        unset($_SESSION['cart_warnings']);
         
         // Tính tổng tiền
         $totalPrice = 0;
@@ -153,6 +159,166 @@ class OrderController {
                 echo "Đơn hàng không tồn tại!";
             }
         }
+    }
+    function detail() {
+        if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
+        $orderId = $_GET['id'] ?? 0;
+        $order = $this->model->getOrderById($orderId);
+
+        if (!$order || $order['user_id'] != $_SESSION['user']['id']) {
+            echo "<script>alert('Không tìm thấy đơn hàng của bạn.'); window.location='?ctrl=user&act=profile';</script>";
+            return;
+        }
+
+        $orderDetails = $this->model->getOrderDetails($orderId) ?: [];
+
+        $statusMap = [
+            0 => ['label' => 'Chờ xử lý', 'color' => '#f39c12'],
+            1 => ['label' => 'Đang giao', 'color' => '#3498db'],
+            2 => ['label' => 'Đã giao', 'color' => '#27ae60'],
+            3 => ['label' => 'Đã hủy', 'color' => '#e74c3c']
+        ];
+
+        $paymentLabel = ((int)$order['payment_status'] === 1) ? 'Đã thanh toán' : 'Chưa thanh toán';
+        $carrierName = $order['carrier_name'] ?? 'Giao Hàng Nhanh';
+        $trackingId = $order['tracking_code'] ?? ('FS' . str_pad($orderId, 6, '0', STR_PAD_LEFT));
+        $trackingUrl = 'https://tracking.ghn.dev/?code=' . urlencode($trackingId);
+
+        // --- SỬA LOGIC TẠI ĐÂY ---
+        $status = (int)$order['status'];
+        $statusStep = 0;
+        
+        // Chỉ tăng bước nếu đơn hàng KHÔNG bị hủy
+        if ($status === 1) { $statusStep = 2; } // Đang giao
+        if ($status === 2) { $statusStep = 3; } // Đã giao thành công
+        
+        // Kiểm tra xem đơn có bị hủy không
+        $isCancelled = ($status === 3);
+
+        $createdAt = strtotime($order['created_at']);
+        $events = [
+            [
+                'title' => 'Đặt hàng thành công',
+                'description' => 'Đơn hàng đã được tạo và chờ xử lý.',
+                'time' => date('H:i d/m/Y', $createdAt),
+                'done' => true
+            ],
+            [
+                'title' => 'Xác nhận & đóng gói',
+                'description' => 'Kho đang chuẩn bị sản phẩm để bàn giao.',
+                'time' => date('H:i d/m/Y', $createdAt + 3600),
+                'done' => ($statusStep >= 1 && !$isCancelled) // Không tick xanh nếu đã hủy
+            ],
+            [
+                'title' => 'Đang giao hàng',
+                'description' => 'Đơn hàng đang được vận chuyển bởi ' . $carrierName . '.',
+                'time' => date('H:i d/m/Y', $createdAt + 7200),
+                'done' => ($statusStep >= 2 && !$isCancelled), // Không tick xanh nếu đã hủy
+                'carrier' => $carrierName,
+                'tracking' => $trackingId,
+                'tracking_link' => $trackingUrl
+            ],
+            [
+                // Thay đổi tiêu đề bước cuối dựa trên trạng thái hủy
+                'title' => $isCancelled ? 'Đã hủy' : 'Hoàn tất',
+                'description' => $isCancelled ? 'Đơn hàng đã bị hủy.' : 'Đơn hàng đã giao thành công.',
+                'time' => date('H:i d/m/Y', $createdAt + 10800),
+                'done' => ($statusStep >= 3 || $isCancelled) // Nếu hủy thì vẫn hiện bước cuối (màu đỏ hoặc xanh tùy CSS, nhưng nội dung là Hủy)
+            ]
+        ];
+
+        include_once 'Views/users/order_detail.php';
+    }
+    function reorder() {
+        if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
+        $orderId = $_GET['id'] ?? 0;
+        $order = $this->model->getOrderById($orderId);
+
+        if (!$order || $order['user_id'] != $_SESSION['user']['id']) {
+            echo "<script>alert('Không thể mua lại đơn hàng này.'); window.location='?ctrl=user&act=profile';</script>";
+            return;
+        }
+
+        $items = $this->model->getOrderDetails($orderId);
+        if (empty($items)) {
+            echo "<script>alert('Không tìm thấy sản phẩm trong đơn hàng.'); history.back();</script>";
+            return;
+        }
+
+        if (!isset($_SESSION['cart'])) { $_SESSION['cart'] = []; }
+
+        foreach ($items as $item) {
+            $key = $item['product_id'] . '_0';
+            $qty = (int)$item['quantity'];
+            if (isset($_SESSION['cart'][$key])) {
+                $_SESSION['cart'][$key]['quantity'] += $qty;
+            } else {
+                $_SESSION['cart'][$key] = [
+                    'id' => $item['product_id'],
+                    'variant_id' => 0,
+                    'name' => $item['product_name'],
+                    'image' => $item['product_image'],
+                    'price' => $item['price'],
+                    'quantity' => $qty,
+                    'stock' => 99,
+                    'info' => ''
+                ];
+            }
+        }
+
+        echo "<script>alert('Đã thêm lại sản phẩm vào giỏ hàng.'); window.location='?ctrl=cart&act=view';</script>";
+    }
+
+    function printInvoice() {
+        if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
+        $orderId = $_GET['id'] ?? 0;
+        $order = $this->model->getOrderById($orderId);
+
+        if (!$order || $order['user_id'] != $_SESSION['user']['id']) {
+            echo "<script>alert('Không tìm thấy đơn hàng để in.'); window.location='?ctrl=user&act=profile';</script>";
+            return;
+        }
+
+        $orderDetails = $this->model->getOrderDetails($orderId) ?: [];
+        include_once 'Views/users/order_invoice.php';
+    }
+
+    function tracking() {
+        if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
+        $orderId = $_GET['id'] ?? 0;
+        $order = $this->model->getOrderById($orderId);
+
+        if (!$order || $order['user_id'] != $_SESSION['user']['id']) {
+            echo "<script>alert('Không tìm thấy thông tin vận chuyển.'); window.location='?ctrl=user&act=profile';</script>";
+            return;
+        }
+
+        $carrierName = $order['carrier_name'] ?? 'Giao Hàng Nhanh';
+        $trackingId = $order['tracking_code'] ?? ('FS' . str_pad($orderId, 6, '0', STR_PAD_LEFT));
+        $trackingUrl = 'https://tracking.ghn.dev/?code=' . urlencode($trackingId);
+
+        include_once 'Views/users/order_tracking.php';
+    }
+
+    // Hủy đơn hàng: chỉ cho phép khi đơn đang "Chờ xác nhận" (status = 0)
+    function cancel() {
+        if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
+        $orderId = $_GET['id'] ?? 0;
+
+        $order = $this->model->getOrderById($orderId);
+        if (!$order || $order['user_id'] != $_SESSION['user']['id']) {
+            echo "<script>alert('Không tìm thấy đơn hàng của bạn.'); window.location='?ctrl=user&act=profile';</script>";
+            return;
+        }
+
+        // status: 0 - chờ, 1 - đang giao, 2 - hoàn thành, 3 - hủy
+        if ((int)$order['status'] !== 0) {
+            echo "<script>alert('Đơn hàng đã được xử lý, không thể hủy.'); window.location='?ctrl=order&act=detail&id={$orderId}';</script>";
+            return;
+        }
+
+        $this->model->updateOrderStatus($orderId, 3);
+        echo "<script>alert('Đã hủy đơn hàng.'); window.location='?ctrl=user&act=profile#orders';</script>";
     }
 }
 ?>

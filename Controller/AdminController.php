@@ -178,29 +178,41 @@ class AdminController {
             $brand = $_POST['brand'];
             $skuCode = $_POST['sku_code'];
             
-            // --- Xử lý upload ảnh ---
-            $image = $_POST['image_current'] ?? ''; // Lấy ảnh hiện tại (nếu có)
+            $skuCode = $_POST['sku_code'];
+            
+    // --- Xử lý upload ảnh (ĐÃ SỬA BẢO MẬT) ---
+    $image = $_POST['image_current'] ?? ''; 
 
-            if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
-                $target_dir = "Public/Uploads/Products/";
-                $allowed_types = ['jpg', 'png', 'jpeg', 'gif'];
-                $file_extension = strtolower(pathinfo($_FILES["image_file"]["name"], PATHINFO_EXTENSION));
+    if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
+        $target_dir = "Public/Uploads/Products/";
+        $allowed_types = ['jpg', 'png', 'jpeg', 'gif'];
+        $filename = $_FILES["image_file"]["name"];
+        $file_extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-                if (!in_array($file_extension, $allowed_types)) {
-                    echo "<script>alert('LỖI: Chỉ cho phép file ảnh JPG, JPEG, PNG & GIF.'); history.back();</script>";
-                    exit;
-                }
+        // 1. Kiểm tra đuôi file
+        if (!in_array($file_extension, $allowed_types)) {
+            echo "<script>alert('LỖI: Chỉ cho phép file ảnh JPG, JPEG, PNG & GIF.'); history.back();</script>";
+            exit;
+        }
 
-                $new_filename = uniqid('product_', true) . '.' . $file_extension;
-                $target_file = $target_dir . $new_filename;
+        // 2. [QUAN TRỌNG] Kiểm tra nội dung file có phải ảnh thật không
+        $check = getimagesize($_FILES["image_file"]["tmp_name"]);
+        if ($check === false) {
+            echo "<script>alert('LỖI: File tải lên không phải là ảnh hợp lệ (có thể là mã độc).'); history.back();</script>";
+            exit;
+        }
 
-                if (move_uploaded_file($_FILES["image_file"]["tmp_name"], $target_file)) {
-                    $image = $target_file; // Cập nhật đường dẫn ảnh mới
-                } else {
-                    echo "<script>alert('LỖI: Upload file thất bại.'); history.back();</script>";
-                    exit;
-                }
-            }
+        // Đặt tên file ngẫu nhiên để tránh trùng
+        $new_filename = uniqid('product_', true) . '.' . $file_extension;
+        $target_file = $target_dir . $new_filename;
+
+        if (move_uploaded_file($_FILES["image_file"]["tmp_name"], $target_file)) {
+            $image = $target_file; 
+        } else {
+            echo "<script>alert('LỖI: Không thể lưu file vào thư mục.'); history.back();</script>";
+            exit;
+        }
+    }
             
             // --- Kiểm tra ảnh khi thêm mới ---
             if ($id == 0 && $image == '') {

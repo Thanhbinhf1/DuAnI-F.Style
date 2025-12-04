@@ -64,21 +64,22 @@ $totalPages = isset($totalPages) ? $totalPages : 1;
                 $isHot = isset($sp['views']) && $sp['views'] >= 20;
         ?>
             <div class="product-item">
-                <div class="thumb-wrapper">
-                    <a href="<?=$link?>">
-                        <img src="<?=$img?>" alt="<?=$sp['name']?>">
-                    </a>
-                    <?php if ($isNew): ?>
-                        <span class="badge badge-new">NEW</span>
-                    <?php endif; ?>
-                    <?php if ($isHot): ?>
-                        <span class="badge badge-hot">HOT</span>
-                    <?php endif; ?>
-                </div>
-                <h3><a href="<?=$link?>"><?=$sp['name']?></a></h3>
-                <p class="price"><?=number_format($sp['price'])?> đ</p>
-                <a href="<?=$link?>"><button class="view-detail-btn">Xem chi tiết</button></a>
-            </div>
+    <div class="thumb-wrapper">
+        <a href="<?=$link?>">
+            <img src="<?=$img?>" alt="<?=$sp['name']?>">
+        </a>
+        <?php if ($isNew): ?><span class="badge badge-new">NEW</span><?php endif; ?>
+        <?php if ($isHot): ?><span class="badge badge-hot">HOT</span><?php endif; ?>
+    </div>
+
+    <div class="product-info">
+        <h3><a href="<?=$link?>"><?=$sp['name']?></a></h3>
+        <p class="price"><?=number_format($sp['price'])?> đ</p>
+        <div class="product-buttons">
+            <a href="<?=$link?>" class="btn-view-detail">Xem chi tiết</a>
+        </div>
+    </div>
+    </div>
         <?php 
             endforeach; 
         } else { 

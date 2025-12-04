@@ -36,11 +36,51 @@ class Order {
     }
 
     function getAllOrders() {
-        $sql = "SELECT o.*, u.fullname as user_fullname 
+       $sql = "SELECT o.*, u.fullname AS user_fullname, COALESCE(od.item_count, 0) AS item_count
                 FROM orders o
                 LEFT JOIN users u ON o.user_id = u.id
+                LEFT JOIN (
+                    SELECT order_id, SUM(quantity) AS item_count
+                    FROM order_details
+                    GROUP BY order_id
+                ) od ON o.id = od.order_id
                 ORDER BY o.created_at DESC";
         return $this->db->query($sql);
+    }
+    function getOrdersByUserId($userId) {
+        $sql = "SELECT *
+                FROM orders
+                WHERE user_id = ?
+                ORDER BY created_at DESC";
+        return $this->db->query($sql, [$userId]);
+    }
+
+
+    function createOrder($userId, $fullname, $phone, $address, $totalMoney, $paymentMethod, $note = '') {
+        $sql = "INSERT INTO orders (user_id, fullname, phone, address, total_money, payment_method, note, status, payment_status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, NOW())";
+
+        $result = $this->db->execute($sql, [
+            $userId,
+            $fullname,
+            $phone,
+            $address,
+            $totalMoney,
+            $paymentMethod,
+            $note
+        ]);
+
+        if ($result) {
+            return (int)$this->db->getLastId();
+        }
+
+        return 0;
+    }
+
+    function createOrderDetail($orderId, $productId, $quantity, $price) {
+        $sql = "INSERT INTO order_details (order_id, product_id, quantity, price)
+                VALUES (?, ?, ?, ?)";
+        return $this->db->execute($sql, [$orderId, $productId, $quantity, $price]);
     }
     
 
@@ -48,6 +88,7 @@ class Order {
         $sql = "SELECT * FROM orders WHERE id = ?";
         return $this->db->queryOne($sql, [$id]);
     }
+    
 
     function getOrderDetails($orderId) {
         $sql = "SELECT od.*, p.name as product_name, p.image as product_image
