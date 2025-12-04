@@ -14,7 +14,7 @@ class Database {
         } catch(PDOException $e) {
             // SỬA: Không echo lỗi ra màn hình
             error_log("Lỗi kết nối DB: " . $e->getMessage());
-            die("Lỗi kết nối cơ sở dữ liệu. Vui lòng thử lại sau.");
+            throw new Exception("Lỗi kết nối cơ sở dữ liệu. Vui lòng thử lại sau.");
         }
     }
 

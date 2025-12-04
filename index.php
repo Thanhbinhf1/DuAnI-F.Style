@@ -2,6 +2,9 @@
 session_start();
 ob_start();
 
+// BASE_URL: Thư mục gốc của ứng dụng
+define('BASE_URL', '/DuAnI-F.Style/');
+
 include_once './Models/Database.php';
 include_once './csrf.php';
 

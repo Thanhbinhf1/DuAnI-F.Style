@@ -184,9 +184,16 @@ class OrderController {
         $trackingId = $order['tracking_code'] ?? ('FS' . str_pad($orderId, 6, '0', STR_PAD_LEFT));
         $trackingUrl = 'https://tracking.ghn.dev/?code=' . urlencode($trackingId);
 
+        // --- SỬA LOGIC TẠI ĐÂY ---
+        $status = (int)$order['status'];
         $statusStep = 0;
-        if ((int)$order['status'] === 1) { $statusStep = 2; }
-        if ((int)$order['status'] === 2 || (int)$order['status'] === 3) { $statusStep = 3; }
+        
+        // Chỉ tăng bước nếu đơn hàng KHÔNG bị hủy
+        if ($status === 1) { $statusStep = 2; } // Đang giao
+        if ($status === 2) { $statusStep = 3; } // Đã giao thành công
+        
+        // Kiểm tra xem đơn có bị hủy không
+        $isCancelled = ($status === 3);
 
         $createdAt = strtotime($order['created_at']);
         $events = [
@@ -200,28 +207,28 @@ class OrderController {
                 'title' => 'Xác nhận & đóng gói',
                 'description' => 'Kho đang chuẩn bị sản phẩm để bàn giao.',
                 'time' => date('H:i d/m/Y', $createdAt + 3600),
-                'done' => $statusStep >= 1
+                'done' => ($statusStep >= 1 && !$isCancelled) // Không tick xanh nếu đã hủy
             ],
             [
                 'title' => 'Đang giao hàng',
                 'description' => 'Đơn hàng đang được vận chuyển bởi ' . $carrierName . '.',
                 'time' => date('H:i d/m/Y', $createdAt + 7200),
-                'done' => $statusStep >= 2,
+                'done' => ($statusStep >= 2 && !$isCancelled), // Không tick xanh nếu đã hủy
                 'carrier' => $carrierName,
                 'tracking' => $trackingId,
                 'tracking_link' => $trackingUrl
             ],
             [
-                'title' => 'Hoàn tất',
-                'description' => 'Đơn hàng đã giao thành công hoặc kết thúc xử lý.',
+                // Thay đổi tiêu đề bước cuối dựa trên trạng thái hủy
+                'title' => $isCancelled ? 'Đã hủy' : 'Hoàn tất',
+                'description' => $isCancelled ? 'Đơn hàng đã bị hủy.' : 'Đơn hàng đã giao thành công.',
                 'time' => date('H:i d/m/Y', $createdAt + 10800),
-                'done' => $statusStep >= 3
+                'done' => ($statusStep >= 3 || $isCancelled) // Nếu hủy thì vẫn hiện bước cuối (màu đỏ hoặc xanh tùy CSS, nhưng nội dung là Hủy)
             ]
         ];
 
         include_once 'Views/users/order_detail.php';
     }
-
     function reorder() {
         if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
         $orderId = $_GET['id'] ?? 0;
@@ -291,6 +298,27 @@ class OrderController {
         $trackingUrl = 'https://tracking.ghn.dev/?code=' . urlencode($trackingId);
 
         include_once 'Views/users/order_tracking.php';
+    }
+
+    // Hủy đơn hàng: chỉ cho phép khi đơn đang "Chờ xác nhận" (status = 0)
+    function cancel() {
+        if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
+        $orderId = $_GET['id'] ?? 0;
+
+        $order = $this->model->getOrderById($orderId);
+        if (!$order || $order['user_id'] != $_SESSION['user']['id']) {
+            echo "<script>alert('Không tìm thấy đơn hàng của bạn.'); window.location='?ctrl=user&act=profile';</script>";
+            return;
+        }
+
+        // status: 0 - chờ, 1 - đang giao, 2 - hoàn thành, 3 - hủy
+        if ((int)$order['status'] !== 0) {
+            echo "<script>alert('Đơn hàng đã được xử lý, không thể hủy.'); window.location='?ctrl=order&act=detail&id={$orderId}';</script>";
+            return;
+        }
+
+        $this->model->updateOrderStatus($orderId, 3);
+        echo "<script>alert('Đã hủy đơn hàng.'); window.location='?ctrl=user&act=profile#orders';</script>";
     }
 }
 ?>
