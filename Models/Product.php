@@ -175,7 +175,6 @@ class Product {
         return $this->db->query($sql);
     }
 
-<<<<<<< HEAD
 function insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
     // Thêm price_sale vào SQL và danh sách tham số
     $sql = "INSERT INTO products(category_id, name, price, price_sale, image, description, material, brand, sku_code) 
@@ -207,20 +206,6 @@ function toggleProductStatus($id, $newStatus) {
     $sql = "UPDATE products SET status = ? WHERE id = ?";
     return $this->db->execute($sql, [$newStatus, $id]);
 }
-=======
-    function insertProduct($categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
-        // Thêm price_sale vào SQL và danh sách tham số
-        $sql = "INSERT INTO products(category_id, name, price, price_sale, image, description, material, brand, sku_code) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
-        return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode]);
-    }
-
-    // Giữ nguyên hàm updateProduct (10 tham số)
-    function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
-        $sql = "UPDATE products SET category_id = ?, name = ?, price = ?, price_sale = ?, image = ?, description = ?, material = ?, brand = ?, sku_code = ? WHERE id = ?";
-        return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode, $id]);
-    }
->>>>>>> main
 
 // 2. Hàm kiểm tra trùng tên sản phẩm (đã thêm vào productPost)
 function checkProductNameExist($name, $excludeId = 0) {
