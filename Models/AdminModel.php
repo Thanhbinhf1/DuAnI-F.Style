@@ -28,12 +28,14 @@ class AdminModel {
         
         $data = $this->db->query($sql);
         
-        // Chuẩn hóa dữ liệu cho biểu đồ
+        // Normalize data for Chart.js
         $labels = [];
         $values = [];
-        foreach (array_reverse($data) as $row) {
-            $labels[] = "Tháng " . $row['month'];
-            $values[] = $row['income'];
+        if ($data) {
+            foreach (array_reverse($data) as $row) {
+                $labels[] = "Tháng " . $row['month'];
+                $values[] = $row['income'];
+            }
         }
         return ['labels' => $labels, 'values' => $values];
     }
@@ -51,7 +53,7 @@ class AdminModel {
     // =========================================================================
 
     public function getAllUsers() {
-        // Lấy danh sách user kèm thống kê số đơn hàng và số đơn hủy
+        // Get user list with order statistics (total orders, cancelled orders)
         $sql = "SELECT u.*, 
                        COUNT(o.id) as total_orders,
                        SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) as cancelled_orders
@@ -60,6 +62,24 @@ class AdminModel {
                 GROUP BY u.id
                 ORDER BY u.id DESC";
         return $this->db->query($sql);
+    }
+
+    public function getUserInfo($id) {
+        return $this->db->queryOne("SELECT * FROM users WHERE id = ?", [$id]);
+    }
+
+    // Get order history for a specific user
+    public function getUserHistory($userId) {
+        $sql = "SELECT o.*, 
+                       GROUP_CONCAT(p.name SEPARATOR ', ') as product_summary,
+                       COUNT(od.id) as item_count
+                FROM orders o
+                LEFT JOIN order_details od ON o.id = od.order_id
+                LEFT JOIN products p ON od.product_id = p.id
+                WHERE o.user_id = ?
+                GROUP BY o.id
+                ORDER BY o.created_at DESC";
+        return $this->db->query($sql, [$userId]);
     }
 
     public function updateUserRole($id, $role) {
@@ -109,7 +129,6 @@ class AdminModel {
     // =========================================================================
 
     public function getAllProductsAdmin() {
-        // Lấy sản phẩm kèm tên danh mục
         $sql = "SELECT p.*, c.name as category_name 
                 FROM products p 
                 LEFT JOIN categories c ON p.category_id = c.id
@@ -126,13 +145,12 @@ class AdminModel {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if ($this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode])) {
-            return $this->db->getLastId(); // Trả về ID vừa thêm để xử lý gallery
+            return $this->db->getLastId();
         }
         return false;
     }
 
     public function updateProduct($id, $categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode) {
-        // Nếu có ảnh mới thì cập nhật, không thì giữ nguyên
         if (!empty($image)) {
             $sql = "UPDATE products SET category_id=?, name=?, price=?, price_sale=?, image=?, description=?, material=?, brand=?, sku_code=? WHERE id=?";
             return $this->db->execute($sql, [$categoryId, $name, $price, $priceSale, $image, $description, $material, $brand, $skuCode, $id]);
@@ -152,7 +170,14 @@ class AdminModel {
         return $result['total'] ?? 0;
     }
 
-    // --- Xử lý Gallery ảnh ---
+    // Check for duplicate product names
+    public function checkProductNameExist($name, $excludeId = 0) {
+        $sql = "SELECT COUNT(*) as total FROM products WHERE name = ? AND id != ?";
+        $result = $this->db->queryOne($sql, [$name, $excludeId]);
+        return ($result && $result['total'] > 0);
+    }
+
+    // --- Gallery Logic ---
     public function insertGalleryImages($productId, $imageUrls) {
         if (empty($imageUrls)) return true;
         foreach ($imageUrls as $url) {
@@ -188,6 +213,15 @@ class AdminModel {
         $sql = "SELECT o.*, u.fullname as user_fullname, u.email as user_email 
                 FROM orders o 
                 LEFT JOIN users u ON o.user_id = u.id 
+                ORDER BY o.created_at DESC"; // Latest first
+        return $this->db->query($sql);
+    }
+
+    public function getCancelledOrders() {
+        $sql = "SELECT o.*, u.fullname as user_fullname, u.email as user_email 
+                FROM orders o 
+                LEFT JOIN users u ON o.user_id = u.id 
+                WHERE o.status = 3 
                 ORDER BY o.id DESC";
         return $this->db->query($sql);
     }
@@ -212,15 +246,15 @@ class AdminModel {
         return $this->db->execute("UPDATE orders SET payment_status = ? WHERE id = ?", [$status, $id]);
     }
 
-    // Thống kê chi tiết cho trang Statistics
+    // Statistics for the Statistics Page
     public function getSaleStatistics() {
-        // 1. Doanh thu 7 ngày
+        // 1. Daily Revenue (Last 7 days)
         $daily = $this->db->query("SELECT DATE(created_at) as date, SUM(total_money) as revenue FROM orders WHERE status = 2 GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 7");
         
-        // 2. Tỷ lệ trạng thái
+        // 2. Order Status Ratio
         $statusRatio = $this->db->query("SELECT status, COUNT(*) as total FROM orders GROUP BY status");
         
-        // 3. Top danh mục
+        // 3. Top Categories by Revenue
         $catRev = $this->db->query("SELECT c.name as category_name, SUM(od.price * od.quantity) as revenue 
                                     FROM order_details od 
                                     JOIN products p ON od.product_id = p.id 
@@ -229,36 +263,29 @@ class AdminModel {
                                     WHERE o.status = 2 
                                     GROUP BY c.name ORDER BY revenue DESC LIMIT 5");
                                     
-        // 4. Khách hàng
+        // 4. Top Provinces (Customers)
         $provinces = $this->db->query("SELECT TRIM(SUBSTRING_INDEX(address, ',', -1)) as province, COUNT(*) as count FROM orders GROUP BY province ORDER BY count DESC LIMIT 5");
         
+        // 5. Customer Type Stats (Returning vs New - Basic logic)
+        // This is a placeholder/simplified query. For accurate data, logic needs to be complex.
+        // We will return an empty array or basic count if needed.
+        $customerTypeStats = []; 
+
         return [
             'daily_revenue' => $daily,
             'status_ratio' => $statusRatio,
             'revenue_by_category' => $catRev,
             'orders_by_province' => $provinces,
-            'customer_type_stats' => [] // Có thể bổ sung sau nếu cần query phức tạp
+            'customer_type_stats' => $customerTypeStats
         ];
         
     }
-    public function getUserInfo($id) {
-        return $this->db->queryOne("SELECT * FROM users WHERE id = ?", [$id]);
+    // [MỚI] Kiểm tra trùng tên danh mục
+    public function checkCategoryNameExist($name, $excludeId = 0) {
+        $sql = "SELECT COUNT(*) as total FROM categories WHERE name = ? AND id != ?";
+        $result = $this->db->queryOne($sql, [$name, $excludeId]);
+        return ($result && $result['total'] > 0);
     }
-
-    // [MỚI] Lấy lịch sử đơn hàng của 1 user (Kèm tên sản phẩm tóm tắt)
-    public function getUserHistory($userId) {
-        // Query này dùng GROUP_CONCAT để gộp tên các sản phẩm trong 1 đơn hàng vào 1 dòng
-        $sql = "SELECT o.*, 
-                       GROUP_CONCAT(p.name SEPARATOR ', ') as product_summary,
-                       COUNT(od.id) as item_count
-                FROM orders o
-                LEFT JOIN order_details od ON o.id = od.order_id
-                LEFT JOIN products p ON od.product_id = p.id
-                WHERE o.user_id = ?
-                GROUP BY o.id
-                ORDER BY o.created_at DESC";
-        return $this->db->query($sql, [$userId]);
-    }
+    
 }
-
 ?>

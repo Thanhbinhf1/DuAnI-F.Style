@@ -1,9 +1,9 @@
 <?php
 // Views/admin/order_detail.php
 
-// Định nghĩa lại nhãn trạng thái và màu sắc
+// Định nghĩa trạng thái và màu sắc
 $statusConfig = [
-    0 => ['label' => 'Chờ xác nhận', 'color' => '#f39c12', 'bg' => '#fef5e7', 'icon' => 'fa-clock'],
+    0 => ['label' => 'Chờ xác nhận', 'color' => '#f39c12', 'bg' => '#fef5e7', 'icon' => 'fa-hourglass-half'],
     1 => ['label' => 'Đang giao', 'color' => '#3498db', 'bg' => '#ebf5fb', 'icon' => 'fa-truck'],
     2 => ['label' => 'Đã giao', 'color' => '#2ecc71', 'bg' => '#eafaf1', 'icon' => 'fa-check-circle'],
     3 => ['label' => 'Đã hủy', 'color' => '#e74c3c', 'bg' => '#fdedec', 'icon' => 'fa-times-circle']
@@ -15,6 +15,7 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
+/* CSS GIAO DIỆN CHI TIẾT */
 .detail-container {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #444;
@@ -46,17 +47,19 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
     text-decoration: none;
     font-size: 14px;
     transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .btn-print:hover {
     background: #7f8c8d;
 }
 
-/* Layout 2 cột */
+/* Grid Layout */
 .detail-grid {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    /* Cột trái nhỏ, cột phải lớn */
     gap: 30px;
 }
 
@@ -68,9 +71,9 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
 
 .card {
     background: #fff;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     height: 100%;
 }
 
@@ -87,7 +90,7 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
     gap: 10px;
 }
 
-/* Thông tin chi tiết */
+/* Thông tin row */
 .info-row {
     display: flex;
     justify-content: space-between;
@@ -105,15 +108,16 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
     text-align: right;
 }
 
-/* Badge trạng thái */
+/* Badge Status */
 .status-badge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 15px;
+    padding: 8px 20px;
     border-radius: 50px;
     font-weight: 700;
     font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 /* Bảng sản phẩm */
@@ -128,6 +132,7 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
     text-align: left;
     font-size: 13px;
     color: #7f8c8d;
+    text-transform: uppercase;
 }
 
 .product-table td {
@@ -143,8 +148,8 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
 }
 
 .product-img {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 6px;
     object-fit: cover;
     border: 1px solid #eee;
@@ -155,11 +160,20 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
     color: #2c3e50;
     display: block;
     margin-bottom: 4px;
+    font-size: 15px;
 }
 
 .product-meta {
     font-size: 12px;
     color: #95a5a6;
+    display: flex;
+    gap: 10px;
+}
+
+.meta-tag {
+    background: #f0f2f5;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 
 .btn-action {
@@ -198,9 +212,7 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
             <i class="fas fa-file-invoice"></i> CHI TIẾT ĐƠN HÀNG
             #<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?>
         </h1>
-        <div>
-            <a href="javascript:window.print()" class="btn-print"><i class="fas fa-print"></i> In Hóa Đơn</a>
-        </div>
+        <a href="javascript:window.print()" class="btn-print"><i class="fas fa-print"></i> In Hóa Đơn</a>
     </div>
 
     <div class="detail-grid">
@@ -223,15 +235,50 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
                     <label
                         style="font-size: 13px; font-weight: 600; color: #7f8c8d; display: block; margin-bottom: 8px;">Cập
                         nhật trạng thái:</label>
+
                     <select name="new_status"
                         style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px;">
                         <?php foreach ($statusConfig as $val => $cfg): ?>
-                        <option value="<?= $val ?>" <?= $order['status'] == $val ? 'selected' : '' ?>>
-                            <?= $cfg['label'] ?>
+                        <?php 
+                                $isDisabled = false;
+                                $note = "";
+
+                                // --- LOGIC CHẶN CHỌN NGƯỢC ---
+                                $curr = $order['status'];
+
+                                // 1. Nếu đơn Đang giao (1) -> KHÔNG ĐƯỢC CHỌN Chờ xác nhận (0)
+                                if ($curr == 1 && $val == 0) {
+                                    $isDisabled = true;
+                                    $note = " (Không thể quay lại)";
+                                }
+
+                                // 2. Nếu đơn đang Chờ xác nhận (0) -> KHÔNG ĐƯỢC CHỌN Đã giao (2) (Phải qua bước Giao hàng đã)
+                                if ($curr == 0 && $val == 2) {
+                                    $isDisabled = true;
+                                    $note = " (Cần giao hàng trước)";
+                                }
+
+                                // 3. Nếu đơn Đã xong (2) hoặc Đã hủy (3) -> KHÔNG ĐƯỢC ĐỔI NỮA (trừ khi chọn chính nó)
+                                if (($curr == 2 || $curr == 3) && $val != $curr) {
+                                    $isDisabled = true;
+                                }
+                            ?>
+
+                        <option value="<?= $val ?>" <?= $curr == $val ? 'selected' : '' ?>
+                            <?= $isDisabled ? 'disabled style="background:#f0f0f0; color:#999;"' : '' ?>>
+                            <?= $cfg['label'] . $note ?>
                         </option>
                         <?php endforeach; ?>
                     </select>
-                    <button type="submit" class="btn-action btn-update">Cập nhật</button>
+
+                    <?php if ($order['status'] != 2 && $order['status'] != 3): ?>
+                    <button type="submit" class="btn-action btn-update">Cập nhật ngay</button>
+                    <?php else: ?>
+                    <div
+                        style="background: #f8f9fa; color: #7f8c8d; padding: 10px; text-align: center; border-radius: 6px; font-size: 13px; border: 1px dashed #ccc;">
+                        <i class="fas fa-lock"></i> Đơn hàng đã đóng, không thể thay đổi.
+                    </div>
+                    <?php endif; ?>
                 </form>
             </div>
 
@@ -278,7 +325,7 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
                     <?php endif; ?>
                 </div>
 
-                <?php if ($order['payment_status'] == 0): ?>
+                <?php if ($order['payment_status'] == 0 && $order['status'] != 3): ?>
                 <div style="margin-top: 15px;">
                     <a href="?ctrl=admin&act=confirmPayment&id=<?= $order['id'] ?>"
                         onclick="return confirm('Xác nhận đã nhận được tiền?');" class="btn-action btn-confirm"
@@ -288,7 +335,6 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
                 </div>
                 <?php endif; ?>
             </div>
-
         </div>
 
         <div class="card">
@@ -316,13 +362,10 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
                                         class="product-name"><?= htmlspecialchars($item['product_name'], ENT_QUOTES, 'UTF-8') ?></span>
                                     <div class="product-meta">
                                         <?php if (!empty($item['size'])): ?>
-                                        <span
-                                            style="background: #eee; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">Size:
-                                            <?= htmlspecialchars($item['size']) ?></span>
+                                        <span class="meta-tag">Size: <?= htmlspecialchars($item['size']) ?></span>
                                         <?php endif; ?>
                                         <?php if (!empty($item['color'])): ?>
-                                        <span style="background: #eee; padding: 2px 6px; border-radius: 3px;">Màu:
-                                            <?= htmlspecialchars($item['color']) ?></span>
+                                        <span class="meta-tag">Màu: <?= htmlspecialchars($item['color']) ?></span>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -337,9 +380,9 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
                     <?php endforeach; ?>
 
                     <tr>
-                        <td colspan="3" style="text-align: right; padding-top: 20px; font-weight: 600; color: #7f8c8d;">
+                        <td colspan="3" style="text-align: right; padding-top: 25px; font-weight: 600; color: #7f8c8d;">
                             Tạm tính:</td>
-                        <td style="text-align: right; padding-top: 20px; font-weight: bold; color: #2c3e50;">
+                        <td style="text-align: right; padding-top: 25px; font-weight: bold; color: #2c3e50;">
                             <?= number_format($order['total_money']) ?> ₫</td>
                     </tr>
                     <tr>
@@ -367,7 +410,8 @@ $currentStatus = $statusConfig[$order['status']] ?? ['label' => 'Không rõ', 'c
     </div>
 
     <div style="margin-top: 20px;">
-        <a href="?ctrl=admin&act=orderList" style="text-decoration: none; color: #7f8c8d; font-weight: 600;">
+        <a href="?ctrl=admin&act=orderList"
+            style="text-decoration: none; color: #7f8c8d; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
             <i class="fas fa-arrow-left"></i> Quay lại danh sách
         </a>
     </div>

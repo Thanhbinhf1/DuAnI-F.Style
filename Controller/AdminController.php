@@ -1,40 +1,57 @@
 <?php 
 // Controller/AdminController.php
 
-// 1. Load Single Combined Model
+// 1. CHỈ LOAD 1 MODEL DUY NHẤT
 include_once 'Models/AdminModel.php'; 
 include_once 'csrf.php'; 
 
 class AdminController {
-    private $model; // We only need one model instance now
+    private $model; 
     
     function __construct() {
-        // SECURITY CHECK: Must be logged in and have role = 1 (Admin)
+        // KIỂM TRA BẢO MẬT: Phải đăng nhập và có role = 1 (Admin)
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 1) {
             echo "<script>alert('Bạn không có quyền truy cập trang quản trị!'); window.location='index.php?ctrl=user&act=login';</script>";
             exit();
         }
         
-        // Initialize the unified AdminModel
+        // Khởi tạo AdminModel (Chứa tất cả chức năng)
         $this->model = new AdminModel(); 
     }
 
     // --- DASHBOARD ---
     function dashboard() {
-        // Fetch stats from AdminModel
         $stats = $this->model->getDashboardStats(); 
-        $chartData = $this->model->getMonthlyIncome(); // Data for charts
+        $chartData = $this->model->getMonthlyIncome(); 
         $recent_activities = $this->model->getRecentActivityOrders();
         
         include_once 'Views/admin/dashboard.php';
     }
 
-    // --- USER MANAGEMENT ---
+    // =========================================================================
+    // QUẢN LÝ NGƯỜI DÙNG (USER)
+    // =========================================================================
 
     function userList() {
-        // Get users with order statistics
         $users = $this->model->getAllUsers(); 
         include_once 'Views/admin/user_list.php';
+    }
+
+    function userDetail() {
+        if (isset($_GET['id'])) {
+            $userId = $_GET['id'];
+            // Lấy thông tin & lịch sử
+            $user = $this->model->getUserInfo($userId);
+            $orders = $this->model->getUserHistory($userId);
+            
+            if (!$user) {
+                $this->redirectWithAlert('Người dùng không tồn tại!', '?ctrl=admin&act=userList');
+            }
+
+            include_once 'Views/admin/user_detail.php';
+        } else {
+            $this->redirectWithAlert('', '?ctrl=admin&act=userList');
+        }
     }
     
     function userDelete() {
@@ -72,7 +89,9 @@ class AdminController {
         }
     }
 
-    // --- CATEGORY MANAGEMENT ---
+    // =========================================================================
+    // QUẢN LÝ DANH MỤC (CATEGORY)
+    // =========================================================================
 
     function categoryList() {
         $categories = $this->model->getAllCategories();
@@ -87,13 +106,26 @@ class AdminController {
         include_once 'Views/admin/category_form.php';
     }
     
-    function categoryPost() {
+function categoryPost() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->verifyCsrf();
             $id = $_POST['id'] ?? 0;
-            $name = $_POST['name'];
+            $name = trim($_POST['name']); // Xóa khoảng trắng thừa
             $status = $_POST['status'];
 
+            // --- 1. KIỂM TRA TÊN RỖNG ---
+            if (empty($name)) {
+                $this->redirectWithAlert('LỖI: Tên danh mục không được để trống.');
+                return;
+            }
+
+            // --- 2. KIỂM TRA TRÙNG TÊN (Server-side) ---
+            if ($this->model->checkCategoryNameExist($name, $id)) {
+                $this->redirectWithAlert("LỖI: Tên danh mục '$name' đã tồn tại. Vui lòng chọn tên khác!");
+                return;
+            }
+
+            // --- 3. LƯU DỮ LIỆU ---
             $result = false;
             $msg = 'LỖI: Thao tác thất bại.';
 
@@ -108,30 +140,27 @@ class AdminController {
             $this->redirectWithAlert($msg, '?ctrl=admin&act=categoryList');
         }
     }
-
     function categoryToggleStatus() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->verifyCsrf();
             $id = $_POST['id'];
             $currentStatus = (int)$_POST['current_status'];
-            
-            // Toggle status: 1 -> 0, 0 -> 1
             $newStatus = $currentStatus == 1 ? 0 : 1;
             
             $result = $this->model->toggleCategoryStatus($id, $newStatus);
-            
-            $statusText = $newStatus == 1 ? 'HIỆN' : 'ẨN';
-            $msg = $result ? "Đã chuyển trạng thái danh mục #$id sang $statusText thành công!" : 'LỖI: Cập nhật thất bại.';
+            $msg = $result ? "Cập nhật trạng thái thành công!" : 'LỖI: Cập nhật thất bại.';
             
             $this->redirectWithAlert($msg, '?ctrl=admin&act=categoryList');
         }
     }
 
-    // --- PRODUCT MANAGEMENT ---
+    // =========================================================================
+    // QUẢN LÝ SẢN PHẨM (PRODUCT)
+    // =========================================================================
 
     function productList() {
         $products = $this->model->getAllProductsAdmin();
-        $categories = $this->model->getAllCategories(); // Used for mapping names
+        $categories = $this->model->getAllCategories(); 
         include_once 'Views/admin/product_list.php';
     }
     
@@ -141,7 +170,6 @@ class AdminController {
         
         if (isset($_GET['id'])) {
             $product = $this->model->getProductById($_GET['id']);
-            // Fetch gallery images if editing
             if ($product) {
                 $galleryImages = $this->model->getGalleryImages($_GET['id']);
             }
@@ -154,7 +182,7 @@ class AdminController {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->verifyCsrf();
             
-            // 1. Get form data
+            // 1. Lấy dữ liệu
             $id = $_POST['id'] ?? 0;
             $categoryId = $_POST['category_id'];
             $name = $_POST['name'];
@@ -164,8 +192,25 @@ class AdminController {
             $material = $_POST['material'];
             $brand = $_POST['brand'];
             $skuCode = $_POST['sku_code'];
+
+            // --- [VALIDATION SERVER-SIDE] ---
+            // 1.1 Kiểm tra giá
+            if ((float)$price <= 0) {
+                $this->redirectWithAlert('LỖI: Giá gốc phải lớn hơn 0.');
+                return;
+            }
+            if ((float)$priceSale > 0 && (float)$priceSale >= (float)$price) {
+                $this->redirectWithAlert('LỖI: Giá khuyến mãi phải NHỎ HƠN giá gốc.');
+                return;
+            }
+
+            // 1.2 Kiểm tra trùng tên
+            if ($this->model->checkProductNameExist($name, $id)) {
+                $this->redirectWithAlert("LỖI: Tên sản phẩm '$name' đã tồn tại. Vui lòng đặt tên khác.");
+                return;
+            }
             
-            // 2. Handle Main Image Upload
+            // 2. Xử lý ảnh chính
             $image = $_POST['image_current'] ?? ''; 
             if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
                 $uploadResult = $this->handleUpload($_FILES['image_file']);
@@ -177,13 +222,12 @@ class AdminController {
                 }
             }
             
-            // Validation for new product
             if ($id == 0 && empty($image)) {
                 $this->redirectWithAlert('LỖI: Vui lòng thêm ảnh cho sản phẩm mới.');
                 return;
             }
 
-            // 3. Database Interaction (Insert/Update)
+            // 3. Insert/Update
             $result = false;
             $productId = $id;
 
@@ -199,11 +243,10 @@ class AdminController {
                 }
             }
 
-            // 4. Handle Gallery Upload (Multiple files)
+            // 4. Xử lý Gallery ảnh
             if ($result && isset($_FILES['gallery_files'])) {
-                // If uploading new gallery, clear old ones first (optional strategy)
                 if (count($_FILES['gallery_files']['name']) > 0 && !empty($_FILES['gallery_files']['name'][0])) {
-                    $this->model->deleteGalleryImages($productId);
+                    $this->model->deleteGalleryImages($productId); // Xóa cũ
                     
                     $galleryPaths = [];
                     $files = $_FILES['gallery_files'];
@@ -218,14 +261,12 @@ class AdminController {
                                 'error' => $files['error'][$i],
                                 'size' => $files['size'][$i]
                             ];
-                            
                             $upRes = $this->handleUpload($singleFile);
                             if ($upRes['success']) {
                                 $galleryPaths[] = $upRes['path'];
                             }
                         }
                     }
-                    
                     if (!empty($galleryPaths)) {
                         $this->model->insertGalleryImages($productId, $galleryPaths);
                     }
@@ -245,19 +286,24 @@ class AdminController {
             $newStatus = $currentStatus == 1 ? 0 : 1;
             
             $result = $this->model->toggleProductStatus($id, $newStatus);
-            
-            $statusText = $newStatus == 1 ? 'HIỆN' : 'ẨN';
-            $msg = $result ? "Đã chuyển trạng thái sản phẩm #$id sang $statusText thành công!" : 'LỖI: Cập nhật thất bại.';
+            $msg = $result ? "Cập nhật trạng thái thành công!" : 'LỖI: Cập nhật thất bại.';
             
             $this->redirectWithAlert($msg, '?ctrl=admin&act=productList');
         }
     }
     
-    // --- ORDER MANAGEMENT ---
+    // =========================================================================
+    // QUẢN LÝ ĐƠN HÀNG (ORDER)
+    // =========================================================================
 
     function orderList() {
         $orders = $this->model->getAllOrders();
         include_once 'Views/admin/order_list.php';
+    }
+
+    function orderCancelledList() {
+        $orders = $this->model->getCancelledOrders();
+        include_once 'Views/admin/order_cancelled.php';
     }
     
     function orderDetail() {
@@ -273,7 +319,7 @@ class AdminController {
             
             include_once 'Views/admin/order_detail.php';
         } else {
-            header("Location: ?ctrl=admin&act=orderList");
+            $this->redirectWithAlert('', '?ctrl=admin&act=orderList');
         }
     }
 
@@ -284,11 +330,10 @@ class AdminController {
             $orderId = $_POST['id'];
             $newStatus = (int)$_POST['new_status'];
             
-            // Fetch current status to validate transition
             $order = $this->model->getOrderById($orderId);
             $currentStatus = (int)$order['status'];
             
-            // -- Simple Workflow Validation --
+            // Logic kiểm tra trạng thái
             $msg = '';
             $isValid = true;
 
@@ -296,6 +341,8 @@ class AdminController {
                 $isValid = false; $msg = 'LỖI: Đơn hàng đã HỦY, không thể thay đổi.';
             } elseif ($currentStatus == 2 && $newStatus != 2) {
                 $isValid = false; $msg = 'LỖI: Đơn hàng đã HOÀN TẤT, không thể đổi lại.';
+            } elseif ($currentStatus == 1 && $newStatus == 0) {
+                $isValid = false; $msg = 'LỖI: Đơn đang giao không thể quay lại chờ xác nhận.';
             }
             
             if ($isValid) {
@@ -303,7 +350,13 @@ class AdminController {
                 $msg = $result ? 'Cập nhật trạng thái thành công!' : 'LỖI: Cập nhật thất bại.';
             }
 
-            $this->redirectWithAlert($msg, "?ctrl=admin&act=orderDetail&id=$orderId");
+            // Redirect về đúng trang đã gọi (list hoặc detail)
+            $redirectUrl = "?ctrl=admin&act=orderList"; // Mặc định về list
+            if (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'orderDetail') !== false) {
+                 $redirectUrl = "?ctrl=admin&act=orderDetail&id=$orderId";
+            }
+
+            $this->redirectWithAlert($msg, $redirectUrl);
         }
     }
 
@@ -319,13 +372,13 @@ class AdminController {
     
     function statistics() {
         $stats = $this->model->getSaleStatistics();
-        // Additional Product Stats
         $stats['top_selling'] = $this->model->getTopSellingProducts(10);
-        
         include_once 'Views/admin/statistics.php';
     }
 
-    // --- HELPER FUNCTIONS (DRY Principle) ---
+    // =========================================================================
+    // HÀM BỔ TRỢ (HELPERS)
+    // =========================================================================
 
     private function verifyCsrf() {
         if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
@@ -335,7 +388,8 @@ class AdminController {
 
     private function redirectWithAlert($msg, $url = null) {
         $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
-        $script = "<script>alert('$safe_msg');";
+        $script = "<script>";
+        if ($msg) $script .= "alert('$safe_msg');";
         if ($url) {
             $script .= " window.location='$url';";
         } else {
@@ -348,7 +402,6 @@ class AdminController {
 
     private function handleUpload($file) {
         $target_dir = "Public/Uploads/Products/";
-        // Create directory if not exists
         if (!file_exists($target_dir)) { mkdir($target_dir, 0777, true); }
 
         $allowed_types = ['jpg', 'png', 'jpeg', 'gif', 'webp'];
@@ -359,7 +412,6 @@ class AdminController {
             return ['success' => false, 'message' => 'LỖI: Định dạng ảnh không hợp lệ.'];
         }
 
-        // Security check
         if (getimagesize($file["tmp_name"]) === false) {
             return ['success' => false, 'message' => 'LỖI: File không phải là ảnh hợp lệ.'];
         }
@@ -372,28 +424,7 @@ class AdminController {
         } else {
             return ['success' => false, 'message' => 'LỖI: Không thể lưu file.'];
         }
-    }
-    // ...
-    
-    function userDetail() {
-        if (isset($_GET['id'])) {
-            $userId = $_GET['id'];
-            
-            // 1. Lấy thông tin cá nhân
-            $user = $this->model->getUserInfo($userId);
-            
-            // 2. Lấy lịch sử mua hàng
-            $orders = $this->model->getUserHistory($userId);
-            
-            if (!$user) {
-                echo "<script>alert('Người dùng không tồn tại!'); history.back();</script>";
-                exit;
-            }
-
-            include_once 'Views/admin/user_detail.php';
-        } else {
-            header("Location: ?ctrl=admin&act=userList");
-        }
+        
     }
     
 }
