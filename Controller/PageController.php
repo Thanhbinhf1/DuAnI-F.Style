@@ -1,6 +1,7 @@
 <?php 
 include_once 'Models/Product.php';
 include_once 'Models/Contact.php';
+include_once 'Models/Favorite.php';
 
 class PageController {
     private $productModel;
@@ -11,11 +12,44 @@ class PageController {
         $this->contactModel  = new Contact();
     }
 
+    /**
+     * Helper function to enrich products with favorite status.
+     * @param array $products The list of products to enrich.
+     * @param array $favoriteIds The list of favorite product IDs for the current user.
+     */
+    private function _enrichProductsWithFavorites(&$products, $favoriteIds) {
+        if (empty($products)) {
+            // Gán is_favorited = false cho tất cả nếu không có ds yêu thích
+            foreach ($products as &$product) {
+                $product['is_favorited'] = false;
+            }
+            unset($product);
+            return;
+        }
+        foreach ($products as &$product) {
+            $product['is_favorited'] = in_array($product['id'], $favoriteIds);
+        }
+        unset($product);
+    }
+
     // Trang chủ
     public function home() {
+        // Lấy danh sách ID sản phẩm yêu thích của user (nếu đã đăng nhập)
+        $favModel = new Favorite();
+        $favoriteIds = [];
+        if (isset($_SESSION['user']['id'])) {
+            $favoriteIds = $favModel->getFavoriteProductIds($_SESSION['user']['id']);
+        }
+
+        // Lấy danh sách sản phẩm
         $spMoi    = $this->productModel->getNewProducts();
         $spHot    = $this->productModel->getHotProducts();
         $spGiaTot = $this->productModel->getSaleProducts();
+
+        // Gán trạng thái is_favorited cho từng sản phẩm
+        $this->_enrichProductsWithFavorites($spMoi, $favoriteIds);
+        $this->_enrichProductsWithFavorites($spHot, $favoriteIds);
+        $this->_enrichProductsWithFavorites($spGiaTot, $favoriteIds);
 
         include_once 'Views/users/Page_home.php';
     }

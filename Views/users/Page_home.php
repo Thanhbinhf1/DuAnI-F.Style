@@ -11,7 +11,7 @@
     
     <section class="section-product">
         <div class="section-header">
-            <h2>SẢN PHẨM HOT </h2>
+            <h2>SẢN PHẨM HOT</h2>
             <a href="?ctrl=product&act=list&type=hot">Xem tất cả &rarr;</a>
         </div>
         <div class="product-list">
@@ -20,12 +20,56 @@
                 foreach ($spHot as $sp): 
                     $link = "?ctrl=product&act=detail&id=" . $sp['id'];
                     $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
+                    $isHot = true; // Đánh dấu là HOT để hiện badge
             ?>
+            
             <div class="product-item">
-                <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
-                <h3><a href="<?=$link?>"><?=$sp['name']?></a></h3>
-                <p><?=number_format($sp['price'])?> đ</p>
-                <a href="<?=$link?>"><button>Xem chi tiết</button></a>
+                <div class="thumb-wrapper">
+                    <a href="<?=$link?>">
+                        <img src="<?=$img?>" alt="<?=$sp['name']?>">
+                    </a>
+                    <span class="badge badge-hot">HOT</span>
+                    <?php if (isset($sp['price_sale']) && $sp['price_sale'] > 0): ?>
+                        <span class="badge badge-sale">-<?=round(100 - ($sp['price_sale']/$sp['price']*100))?>%</span>
+                    <?php endif; ?>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-name">
+                        <a href="<?=$link?>" title="<?=$sp['name']?>"><?=$sp['name']?></a>
+                    </h3>
+
+                    <div class="product-meta">
+                        <div class="stars">
+                            <?php 
+                            $rating = isset($sp['avg_rating']) ? round($sp['avg_rating']) : 5;
+                            for($i=1; $i<=5; $i++) {
+                                echo '<i class="fa-solid fa-star ' . ($i <= $rating ? 'gold' : 'gray') . '"></i>';
+                            }
+                            ?>
+                        </div>
+                        <span class="sold-count">Đã bán <?= number_format($sp['sold_count'] ?? 0) ?></span>
+                    </div>
+
+                    <div class="price-box">
+                        <?php if(isset($sp['price_sale']) && $sp['price_sale'] > 0): ?>
+                            <span class="current-price"><?=number_format($sp['price_sale'])?>đ</span>
+                            <span class="old-price"><?=number_format($sp['price'])?>đ</span>
+                        <?php else: ?>
+                            <span class="current-price"><?=number_format($sp['price'])?>đ</span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="product-buttons">
+                        <a href="<?=$link?>" class="btn-action btn-view">Xem chi tiết</a>
+                        <button type="button" 
+                                class="btn-action btn-favorite <?= isset($sp['is_favorited']) && $sp['is_favorited'] ? 'active' : '' ?>" 
+                                data-product-id="<?=$sp['id']?>"
+                                onclick="toggleFavorite(this, <?=$sp['id']?>)">
+                            <i class="fa-solid fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <?php endforeach; 
             } else { echo "<p>Đang cập nhật...</p>"; }
@@ -35,7 +79,7 @@
 
     <section class="section-product">
         <div class="section-header">
-            <h2>HÀNG MỚI VỀ </h2>
+            <h2>HÀNG MỚI VỀ</h2>
             <a href="?ctrl=product&act=list&type=new">Xem tất cả &rarr;</a>
         </div>
         
@@ -52,9 +96,28 @@
                         $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
                 ?>
                 <div class="product-item">
-                    <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
-                    <h3><a href="<?=$link?>"><?=$sp['name']?></a></h3>
-                    <p><?=number_format($sp['price'])?> đ</p>
+                    <div class="thumb-wrapper">
+                        <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
+                        <span class="badge badge-new">NEW</span>
+                    </div>
+                    
+                    <div class="product-info">
+                        <h3 class="product-name"><a href="<?=$link?>"><?=$sp['name']?></a></h3>
+                        
+                        <div class="product-meta">
+                            <div class="stars">
+                                <?php 
+                                $rating = isset($sp['avg_rating']) ? round($sp['avg_rating']) : 5;
+                                for($i=1; $i<=5; $i++) echo '<i class="fa-solid fa-star ' . ($i <= $rating ? 'gold' : 'gray') . '"></i>';
+                                ?>
+                            </div>
+                            <span class="sold-count">Đã bán <?= number_format($sp['sold_count'] ?? 0) ?></span>
+                        </div>
+
+                        <div class="price-box">
+                            <span class="current-price"><?=number_format($sp['price'])?>đ</span>
+                        </div>
+                    </div>
                 </div>
                 <?php endforeach; 
                 } else { echo "<p>Chưa có sản phẩm mới.</p>"; }
@@ -65,7 +128,7 @@
 
     <section class="section-product">
         <div class="section-header">
-            <h2>SẢN PHẨM GIÁ TỐT </h2>
+            <h2>SẢN PHẨM GIÁ TỐT</h2>
             <a href="?ctrl=product&act=list&type=sale">Xem tất cả &rarr;</a>
         </div>
         <div class="product-list">
@@ -76,10 +139,47 @@
                     $img = !empty($sp['image']) ? $sp['image'] : 'https://via.placeholder.com/200';
             ?>
             <div class="product-item">
-                <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
-                <h3><a href="<?=$link?>"><?=$sp['name']?></a></h3>
-                <p><?=number_format($sp['price'])?> đ</p>
-                <a href="<?=$link?>"><button>Xem chi tiết</button></a>
+                <div class="thumb-wrapper">
+                    <a href="<?=$link?>"><img src="<?=$img?>" alt="<?=$sp['name']?>"></a>
+                    <?php if (isset($sp['price_sale']) && $sp['price_sale'] > 0): ?>
+                        <span class="badge badge-sale">-<?=round(100 - ($sp['price_sale']/$sp['price']*100))?>%</span>
+                    <?php endif; ?>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-name">
+                        <a href="<?=$link?>" title="<?=$sp['name']?>"><?=$sp['name']?></a>
+                    </h3>
+
+                    <div class="product-meta">
+                        <div class="stars">
+                            <?php 
+                            $rating = isset($sp['avg_rating']) ? round($sp['avg_rating']) : 5;
+                            for($i=1; $i<=5; $i++) echo '<i class="fa-solid fa-star ' . ($i <= $rating ? 'gold' : 'gray') . '"></i>';
+                            ?>
+                        </div>
+                        <span class="sold-count">Đã bán <?= number_format($sp['sold_count'] ?? 0) ?></span>
+                    </div>
+
+                    <div class="price-box">
+                        <?php if(isset($sp['price_sale']) && $sp['price_sale'] > 0): ?>
+                            <span class="current-price"><?=number_format($sp['price_sale'])?>đ</span>
+                            <span class="old-price"><?=number_format($sp['price'])?>đ</span>
+                        <?php else: ?>
+                            <span class="current-price"><?=number_format($sp['price'])?>đ</span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="product-buttons">
+                        <a href="<?=$link?>" class="btn-action btn-view">Xem chi tiết</a>
+                        <button type="button" 
+                                class="btn-action btn-favorite <?= isset($sp['is_favorited']) && $sp['is_favorited'] ? 'active' : '' ?>" 
+                                data-product-id="<?=$sp['id']?>"
+                                onclick="toggleFavorite(this, <?=$sp['id']?>)">
+                            <i class="fa-solid fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <?php endforeach; 
             } else { echo "<p>Đang cập nhật...</p>"; }

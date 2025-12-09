@@ -132,63 +132,145 @@ h2 {
 
 .product-list {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 cột đều nhau */
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* More responsive grid */
+    gap: 2rem;
     margin-bottom: 50px;
 }
 
 .product-item {
     background: #fff;
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    border: none !important; /* Ghi đè style inline cũ */
-    width: 100% !important; /* Ghi đè style inline cũ */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #e9e9e9;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Key for alignment */
 }
 
 .product-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.08);
+}
+
+/* Container for image to handle zoom effect */
+.product-item .thumb-wrapper {
+    overflow: hidden;
+    position: relative;
 }
 
 .product-item img {
     width: 100%;
-    height: 250px;
-    object-fit: cover; /* Giúp ảnh không bị méo */
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.product-item:hover img {
+    transform: scale(1.05);
+}
+
+.product-info {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* This is important for the buttons to align at the bottom */
 }
 
 .product-item h3 {
-    font-size: 16px;
-    padding: 15px 15px 5px;
-    margin: 0;
-    height: 60px; /* Cố định chiều cao tên để đều dòng */
-    overflow: hidden;
-}
-
-.product-item p {
-    padding: 0 15px;
-    color: #ff5722 !important;
-    font-size: 18px;
-}
-
-.product-item button {
-    margin: 15px;
-    padding: 10px;
-    background: white;
-    color: #333;
-    border: 1px solid #333;
-    border-radius: 5px;
-    cursor: pointer;
+    font-size: 1rem;
     font-weight: 600;
-    transition: 0.3s;
+    margin: 0 0 0.5rem 0;
+    height: 48px; /* Approx 2 lines, adjusted for line-height */
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.product-item button:hover {
-    background: #333;
-    color: white;
+.product-item h3 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.product-item h3 a:hover {
+    color: #ff5722;
+}
+
+.product-item .price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ff5722 !important;
+    margin: 0 0 1rem 0;
+}
+
+.product-buttons {
+    margin-top: auto; /* Pushes the button group to the bottom */
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.product-buttons .btn-view-detail {
+    flex-grow: 1;
+    padding: 0.6rem 1rem;
+    background: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.product-buttons .btn-view-detail:hover {
+    background: #f7f7f7;
+    border-color: #b3b3b3;
+    color: #000;
+}
+
+.product-buttons .btn-favorite {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.product-buttons .btn-favorite:hover {
+    border-color: #ff5722;
+    background: #fff5f2;
+}
+
+.product-buttons .btn-favorite svg {
+    width: 18px;
+    height: 18px;
+    fill: #999;
+    transition: all 0.2s;
+}
+
+.product-buttons .btn-favorite:hover svg {
+    fill: #ff5722;
+}
+
+/* State when a product is favorited */
+.product-buttons .btn-favorite.is-favorited {
+    background: #ff5722;
+    border-color: #ff5722;
+}
+
+.product-buttons .btn-favorite.is-favorited svg {
+    fill: #fff;
 }
 
 /* =========================================
@@ -717,35 +799,6 @@ nav:not(.navbar) ul li.dropdown:hover > a::after { width: 0; }
     height: 35px;
     font-weight: 600;
     appearance: none; /* Ẩn mũi tên mặc định của input number */
-}
-
-/* Nút Mua ngay khi Hover (Trang chủ) */
-.product-item {
-    position: relative; /* Để nút mua ngay bám theo */
-}
-
-.btn-buy-now-hover {
-    position: absolute;
-    bottom: -40px; /* Ẩn bên dưới */
-    left: 0;
-    width: 100%;
-    background: #ff5722;
-    color: white;
-    text-align: center;
-    padding: 10px 0;
-    font-weight: bold;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    opacity: 0; /* Ẩn đi */
-}
-
-.product-item:hover .btn-buy-now-hover {
-    bottom: 0; /* Trượt lên */
-    opacity: 1; /* Hiện ra */
-}
-
-.product-item:hover {
-    padding-bottom: 40px; /* Tạo chỗ trống cho nút trượt lên */
 }
 
 /* Nút Mua ngay (Trang chi tiết) */
