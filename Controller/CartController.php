@@ -29,7 +29,23 @@ class CartController {
     function buyNow() {
         $this->processAdd(true); 
     }
+public function addToCart() {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        // Kiểm tra dữ liệu gửi lên
+        $color = $_POST['color'] ?? null;
+        $size = $_POST['size'] ?? null;
+        $productId = $_POST['product_id'] ?? null;
 
+        if (empty($color) || empty($size)) {
+            // Nếu thiếu, quay lại trang chi tiết và báo lỗi
+            $_SESSION['error'] = "Vui lòng chọn đầy đủ màu sắc và kích thước!";
+            header("Location: index.php?act=product-detail&id=" . $productId);
+            exit();
+        }
+
+        // ... Các xử lý thêm vào giỏ hàng bình thường ...
+    }
+}
     // Hàm xử lý chung cho Add và BuyNow
     private function processAdd($isBuyNow) {
         if (isset($_POST['id'])) {

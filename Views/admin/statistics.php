@@ -1,128 +1,139 @@
 <?php
 // Views/admin/statistics.php
 
-// Dữ liệu cần thiết cho JS
+// Dữ liệu JSON cho biểu đồ
 $dailyRevenueJson = json_encode($stats['daily_revenue'] ?? [], JSON_NUMERIC_CHECK);
 $statusRatioJson = json_encode($stats['status_ratio'] ?? [], JSON_NUMERIC_CHECK);
-$revenueByCategoryJson = json_encode($stats['revenue_by_category'] ?? [], JSON_NUMERIC_CHECK);
 
 // Mapping trạng thái
 $statusMapping = [
-    0 => ['label' => 'Chờ xác nhận', 'color' => '#f1c40f'], // Vàng
-    1 => ['label' => 'Đang giao', 'color' => '#3498db'],   // Xanh dương
-    2 => ['label' => 'Hoàn thành', 'color' => '#2ecc71'],  // Xanh lá
-    3 => ['label' => 'Đã hủy', 'color' => '#e74c3c'],      // Đỏ
+    0 => ['label' => 'Chờ xác nhận', 'color' => '#f1c40f'],
+    1 => ['label' => 'Đang giao', 'color' => '#3498db'],
+    2 => ['label' => 'Hoàn thành', 'color' => '#2ecc71'],
+    3 => ['label' => 'Đã hủy', 'color' => '#e74c3c'],
 ];
-$totalOrders = array_sum(array_column($stats['status_ratio'] ?? [], 'total'));
 
-// Tính toán sơ bộ để hiển thị gợi ý hành động (Logic PHP)
-$pendingOrders = 0;
-$shippingOrders = 0;
-$cancelledOrders = 0;
-$successOrders = 0;
-
+// Tính toán tổng quan cho các thẻ gợi ý
+$pendingOrders = 0; $shippingOrders = 0; $cancelledOrders = 0;
 foreach ($stats['status_ratio'] ?? [] as $s) {
     if ($s['status'] == 0) $pendingOrders = $s['total'];
     if ($s['status'] == 1) $shippingOrders = $s['total'];
-    if ($s['status'] == 2) $successOrders = $s['total'];
     if ($s['status'] == 3) $cancelledOrders = $s['total'];
 }
+
+// Mảng cấu hình bộ lọc thời gian
+$timeOptions = [
+    15 => '15 ngày qua',
+    30 => '30 ngày qua',
+    90 => '3 tháng qua',
+    180 => '6 tháng qua',
+    365 => '1 năm qua'
+];
+$currentTime = isset($selectedDays) ? $selectedDays : 30; // Biến từ Controller
 ?>
 
-<h1 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 30px;">
-    📈 THỐNG KÊ & BÁO CÁO CHI TIẾT
-</h1>
+<div
+    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 30px;">
+    <h1 style="color: #2c3e50; margin: 0;">📈 THỐNG KÊ DOANH THU</h1>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;">
+    <form method="GET" action="" style="display: flex; align-items: center; gap: 10px;">
+        <input type="hidden" name="ctrl" value="admin">
+        <input type="hidden" name="act" value="statistics">
+
+        <label style="font-weight: 600; color: #555;">Xem theo:</label>
+        <select name="time" onchange="this.form.submit()"
+            style="padding: 8px 15px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; font-weight: bold; color: #2c3e50;">
+            <?php foreach ($timeOptions as $val => $label): ?>
+            <option value="<?= $val ?>" <?= $currentTime == $val ? 'selected' : '' ?>>
+                <?= $label ?>
+            </option>
+            <?php endforeach; ?>
+        </select>
+    </form>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 40px;">
     <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-        <h3>Doanh thu 7 ngày gần nhất</h3>
-        <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 10px;">Theo dõi biến động dòng tiền hàng ngày</p>
-        <canvas id="dailyRevenueChart" style="max-height: 300px;"></canvas>
+        <h3>Doanh thu thực tế (<?= $timeOptions[$currentTime] ?>)</h3>
+        <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 10px;">Biểu đồ thể hiện tổng tiền thu được từ các đơn
+            hàng "Hoàn thành".</p>
+        <canvas id="dailyRevenueChart" style="max-height: 300px; width: 100%;"></canvas>
     </div>
 
     <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-        <h3>Tỷ lệ & Kiểm soát Đơn hàng</h3>
-        <div style="display: flex; gap: 20px; align-items: center;">
-            <div style="flex: 1;">
-                <canvas id="statusRatioChart" style="max-height: 250px;"></canvas>
+        <h3>Trạng thái đơn hàng</h3>
+        <canvas id="statusRatioChart" style="max-height: 200px; margin-bottom: 20px;"></canvas>
+
+        <div style="font-size: 13px; border-top: 1px dashed #eee; padding-top: 15px;">
+            <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span style="color: #f1c40f; font-weight: bold;">● Chờ xử lý:</span>
+                <span><?= $pendingOrders ?> đơn</span>
             </div>
-            <div style="flex: 1; font-size: 14px;">
-                <div style="margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #eee;">
-                    <strong style="color: #f1c40f;">● Chờ xác nhận: <?= $pendingOrders ?> đơn</strong><br>
-                    <small style="color: #555;">👉 Cần đóng gói & trừ kho ngay.</small>
-                </div>
-                <div style="margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #eee;">
-                    <strong style="color: #3498db;">● Đang giao: <?= $shippingOrders ?> đơn</strong><br>
-                    <small style="color: #555;">📦 Hàng đang trên đường đi.</small>
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <strong style="color: #e74c3c;">● Đã hủy: <?= $cancelledOrders ?> đơn</strong><br>
-                    <small style="color: #555;">⚠️ Kiểm tra lý do (hoàn kho).</small>
-                </div>
+            <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span style="color: #3498db; font-weight: bold;">● Đang giao:</span>
+                <span><?= $shippingOrders ?> đơn</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #e74c3c; font-weight: bold;">● Đã hủy:</span>
+                <span><?= $cancelledOrders ?> đơn</span>
             </div>
         </div>
     </div>
 </div>
 
 <div
-    style="margin-bottom: 40px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-    <h3>Top 5 Doanh thu theo Danh mục</h3>
-    <canvas id="revenueByCategoryChart" style="max-height: 400px;"></canvas>
-</div>
+    style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 40px;">
+    <h3 style="color: #2c3e50; border-left: 5px solid #27ae60; padding-left: 10px; margin-bottom: 20px;">
+        🏆 TOP 10 SẢN PHẨM BÁN CHẠY NHẤT (<?= $timeOptions[$currentTime] ?>)
+    </h3>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;">
-
-    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-        <h3>Top 10 Sản phẩm Bán chạy</h3>
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background: #f1f1f1;">
-                    <th>#</th>
-                    <th>Tên sản phẩm</th>
-                    <th style="text-align:center">Đã bán</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php 
-            foreach ($stats['top_selling'] ?? [] as $index => $sp) {
-                echo "<tr style='border-bottom: 1px solid #eee;'><td>" . ($index + 1) . "</td><td>{$sp['name']}</td><td style='text-align:center'>{$sp['sold_quantity']}</td></tr>";
-            }
-            ?>
-            </tbody>
-        </table>
-    </div>
-
-    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-        <h3>Phân tích Khu vực & Khách hàng</h3>
-
-        <h4 style="margin-top: 15px; font-size: 16px;">Top 5 Tỉnh/Thành</h4>
-        <table style="width: 100%; border-collapse: collapse;">
-            <?php 
-            foreach ($stats['orders_by_province'] ?? [] as $index => $row) {
-                echo "<tr><td>" . ($index + 1) . "</td><td>{$row['province']}</td><td style='text-align:center'>{$row['count']} đơn</td></tr>";
-            }
-            ?>
-        </table>
-
-        <h4 style="margin-top: 20px; font-size: 16px;">Tỉ lệ Khách hàng (30 ngày)</h4>
-        <table style="width: 100%; border-collapse: collapse;">
-            <?php
-            $totalCustomerOrders = array_sum(array_column($stats['customer_type_stats'] ?? [], 'total_orders'));
-            foreach ($stats['customer_type_stats'] ?? [] as $row) {
-                $type = ($row['customer_type'] === 'New') ? 'Khách mới' : 'Khách cũ';
-                $percent = $totalCustomerOrders > 0 ? round(($row['total_orders'] / $totalCustomerOrders) * 100, 1) : 0;
-                echo "<tr><td>{$type}</td><td>{$row['total_orders']} đơn</td><td>{$percent}%</td></tr>";
-            }
-            ?>
-        </table>
-    </div>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f8f9fa; color: #555; text-transform: uppercase; font-size: 13px;">
+                <th style="padding: 12px; text-align: center; width: 5%;">Top</th>
+                <th style="padding: 12px; text-align: left;">Tên sản phẩm</th>
+                <th style="padding: 12px; text-align: center;">Số lượng bán</th>
+                <th style="padding: 12px; text-align: right;">Ngày bán gần nhất</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($stats['top_selling'])): ?>
+            <?php foreach ($stats['top_selling'] as $index => $sp): ?>
+            <tr style="border-bottom: 1px solid #eee; transition: 0.2s;" onmouseover="this.style.background='#fcfcfc'"
+                onmouseout="this.style.background='transparent'">
+                <td style="padding: 15px; text-align: center; font-weight: bold; color: #7f8c8d;">
+                    <?php if($index == 0) echo '🥇'; elseif($index == 1) echo '🥈'; elseif($index == 2) echo '🥉'; else echo ($index + 1); ?>
+                </td>
+                <td style="padding: 15px; font-weight: 600; color: #2c3e50;">
+                    <?= htmlspecialchars($sp['name']) ?>
+                </td>
+                <td style="padding: 15px; text-align: center;">
+                    <span
+                        style="background: #eafaf1; color: #2ecc71; padding: 5px 10px; border-radius: 15px; font-weight: bold;">
+                        <?= $sp['sold_quantity'] ?> cái
+                    </span>
+                </td>
+                <td style="padding: 15px; text-align: right; color: #555;">
+                    <i class="far fa-clock"></i>
+                    <?= date('d/m/Y', strtotime($sp['last_sale_date'])) ?>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            <?php else: ?>
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 30px; color: #999;">
+                    Chưa có dữ liệu bán hàng trong khoảng thời gian này.
+                </td>
+            </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const dailyRevenueData = <?= $dailyRevenueJson ?>;
     const statusRatioData = <?= $statusRatioJson ?>;
-    const revenueByCategoryData = <?= $revenueByCategoryJson ?>;
     const statusMapping = <?= json_encode($statusMapping) ?>;
 
     const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', {
@@ -130,63 +141,77 @@ document.addEventListener('DOMContentLoaded', function() {
         currency: 'VND'
     }).format(value);
 
-    // 1. BIỂU ĐỒ DOANH THU HÀNG NGÀY (ĐÃ SỬA: Bar Chart)
-    const revenueLabels = dailyRevenueData.map(item => new Date(item.date).toLocaleDateString('vi-VN'));
+    // 1. CHART DOANH THU
+    const revenueLabels = dailyRevenueData.map(item => {
+        const d = new Date(item.date);
+        return d.getDate() + '/' + (d.getMonth() + 1); // Chỉ hiện Ngày/Tháng cho gọn
+    });
     const revenueValues = dailyRevenueData.map(item => item.revenue);
-    // Đảo ngược mảng nếu dữ liệu server trả về từ mới nhất -> cũ nhất (để hiển thị theo thời gian trái -> phải)
+
+    // Đảo ngược để hiện từ cũ đến mới (trái qua phải)
     revenueLabels.reverse();
     revenueValues.reverse();
 
     new Chart(document.getElementById('dailyRevenueChart').getContext('2d'), {
-        type: 'bar', // <--- ĐỔI TỪ LINE SANG BAR
+        type: 'line', // Dùng line chart để thấy xu hướng theo thời gian tốt hơn
         data: {
             labels: revenueLabels,
             datasets: [{
-                label: 'Doanh thu (VND)',
+                label: 'Doanh thu',
                 data: revenueValues,
-                backgroundColor: '#3498db', // Màu cột
-                borderRadius: 4, // Bo tròn góc cột
-                barThickness: 20, // Độ rộng cột
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#3498db',
+                pointRadius: 4
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: formatCurrency
+                        callback: (val) => formatCurrency(val)
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
                     }
                 }
             },
             plugins: {
+                legend: {
+                    display: false
+                },
                 tooltip: {
                     callbacks: {
-                        label: (context) => context.dataset.label + ': ' + formatCurrency(context.parsed
-                            .y)
+                        label: (ctx) => formatCurrency(ctx.parsed.y)
                     }
-                },
-                legend: {
-                    display: false // Ẩn chú thích vì chỉ có 1 loại dữ liệu
                 }
             }
         }
     });
 
-    // 2. BIỂU ĐỒ TỶ LỆ TRẠNG THÁI ĐƠN HÀNG (Giữ nguyên Chart, HTML đã thêm phần giải thích)
+    // 2. CHART TRẠNG THÁI (Doughnut)
     const ratioLabels = statusRatioData.map(item => statusMapping[item.status]?.label || 'Khác');
     const ratioValues = statusRatioData.map(item => item.total);
-    const ratioColors = statusRatioData.map(item => statusMapping[item.status]?.color || '#777');
+    const ratioColors = statusRatioData.map(item => statusMapping[item.status]?.color || '#ccc');
 
     new Chart(document.getElementById('statusRatioChart').getContext('2d'), {
         type: 'doughnut',
         data: {
             labels: ratioLabels,
             datasets: [{
-                label: 'Số đơn hàng',
                 data: ratioValues,
                 backgroundColor: ratioColors,
-                hoverOffset: 4
+                borderWidth: 0,
+                hoverOffset: 5
             }]
         },
         options: {
@@ -194,48 +219,13 @@ document.addEventListener('DOMContentLoaded', function() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: false // Ẩn legend trong chart vì đã có phần giải thích bên cạnh
-                }
-            }
-        }
-    });
-
-    // 3. BIỂU ĐỒ DOANH THU THEO DANH MỤC
-    const categoryLabels = revenueByCategoryData.map(item => item.category_name);
-    const categoryValues = revenueByCategoryData.map(item => item.revenue);
-
-    new Chart(document.getElementById('revenueByCategoryChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-                label: 'Doanh thu (VND)',
-                data: categoryValues,
-                backgroundColor: '#e67e22',
-                borderColor: '#d35400',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y', // Biểu đồ cột ngang
-            responsive: true,
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: formatCurrency
+                    position: 'right',
+                    labels: {
+                        boxWidth: 12,
+                        font: {
+                            size: 11
+                        }
                     }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: (context) => context.dataset.label + ': ' + formatCurrency(context.parsed
-                            .x)
-                    }
-                },
-                legend: {
-                    display: false
                 }
             }
         }

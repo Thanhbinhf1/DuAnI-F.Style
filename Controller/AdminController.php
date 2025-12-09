@@ -296,12 +296,20 @@ function categoryPost() {
     // QUẢN LÝ ĐƠN HÀNG (ORDER)
     // =========================================================================
 
+// Sửa lại hàm orderList trong AdminController.php
+// Trong Controller/AdminController.php
+
     function orderList() {
-        $orders = $this->model->getAllOrders();
+        // 1. Lấy trạng thái từ URL (ví dụ: ?status=1)
+        $status = isset($_GET['status']) ? $_GET['status'] : null;
+        
+        // 2. Truyền status vào Model để lấy danh sách đã lọc
+        $orders = $this->model->getAllOrders($status);
+        
         include_once 'Views/admin/order_list.php';
     }
-
     function orderCancelledList() {
+        // Gọi hàm lấy đơn hủy từ Model
         $orders = $this->model->getCancelledOrders();
         include_once 'Views/admin/order_cancelled.php';
     }
@@ -371,8 +379,16 @@ function categoryPost() {
     }
     
     function statistics() {
-        $stats = $this->model->getSaleStatistics();
-        $stats['top_selling'] = $this->model->getTopSellingProducts(10);
+        // 1. Lấy khoảng thời gian từ URL (mặc định 30 ngày)
+        $days = isset($_GET['time']) ? (int)$_GET['time'] : 30;
+        
+        // 2. Truyền số ngày vào Model
+        $stats = $this->model->getSaleStatistics($days);
+        $stats['top_selling'] = $this->model->getTopSellingProducts(10, $days);
+        
+        // 3. Gửi biến $days sang View để giữ trạng thái select box
+        $selectedDays = $days; 
+        
         include_once 'Views/admin/statistics.php';
     }
 

@@ -7,7 +7,7 @@ class AdminModel {
     }
 
     // =========================================================================
-    // 1. QUẢN LÝ THỐNG KÊ (DASHBOARD)
+    // 1. QUẢN LÝ THỐNG KÊ (DASHBOARD - TỔNG QUAN)
     // =========================================================================
     
     public function getDashboardStats() {
@@ -53,7 +53,6 @@ class AdminModel {
     // =========================================================================
 
     public function getAllUsers() {
-        // Get user list with order statistics (total orders, cancelled orders)
         $sql = "SELECT u.*, 
                        COUNT(o.id) as total_orders,
                        SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) as cancelled_orders
@@ -68,7 +67,6 @@ class AdminModel {
         return $this->db->queryOne("SELECT * FROM users WHERE id = ?", [$id]);
     }
 
-    // Get order history for a specific user
     public function getUserHistory($userId) {
         $sql = "SELECT o.*, 
                        GROUP_CONCAT(p.name SEPARATOR ', ') as product_summary,
@@ -119,9 +117,11 @@ class AdminModel {
         return $this->db->execute($sql, [$newStatus, $id]);
     }
 
-    public function deleteCategory($id) {
-        $sql = "DELETE FROM categories WHERE id = ?";
-        return $this->db->execute($sql, [$id]);
+    // Kiểm tra trùng tên danh mục
+    public function checkCategoryNameExist($name, $excludeId = 0) {
+        $sql = "SELECT COUNT(*) as total FROM categories WHERE name = ? AND id != ?";
+        $result = $this->db->queryOne($sql, [$name, $excludeId]);
+        return ($result && $result['total'] > 0);
     }
 
     // =========================================================================
@@ -170,7 +170,6 @@ class AdminModel {
         return $result['total'] ?? 0;
     }
 
-    // Check for duplicate product names
     public function checkProductNameExist($name, $excludeId = 0) {
         $sql = "SELECT COUNT(*) as total FROM products WHERE name = ? AND id != ?";
         $result = $this->db->queryOne($sql, [$name, $excludeId]);
@@ -194,26 +193,20 @@ class AdminModel {
         return $this->db->execute("DELETE FROM product_images WHERE product_id = ?", [$productId]);
     }
 
-    public function getTopSellingProducts($limit = 10) {
-        $sql = "SELECT p.name, SUM(od.quantity) as sold_quantity 
-                FROM order_details od
-                JOIN products p ON od.product_id = p.id
-                JOIN orders o ON od.order_id = o.id
-                WHERE o.status = 2 
-                GROUP BY p.id
-                ORDER BY sold_quantity DESC LIMIT $limit";
-        return $this->db->query($sql);
-    }
-
     // =========================================================================
     // 5. QUẢN LÝ ĐƠN HÀNG
     // =========================================================================
 
-    public function getAllOrders() {
+    public function getAllOrders($status = null) {
         $sql = "SELECT o.*, u.fullname as user_fullname, u.email as user_email 
                 FROM orders o 
-                LEFT JOIN users u ON o.user_id = u.id 
-                ORDER BY o.created_at DESC"; // Latest first
+                LEFT JOIN users u ON o.user_id = u.id";
+        
+        if ($status !== null && $status !== 'all') {
+            $sql .= " WHERE o.status = " . (int)$status;
+        }
+        
+        $sql .= " ORDER BY o.created_at DESC";
         return $this->db->query($sql);
     }
 
@@ -246,46 +239,47 @@ class AdminModel {
         return $this->db->execute("UPDATE orders SET payment_status = ? WHERE id = ?", [$status, $id]);
     }
 
-    // Statistics for the Statistics Page
-    public function getSaleStatistics() {
-        // 1. Daily Revenue (Last 7 days)
-        $daily = $this->db->query("SELECT DATE(created_at) as date, SUM(total_money) as revenue FROM orders WHERE status = 2 GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 7");
-        
-        // 2. Order Status Ratio
-        $statusRatio = $this->db->query("SELECT status, COUNT(*) as total FROM orders GROUP BY status");
-        
-        // 3. Top Categories by Revenue
-        $catRev = $this->db->query("SELECT c.name as category_name, SUM(od.price * od.quantity) as revenue 
-                                    FROM order_details od 
-                                    JOIN products p ON od.product_id = p.id 
-                                    JOIN categories c ON p.category_id = c.id 
-                                    JOIN orders o ON od.order_id = o.id 
-                                    WHERE o.status = 2 
-                                    GROUP BY c.name ORDER BY revenue DESC LIMIT 5");
-                                    
-        // 4. Top Provinces (Customers)
-        $provinces = $this->db->query("SELECT TRIM(SUBSTRING_INDEX(address, ',', -1)) as province, COUNT(*) as count FROM orders GROUP BY province ORDER BY count DESC LIMIT 5");
-        
-        // 5. Customer Type Stats (Returning vs New - Basic logic)
-        // This is a placeholder/simplified query. For accurate data, logic needs to be complex.
-        // We will return an empty array or basic count if needed.
-        $customerTypeStats = []; 
+    // =========================================================================
+    // 6. THỐNG KÊ CHI TIẾT (Statistics Page)
+    // =========================================================================
 
+    // [CẬP NHẬT] Lấy Top sản phẩm bán chạy (có lọc theo ngày)
+    public function getTopSellingProducts($limit = 10, $days = 30) {
+        $sql = "SELECT p.name, 
+                       SUM(od.quantity) as sold_quantity, 
+                       MAX(o.created_at) as last_sale_date 
+                FROM order_details od
+                JOIN products p ON od.product_id = p.id
+                JOIN orders o ON od.order_id = o.id
+                WHERE o.status = 2 
+                AND o.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                GROUP BY p.id
+                ORDER BY sold_quantity DESC LIMIT $limit";
+        // Nếu database class của bạn hỗ trợ tham số cho LIMIT thì dùng ?, nếu không thì nối chuỗi
+        return $this->db->query($sql, [$days]);
+    }
+
+    // [CẬP NHẬT] Thống kê doanh thu & Trạng thái (Đã xóa các phần dư thừa)
+    public function getSaleStatistics($days = 30) {
+        // 1. Doanh thu (Lọc theo số ngày được chọn)
+        $sqlDaily = "SELECT DATE(created_at) as date, SUM(total_money) as revenue 
+                     FROM orders 
+                     WHERE status = 2 AND created_at >= DATE_SUB(NOW(), INTERVAL $days DAY) 
+                     GROUP BY DATE(created_at) 
+                     ORDER BY date DESC"; 
+        $daily = $this->db->query($sqlDaily);
+        
+        // 2. Tỷ lệ trạng thái (Lọc theo số ngày được chọn)
+        $sqlStatus = "SELECT status, COUNT(*) as total 
+                      FROM orders 
+                      WHERE created_at >= DATE_SUB(NOW(), INTERVAL $days DAY)
+                      GROUP BY status";
+        $statusRatio = $this->db->query($sqlStatus);
+        
         return [
             'daily_revenue' => $daily,
             'status_ratio' => $statusRatio,
-            'revenue_by_category' => $catRev,
-            'orders_by_province' => $provinces,
-            'customer_type_stats' => $customerTypeStats
         ];
-        
     }
-    // [MỚI] Kiểm tra trùng tên danh mục
-    public function checkCategoryNameExist($name, $excludeId = 0) {
-        $sql = "SELECT COUNT(*) as total FROM categories WHERE name = ? AND id != ?";
-        $result = $this->db->queryOne($sql, [$name, $excludeId]);
-        return ($result && $result['total'] > 0);
-    }
-    
 }
 ?>
