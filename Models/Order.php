@@ -17,7 +17,14 @@ class Order {
         $result = $this->db->queryOne($sql);
         return $result ? (float)$result['total'] : 0;
     }
-
+    // Lấy chi tiết đơn hàng (kèm thông tin sản phẩm để đánh giá)
+    function getOrderDetailsForReview($orderId) {
+        $sql = "SELECT od.product_id, od.quantity, p.name, p.image 
+                FROM order_details od 
+                JOIN products p ON od.product_id = p.id 
+                WHERE od.order_id = ?";
+        return $this->db->query($sql, [$orderId]);
+    }
     function getMonthlyIncome() {
         $sql = "SELECT MONTH(created_at) as month, SUM(total_money) as income
                 FROM orders 

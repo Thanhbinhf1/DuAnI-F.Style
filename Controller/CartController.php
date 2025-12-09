@@ -106,7 +106,38 @@ public function addToCart() {
             }
         }
     }
+    // 1. Hàm kiểm tra mã giảm giá (Dùng cho nút "Áp dụng")
+    function checkVoucher() {
+        while (ob_get_level()) { ob_end_clean(); } // Xóa rác header
+        header('Content-Type: application/json');
 
+        if (isset($_POST['code'])) {
+            $code = $_POST['code'];
+            $db = new Database(); // Gọi DB trực tiếp
+            $sql = "SELECT * FROM vouchers WHERE code = ? AND status = 1 AND quantity > 0 AND end_date >= CURDATE()";
+            $voucher = $db->queryOne($sql, [$code]);
+
+            if ($voucher) {
+                echo json_encode(['status' => 'success', 'percent' => $voucher['discount_percent']]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Mã không hợp lệ hoặc đã hết hạn!']);
+            }
+        }
+        exit;
+    }
+
+    // 2. Hàm lấy danh sách Voucher (Dùng cho Modal "Chọn Voucher")
+    function listVouchers() {
+        while (ob_get_level()) { ob_end_clean(); }
+        header('Content-Type: application/json');
+
+        $db = new Database();
+        $sql = "SELECT * FROM vouchers WHERE status = 1 AND quantity > 0 AND end_date >= CURDATE()";
+        $list = $db->query($sql);
+        
+        echo json_encode(['status' => 'success', 'data' => $list]);
+        exit;
+    }
     // Xóa
     function delete() {
         if (isset($_GET['key'])) {

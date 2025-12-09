@@ -37,7 +37,7 @@ class ProductController {
         }
         $id = (int)$_GET['id'];
 
-        // Nếu submit bình luận
+        // Nếu submit bình luận đơn lẻ (từ trang chi tiết)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_content'])) {
             if (!isset($_SESSION['user'])) {
                 echo "<script>alert('Bạn cần đăng nhập để bình luận!'); 
@@ -67,7 +67,7 @@ class ProductController {
             $favoriteIds = $favModel->getFavoriteProductIds($_SESSION['user']['id']);
         }
 
-        // Lấy thông tin sản phẩm
+        // 1. Lấy thông tin sản phẩm chính
         $sp = $this->model->getProductById($id);
         if (!$sp) {
             header("Location: index.php");
@@ -75,14 +75,26 @@ class ProductController {
         }
         $this->_enrichProductsWithFavorites($sp, $favoriteIds);
 
+        // Tăng lượt xem
         $this->model->increaseView($id);
 
+        // 2. Lấy biến thể (Màu/Size)
         $variants = $this->model->getProductVariants($id);
+        
+        // 3. Lấy ảnh bộ sưu tập (Gallery)
+        if (method_exists($this->model, 'getProductGallery')) {
+            $gallery = $this->model->getProductGallery($id);
+        } else {
+            $gallery = []; 
+        }
+
+        // 4. Lấy sản phẩm liên quan
         $spLienQuan = $this->model->getRelatedProducts($sp['category_id'], $id);
         $this->_enrichProductsWithFavorites($spLienQuan, $favoriteIds);
 
-        $comments   = $this->model->getCommentsByProduct($id);
-        $ratingInfo = $this->model->getAverageRating($id);
+        // 5. Lấy bình luận và đánh giá
+        $comments = $this->model->getCommentsByProduct($id);
+        $averageRating = $this->model->getAverageRating($id);
 
         include_once 'Views/users/product_detail.php';
     }
@@ -138,5 +150,33 @@ class ProductController {
 
         include_once 'Views/users/product_list.php';
     }
-}
+
+    // --- HÀM MỚI THÊM: Xử lý đánh giá nhiều sản phẩm từ trang hóa đơn ---
+    // Hàm này phải nằm TRONG class ProductController (trước dấu đóng } cuối cùng)
+    function submitMultiReviews() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user'])) {
+            $userId = $_SESSION['user']['id'];
+            // Lấy mảng các đánh giá từ form
+            $reviews = $_POST['reviews'] ?? []; 
+            $orderId = $_POST['order_id'] ?? 0;
+
+            foreach ($reviews as $productId => $data) {
+                $rating = (int)$data['rating'];
+                $content = trim($data['content']);
+
+                // Chỉ lưu nếu có nội dung hoặc đã chọn sao
+                if ($rating > 0 || !empty($content)) {
+                    // Gọi hàm insertComment đã có sẵn trong Model
+                    $this->model->insertComment($userId, $productId, $content, $rating);
+                }
+            }
+            
+            // Chuyển hướng về trang chi tiết đơn hàng để user thấy
+            echo "<script>alert('Cảm ơn bạn đã đánh giá!'); window.location='?ctrl=order&act=detail&id=$orderId';</script>";
+        } else {
+            header("Location: index.php");
+        }
+    }
+
+} // <--- Dấu đóng Class quan trọng nằm ở đây
 ?>

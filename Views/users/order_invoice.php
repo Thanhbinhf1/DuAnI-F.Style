@@ -1,48 +1,75 @@
-    <div class="container" style="max-width: 900px; margin: 30px auto; padding: 0 15px;">
-    <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.05);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h2 style="margin: 0 0 8px;">Hóa đơn #<?= htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') ?></h2>
-                <p style="margin: 0; color: #555;">Ngày đặt: <?= htmlspecialchars(date('d/m/Y H:i', strtotime($order['created_at'])), ENT_QUOTES, 'UTF-8') ?></p>
+<?php if (!empty($order_details)): ?>
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true"
+    data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="reviewModalLabel">Đánh giá đơn hàng vừa mua</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
-            <button onclick="window.print()" style="padding: 10px 16px; background: #222; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">In hóa đơn</button>
-        </div>
 
-        <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div>
-                <h4 style="margin: 0 0 8px;">Thông tin người nhận</h4>
-                <p style="margin: 4px 0;">Họ tên: <strong><?= htmlspecialchars($order['fullname'], ENT_QUOTES, 'UTF-8') ?></strong></p>
-                <p style="margin: 4px 0;">SĐT: <strong><?= htmlspecialchars($order['phone'], ENT_QUOTES, 'UTF-8') ?></strong></p>
-                <p style="margin: 4px 0;">Địa chỉ: <?= htmlspecialchars($order['address'], ENT_QUOTES, 'UTF-8') ?></p>
-            </div>
-            <div>
-                <h4 style="margin: 0 0 8px;">Thanh toán</h4>
-                <p style="margin: 4px 0;">Phương thức: <?= htmlspecialchars($order['payment_method'], ENT_QUOTES, 'UTF-8') ?></p>
-                <p style="margin: 4px 0;">Trạng thái: <strong><?= (int)$order['payment_status'] === 1 ? 'Đã thanh toán' : 'Chưa thanh toán' ?></strong></p>
-            </div>
-        </div>
+            <form action="?ctrl=product&act=submitMultiReviews" method="POST">
+                <input type="hidden" name="order_id" value="<?= $_GET['id'] ?? 0 ?>">
 
-        <table style="width: 100%; border-collapse: collapse; margin-top: 18px;">
-            <thead>
-                <tr style="background: #f6f7fb;">
-                    <th style="padding: 10px; text-align: left;">Sản phẩm</th>
-                    <th style="padding: 10px; text-align: center;">Số lượng</th>
-                    <th style="padding: 10px; text-align: right;">Đơn giá</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($orderDetails as $item): ?>
-                    <tr style="border-bottom: 1px solid #f0f0f0;">
-                        <td style="padding: 10px;"><?= htmlspecialchars($item['product_name'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td style="padding: 10px; text-align: center;"><?= (int)$item['quantity'] ?></td>
-                        <td style="padding: 10px; text-align: right;"><?= number_format($item['price']) ?> đ</td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                    <p class="text-muted text-center mb-4">Hãy chia sẻ cảm nhận của bạn để nhận ưu đãi cho lần mua tới
+                        nhé!</p>
 
-        <div style="text-align: right; margin-top: 12px; font-size: 18px; font-weight: 700; color: #ff5722;">
-            Tổng cộng: <?= number_format($order['total_money']) ?> đ
+                    <?php foreach ($order_details as $item): 
+                  $img = $item['image'];
+                  if (!str_contains($img, 'http')) $img = "./Public/Uploads/Products/" . $img;
+              ?>
+                    <div class="card mb-3 shadow-sm border-0">
+                        <div class="row g-0 align-items-center p-2">
+                            <div class="col-md-2 text-center">
+                                <img src="<?= $img ?>" class="img-fluid rounded" style="max-height: 80px;"
+                                    alt="<?= htmlspecialchars($item['name']) ?>">
+                            </div>
+                            <div class="col-md-10">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title mb-1"><?= htmlspecialchars($item['name']) ?></h6>
+
+                                    <div class="rating-group mb-2">
+                                        <label class="me-2 text-small">Chấm điểm:</label>
+                                        <select name="reviews[<?= $item['product_id'] ?>][rating]"
+                                            class="form-select form-select-sm d-inline-block w-auto">
+                                            <option value="5">⭐⭐⭐⭐⭐ (Tuyệt vời)</option>
+                                            <option value="4">⭐⭐⭐⭐ (Tốt)</option>
+                                            <option value="3">⭐⭐⭐ (Bình thường)</option>
+                                            <option value="2">⭐⭐ (Tệ)</option>
+                                            <option value="1">⭐ (Rất tệ)</option>
+                                        </select>
+                                    </div>
+
+                                    <textarea name="reviews[<?= $item['product_id'] ?>][content]"
+                                        class="form-control form-control-sm" rows="2"
+                                        placeholder="Sản phẩm thế nào? Chất lượng ra sao?"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Để sau</button>
+                    <button type="submit" class="btn btn-primary" style="background-color: #f59e0b; border:none;">Gửi
+                        đánh giá</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Kiểm tra xem Modal có tồn tại không
+    var reviewModalEl = document.getElementById('reviewModal');
+    if (reviewModalEl) {
+        var myModal = new bootstrap.Modal(reviewModalEl);
+        myModal.show();
+    }
+});
+</script>
+<?php endif; ?>

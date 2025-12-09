@@ -49,6 +49,16 @@ class Product {
         }
         return $this->db->query($sql);
     }
+    // Lấy danh sách ảnh phụ (gallery) từ database
+// Lấy danh sách ảnh phụ (gallery) từ database
+    function getProductGallery($id) {
+        // SQL lấy tất cả các cột
+        $sql = "SELECT * FROM product_images WHERE product_id = ?";
+        
+        // SỬA QUAN TRỌNG: Dùng $this->db->query(...) thay vì select(...)
+        // Và truyền tham số vào mảng [] để bảo mật hơn
+        return $this->db->query($sql, [$id]); 
+    }
 
     // Lấy chi tiết 1 sản phẩm
     function getProductById($id) {
