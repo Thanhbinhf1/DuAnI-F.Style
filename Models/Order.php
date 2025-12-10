@@ -41,6 +41,8 @@ class Order {
                 LIMIT 5";
         return $this->db->query($sql);
     }
+    // Hàm lấy danh sách sản phẩm trong đơn hàng để đánh giá
+
 
     function getAllOrders() {
        $sql = "SELECT o.*, u.fullname AS user_fullname, COALESCE(od.item_count, 0) AS item_count
@@ -191,6 +193,7 @@ function countOrdersByInterval($interval = 'DAY') {
             LIMIT 12";
     return $this->db->query($sql);
 }
+
 
 // ...
 }

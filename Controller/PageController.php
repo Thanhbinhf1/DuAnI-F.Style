@@ -2,24 +2,24 @@
 include_once 'Models/Product.php';
 include_once 'Models/Contact.php';
 include_once 'Models/Favorite.php';
+include_once 'Models/Banner.php'; // 1. BỔ SUNG MODEL BANNER
 
 class PageController {
     private $productModel;
     private $contactModel;
+    private $bannerModel; // 2. KHAI BÁO THUỘC TÍNH
 
     public function __construct() {
         $this->productModel  = new Product();
         $this->contactModel  = new Contact();
+        $this->bannerModel   = new Banner(); // 3. KHỞI TẠO
     }
 
     /**
      * Helper function to enrich products with favorite status.
-     * @param array $products The list of products to enrich.
-     * @param array $favoriteIds The list of favorite product IDs for the current user.
      */
     private function _enrichProductsWithFavorites(&$products, $favoriteIds) {
         if (empty($products)) {
-            // Gán is_favorited = false cho tất cả nếu không có ds yêu thích
             foreach ($products as &$product) {
                 $product['is_favorited'] = false;
             }
@@ -34,7 +34,11 @@ class PageController {
 
     // Trang chủ
     public function home() {
-        // Lấy danh sách ID sản phẩm yêu thích của user (nếu đã đăng nhập)
+        // --- 4. LẤY DANH SÁCH BANNER TỪ DATABASE (QUAN TRỌNG NHẤT) ---
+        $banners = $this->bannerModel->getActiveBanners();
+        // -------------------------------------------------------------
+
+        // Lấy danh sách ID sản phẩm yêu thích của user
         $favModel = new Favorite();
         $favoriteIds = [];
         if (isset($_SESSION['user']['id'])) {
@@ -46,7 +50,7 @@ class PageController {
         $spHot    = $this->productModel->getHotProducts();
         $spGiaTot = $this->productModel->getSaleProducts();
 
-        // Gán trạng thái is_favorited cho từng sản phẩm
+        // Gán trạng thái is_favorited
         $this->_enrichProductsWithFavorites($spMoi, $favoriteIds);
         $this->_enrichProductsWithFavorites($spHot, $favoriteIds);
         $this->_enrichProductsWithFavorites($spGiaTot, $favoriteIds);
@@ -59,17 +63,11 @@ class PageController {
         include_once 'Views/users/Page_about.php';
     }
 
-    // Trang liên hệ (GET: hiển thị form, POST: xử lý gửi)
+    // Trang liên hệ
     public function contact() {
         $errors = [];
         $successMessage = "";
-        $old = [
-            'name'    => '',
-            'email'   => '',
-            'phone'   => '',
-            'subject' => '',
-            'message' => ''
-        ];
+        $old = ['name' => '', 'email' => '', 'phone' => '', 'subject' => '', 'message' => ''];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name    = trim($_POST['name'] ?? '');
@@ -78,38 +76,23 @@ class PageController {
             $subject = trim($_POST['subject'] ?? '');
             $message = trim($_POST['message'] ?? '');
 
-            // Lưu lại dữ liệu cũ để fill lại form nếu lỗi
             $old = compact('name', 'email', 'phone', 'subject', 'message');
 
-            // Validate đơn giản
-            if ($name === '') {
-                $errors['name'] = 'Vui lòng nhập họ tên.';
-            }
+            if ($name === '') $errors['name'] = 'Vui lòng nhập họ tên.';
             if ($email === '') {
                 $errors['email'] = 'Vui lòng nhập email.';
             } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors['email'] = 'Email không hợp lệ.';
             }
-            if ($message === '') {
-                $errors['message'] = 'Vui lòng nhập nội dung liên hệ.';
-            }
+            if ($message === '') $errors['message'] = 'Vui lòng nhập nội dung liên hệ.';
 
-            // Nếu không có lỗi -> lưu DB
             if (empty($errors)) {
                 $this->contactModel->create($name, $email, $phone, $subject, $message);
                 $successMessage = "Cảm ơn bạn! F.Style đã nhận được thông tin và sẽ phản hồi sớm nhất có thể.";
-                // Xóa dữ liệu cũ trên form
-                $old = [
-                    'name'    => '',
-                    'email'   => '',
-                    'phone'   => '',
-                    'subject' => '',
-                    'message' => ''
-                ];
+                $old = ['name' => '', 'email' => '', 'phone' => '', 'subject' => '', 'message' => ''];
             }
         }
 
-        // Gửi biến sang View
         include_once 'Views/users/Page_contact.php';
     }
 }

@@ -1,5 +1,16 @@
 <?php
 class User {
+    function updateAddress($id, $province_id, $district_id, $ward_id, $street, $full_address) {
+        // Lưu cả ID (để auto fill) và Full Address (để hiển thị nhanh)
+        $sql = "UPDATE users SET 
+                province_id = ?, 
+                district_id = ?, 
+                ward_id = ?, 
+                street_address = ?, 
+                address = ? 
+                WHERE id = ?";
+        return $this->db->execute($sql, [$province_id, $district_id, $ward_id, $street, $full_address, $id]);
+    }
     private $db;
 
     function __construct() {
@@ -101,4 +112,7 @@ class User {
         return $result ? (int)$result['total'] : 0;
     }
 }
+
+
+
 ?>
