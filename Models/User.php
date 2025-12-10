@@ -111,8 +111,7 @@ class User {
         return $result ? (int)$result['total'] : 0;
     }
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> binhf
+
+
 ?>
