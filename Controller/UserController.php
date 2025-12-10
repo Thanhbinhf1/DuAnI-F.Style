@@ -8,7 +8,8 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 // BẮT BUỘC phải require 3 file chính
-require_once 'vendor/PHPMailer/src/PHPMailer.php';
+// ĐƯỜNG DẪN NÀY LÀ ĐƯỜNG DẪN TƯƠNG ĐỐI TỪ Controller/ RA NGOÀI GỐC DỰ ÁN
+require_once 'vendor/PHPMailer/src/PHPMailer.php'; 
 require_once 'vendor/PHPMailer/src/SMTP.php';
 require_once 'vendor/PHPMailer/src/Exception.php';
 
@@ -29,16 +30,15 @@ function sendEmail_PHPMailer($to, $subject, $body) {
         $mail->SMTPAuth   = true;                                   
         
         // ====================================================
-        // ĐIỀN THÔNG TIN GMAIL VÀ APP PASSWORD CỦA BẠN VÀO ĐÂY
+        // THAY THẾ BẰNG THÔNG TIN GMAIL VÀ APP PASSWORD CỦA BẠN
         // ====================================================
-        $mail->Username   = 'truongquanguqy2512@gmail.com'; 
-        $mail->Password   = 'rvnzachoylhyjsrq';   
+        $mail->Username   = 'truongquangquy2512@gmail.com'; // Ví dụ: truongquanguqy2512@gmail.com
+        $mail->Password   = 'rvnzachoylhyjsrq';   // Ví dụ: rvnzachoylhyjsrq
 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         
         $mail->Port       = 587;                                    
-        // ====================================================
-
-        // Thiết lập mã hóa Tiếng Việt và Người gửi
+        
+        // Cấu hình mã hóa Tiếng Việt và Người gửi
         $mail->CharSet = 'UTF-8';
         $mail->setFrom('no-reply@fstyle.com', 'F.Style Store'); 
         
@@ -51,6 +51,8 @@ function sendEmail_PHPMailer($to, $subject, $body) {
         return true;
     } catch (Exception $e) {
         error_log("LỖI GỬI MAIL (PHPMailer): {$mail->ErrorInfo}");
+        // Nếu lỗi xảy ra, bạn có thể xem chi tiết lỗi bằng cách bỏ comment dòng sau:
+        // echo "Lỗi gửi mail: " . $mail->ErrorInfo; 
         return false;
     }
 }
@@ -92,7 +94,6 @@ class UserController {
 
     // 1. Trang nhập email để lấy lại mật khẩu
     function forgotPassword() {
-        // Fix lỗi cú pháp: $error và $oldEmail nhận giá trị từ GET
         $error = $_GET['error'] ?? '';
         $success = '';
         $oldEmail = $_GET['email'] ?? ''; 
@@ -134,7 +135,7 @@ class UserController {
                 }
             } 
             
-            // Luôn chuyển sang trang nhập mã, dù có lỗi gửi mail để tránh lộ thông tin user
+            // Luôn chuyển sang trang nhập mã, dù có lỗi gửi mail
             $success = "Hệ thống đã gửi mã xác nhận 6 chữ số đến Email: $email. Vui lòng kiểm tra hộp thư.";
             echo "<script>alert('{$success}'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
             exit;
@@ -192,6 +193,7 @@ class UserController {
         $currentTime = date('Y-m-d H:i:s');
 
         // Kiểm tra lại code có hợp lệ không trước khi cho hiển thị form
+        // Dùng 'temp@email.com' vì hàm Model cần tham số email
         if (empty($code) || !$this->model->getUserByCodeAndEmail($code, 'temp@email.com', $currentTime)) {
             $error = 'Yêu cầu đặt lại mật khẩu không hợp lệ hoặc mã đã hết hạn. Vui lòng bắt đầu lại.';
         }
