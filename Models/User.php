@@ -38,6 +38,33 @@ class User {
         return $this->db->execute($sql, [$fullname, $email, $phone, $address, $id]);
     }
 
+    // BỔ SUNG: Tìm kiếm user bằng email
+    function getUserByEmail($email) {
+        $sql = "SELECT * FROM users WHERE email = ?";
+        return $this->db->queryOne($sql, [$email]);
+    }
+
+    // BỔ SUNG: Lưu MÃ XÁC NHẬN (Code) và thời gian hết hạn vào DB
+    function setResetCode($id, $code, $expiry) {
+        // Giả định bạn đã thêm 2 cột reset_token và token_expiry vào bảng users
+        $sql = "UPDATE users SET reset_token = ?, token_expiry = ? WHERE id = ?";
+        return $this->db->execute($sql, [$code, $expiry, $id]);
+    }
+
+    // BỔ SUNG: Tìm user bằng MÃ VÀ EMAIL và kiểm tra thời gian hết hạn
+    function getUserByCodeAndEmail($code, $email) {
+        $sql = "SELECT * FROM users WHERE reset_token = ? AND email = ? AND token_expiry > NOW()";
+        return $this->db->queryOne($sql, [$code, $email]);
+    }
+    
+    // BỔ SUNG: Cập nhật mật khẩu và xóa code/token
+    function updatePasswordByCode($code, $newHashedPassword) {
+        $sql = "UPDATE users 
+                SET password = ?, reset_token = NULL, token_expiry = NULL 
+                WHERE reset_token = ?";
+        return $this->db->execute($sql, [$newHashedPassword, $code]);
+    }
+
     // Lấy tất cả user
     function getAllUsers() {
         $sql = "SELECT * FROM users";
@@ -65,5 +92,4 @@ class User {
         return $result ? (int)$result['total'] : 0;
     }
 }
-
 ?>

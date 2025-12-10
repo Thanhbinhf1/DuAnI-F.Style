@@ -23,11 +23,14 @@
                        style="width:100%; padding:8px 10px; margin-top:4px;
                               border-radius:5px; border:1px solid #ccc;">
             </div>
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 5px;">
                 <label style="font-size: 14px;">Mật khẩu</label>
                 <input type="password" name="password" required
                        style="width:100%; padding:8px 10px; margin-top:4px;
                               border-radius:5px; border:1px solid #ccc;">
+            </div>
+            <div style="text-align: right; margin-bottom: 20px; font-size: 13px;">
+                <a href="?ctrl=user&act=forgotPassword" style="color: #ff5722;">Quên mật khẩu?</a>
             </div>
             <button type="submit"
                     style="width:100%; padding:10px 0; border:none;
