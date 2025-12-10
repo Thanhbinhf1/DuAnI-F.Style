@@ -31,8 +31,8 @@ function sendEmail_PHPMailer($to, $subject, $body) {
         // ====================================================
         // ĐIỀN THÔNG TIN GMAIL VÀ APP PASSWORD CỦA BẠN VÀO ĐÂY
         // ====================================================
-        $mail->Username   = 'emailcuaban@gmail.com'; 
-        $mail->Password   = 'matkhauungdunggmail';   
+        $mail->Username   = 'truongquanguqy2512@gmail.com'; 
+        $mail->Password   = 'rvnzachoylhyjsrq';   
 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         
         $mail->Port       = 587;                                    
