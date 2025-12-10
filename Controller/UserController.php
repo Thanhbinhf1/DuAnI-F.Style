@@ -14,7 +14,8 @@ require_once 'vendor/PHPMailer/src/Exception.php';
 
 // [QUAN TRỌNG] Đảm bảo hằng số BASE_URL đã được định nghĩa ở index.php
 if (!defined('BASE_URL')) {
-    define('BASE_URL', '/'); 
+    // Nếu chưa có, tạo hằng số cho đường dẫn thư mục gốc
+    define('BASE_URL', '/DuAnI-F.Style/'); 
 }
 
 // Hàm gửi email SỬ DỤNG PHPMailer
@@ -28,10 +29,10 @@ function sendEmail_PHPMailer($to, $subject, $body) {
         $mail->SMTPAuth   = true;                                   
         
         // ====================================================
-        // THAY THẾ BẰNG THÔNG TIN GMAIL VÀ APP PASSWORD CỦA BẠN
+        // ĐIỀN THÔNG TIN GMAIL VÀ APP PASSWORD CỦA BẠN VÀO ĐÂY
         // ====================================================
-        $mail->Username   = 'truongquangquy2512@gmail.com'; // Thay thế
-        $mail->Password   = 'rvnzachoylhyjsrq';   // Thay thế
+        $mail->Username   = 'emailcuaban@gmail.com'; 
+        $mail->Password   = 'matkhauungdunggmail';   
 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         
         $mail->Port       = 587;                                    
@@ -68,6 +69,7 @@ class UserController {
 
     // 1. Trang nhập email để lấy lại mật khẩu
     function forgotPassword() {
+        // Fix lỗi cú pháp: $error và $oldEmail nhận giá trị từ GET
         $error = $_GET['error'] ?? '';
         $success = '';
         $oldEmail = $_GET['email'] ?? ''; 
@@ -104,18 +106,15 @@ class UserController {
 
                 if ($mailSent) {
                     $success = "Hệ thống đã gửi mã xác nhận 6 chữ số đến Email: $email. Vui lòng kiểm tra hộp thư.";
-                    echo "<script>alert('{$success}'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
-                    exit;
                 } else {
                     $errorMsg = "LỖI: Không thể gửi Email. Vui lòng kiểm tra lại Username/App Password.";
-                    echo "<script>alert('Lỗi gửi mail: Mã xác nhận đã được tạo. Vui lòng thử nhập mã thủ công và kiểm tra cấu hình SMTP.'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
-                    exit;
                 }
-            } else {
-                $success = "Hệ thống đã gửi mã xác nhận 6 chữ số đến Email: $email. Vui lòng kiểm tra hộp thư.";
-                echo "<script>alert('{$success}'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
-                exit;
-            }
+            } 
+            
+            // Luôn chuyển sang trang nhập mã, dù có lỗi gửi mail để tránh lộ thông tin user
+            $success = "Hệ thống đã gửi mã xác nhận 6 chữ số đến Email: $email. Vui lòng kiểm tra hộp thư.";
+            echo "<script>alert('{$success}'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
+            exit;
         }
 
         include_once 'Views/users/user_forgot_password.php';
@@ -170,7 +169,6 @@ class UserController {
         $currentTime = date('Y-m-d H:i:s');
 
         // Kiểm tra lại code có hợp lệ không trước khi cho hiển thị form
-        // Dùng 'temp@email.com' vì hàm Model cần tham số email, nhưng ở đây ta chỉ cần check mã
         if (empty($code) || !$this->model->getUserByCodeAndEmail($code, 'temp@email.com', $currentTime)) {
             $error = 'Yêu cầu đặt lại mật khẩu không hợp lệ hoặc mã đã hết hạn. Vui lòng bắt đầu lại.';
         }
@@ -196,7 +194,7 @@ class UserController {
             $result = $this->model->updatePasswordByCode($code, $hashed_pass);
 
             if ($result) {
-                $base_url = defined('BASE_URL') ? BASE_URL : '/';
+                $base_url = defined('BASE_URL') ? BASE_URL : '/DuAnI-F.Style/';
                 echo "<script>alert('Đặt lại mật khẩu thành công! Vui lòng đăng nhập.'); window.location='" . $base_url . "?ctrl=user&act=login';</script>";
                 exit;
             } else {
@@ -210,7 +208,10 @@ class UserController {
     }
 
 
-    // ... (Các hàm cũ: register, login, logout, profile, editProfile, updateProfile giữ nguyên)
+    // ===================================
+    //  KHÔI PHỤC CÁC HÀM CŨ
+    // ===================================
+
     function register() {
         include_once 'Views/users/user_register.php';
     }
@@ -254,8 +255,9 @@ class UserController {
              include_once 'Views/users/user_login.php';
              return;
         }
-
-        $check = $this->model->login($user);
+        
+        // Lỗi Fatal error: Uncaught Call to undefined method User::login() được fix trong Models/User.php
+        $check = $this->model->login($user); 
 
         if ($check && password_verify($pass, $check['password'])) {
             $_SESSION['user'] = $check;
@@ -297,6 +299,7 @@ class UserController {
     
     function editProfile() {
          if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
+         $user = $_SESSION['user'];
          include_once 'Views/users/edit_profile.php';
     }
 
@@ -311,6 +314,7 @@ class UserController {
 
         $this->model->updateUser($id, $fullname, $email, $phone, $address);
         
+        // Cập nhật lại session
         $_SESSION['user']['fullname'] = $fullname;
         $_SESSION['user']['email'] = $email;
         $_SESSION['user']['phone'] = $phone;
