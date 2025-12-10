@@ -12,7 +12,7 @@ class User {
         return $this->db->queryOne($sql, [$username]);
     }
 
-    // 2. Khôi phục: Hàm login (Lỗi Fatal error: Uncaught Call to undefined method User::login() được fix ở đây)
+    // 2. Khôi phục: Hàm login (FIX: Đảm bảo hàm này tồn tại cho loginPost)
     function login($username) {
         $sql = "SELECT id, username, password, fullname, email, role 
             FROM users WHERE username = ?";
@@ -56,13 +56,14 @@ class User {
         return $this->db->execute($sql, [$code, $expiry, $id]);
     }
 
-    // 8. Bổ sung: Fix Lỗi Lệch Múi Giờ bằng cách truyền thời gian hiện tại từ PHP
+    // 8. Bổ sung: FIX LỖI TIMEZONE: Truyền thời gian hiện tại từ PHP
     function getUserByCodeAndEmail($code, $email, $currentTime) {
         // Kiểm tra reset_token khớp, email khớp (hoặc cờ ?) VÀ thời gian CHƯA HẾT HẠN
-        // Biến thứ 3 (OR ?) dùng để cho phép kiểm tra mã trong hàm resetPassword mà không cần kiểm tra email (tránh lỗi email = '')
+        // Dùng tham số thứ 3 (isEmailEmpty) để cho phép kiểm tra mã trong hàm resetPassword mà không cần kiểm tra email (tránh lỗi email = '')
         $sql = "SELECT * FROM users WHERE reset_token = ? AND (email = ? OR ?) AND token_expiry > ?";
         
-        $isEmailEmpty = empty($email) ? 1 : 0;
+        // Nếu email rỗng hoặc là 'temp@email.com', đặt cờ là 1 (True) để bỏ qua điều kiện email trong SQL
+        $isEmailEmpty = (empty($email) || $email === 'temp@email.com') ? 1 : 0;
         
         return $this->db->queryOne($sql, [$code, $email, $isEmailEmpty, $currentTime]);
     }
