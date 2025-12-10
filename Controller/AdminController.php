@@ -27,6 +27,104 @@ class AdminController {
         
         include_once 'Views/admin/dashboard.php';
     }
+    // --- KHU VỰC QUẢN LÝ BANNER (THÊM MỚI) ---
+    
+    function bannerList() {
+        include_once 'Models/Banner.php';
+        $bannerModel = new Banner();
+        $banners = $bannerModel->getAllBanners();
+        include_once 'Views/admin/banner_list.php';
+    }
+
+    function bannerForm() {
+        include_once 'Models/Banner.php';
+        $banner = null;
+        if (isset($_GET['id'])) {
+            $bannerModel = new Banner();
+            $banner = $bannerModel->getBannerById($_GET['id']);
+        }
+        include_once 'Views/admin/banner_form.php';
+    }
+
+    function bannerPost() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            include_once 'Models/Banner.php';
+            $bannerModel = new Banner();
+            $this->verifyCsrf();
+
+            $id = $_POST['id'] ?? 0;
+            $title = $_POST['title'];
+            $link = $_POST['link'];
+            $status = $_POST['status'];
+            
+            // Xử lý ảnh
+            $image = $_POST['image_current'] ?? '';
+            if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
+                // Tận dụng hàm upload có sẵn trong AdminController của bạn
+                $uploadResult = $this->handleUpload($_FILES['image_file']);
+                if ($uploadResult['success']) {
+                    $image = $uploadResult['path'];
+                } else {
+                    $this->redirectWithAlert($uploadResult['message']);
+                    return;
+                }
+            }
+
+            if ($id > 0) {
+                $bannerModel->updateBanner($id, $title, $image, $link, $status);
+                $msg = "Cập nhật banner thành công!";
+            } else {
+                if (empty($image)) {
+                    $this->redirectWithAlert("Vui lòng chọn ảnh banner!");
+                    return;
+                }
+                $bannerModel->insertBanner($title, $image, $link, $status);
+                $msg = "Thêm banner mới thành công!";
+            }
+            
+            $this->redirectWithAlert($msg, '?ctrl=admin&act=bannerList');
+        }
+    }
+
+    function bannerDelete() {
+        if (isset($_GET['id'])) {
+            include_once 'Models/Banner.php';
+            $bannerModel = new Banner();
+            $bannerModel->deleteBanner($_GET['id']);
+            $this->redirectWithAlert("Đã xóa banner!", '?ctrl=admin&act=bannerList');
+        }
+    }
+    // --- CHỨC NĂNG ĐẢO TRẠNG THÁI (ẨN/HIỆN) ---
+    function bannerToggle() {
+        if (isset($_GET['id']) && isset($_GET['status'])) {
+            include_once 'Models/Banner.php';
+            $bannerModel = new Banner();
+            
+            // Logic đảo ngược: Đang 1 thì thành 0, đang 0 thì thành 1
+            $newStatus = ($_GET['status'] == 1) ? 0 : 1;
+            
+            $bannerModel->updateStatus($_GET['id'], $newStatus);
+            
+            // Quay lại trang danh sách ngay lập tức
+            header("Location: ?ctrl=admin&act=bannerList");
+            exit;
+        }
+    }
+    // =========================================================================
+    // QUẢN LÝ BÌNH LUẬN (REVIEWS)
+    // =========================================================================
+
+    function commentList() {
+        $comments = $this->model->getAllComments();
+        include_once 'Views/admin/comment_list.php';
+    }
+
+    function commentDelete() {
+        if (isset($_GET['id'])) {
+            $this->model->deleteComment($_GET['id']);
+            $this->redirectWithAlert("Đã xóa bình luận thành công!", '?ctrl=admin&act=commentList');
+        }
+    }
 
     // =========================================================================
     // QUẢN LÝ NGƯỜI DÙNG (USER)

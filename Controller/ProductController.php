@@ -37,7 +37,9 @@ class ProductController {
         }
         $id = (int)$_GET['id'];
 
-        // Nếu submit bình luận đơn lẻ (từ trang chi tiết)
+   // ... (Đoạn đầu giữ nguyên) ...
+        
+        // Nếu submit bình luận
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_content'])) {
             if (!isset($_SESSION['user'])) {
                 echo "<script>alert('Bạn cần đăng nhập để bình luận!'); 
@@ -49,11 +51,37 @@ class ProductController {
             $content = trim($_POST['comment_content']);
             $rating  = isset($_POST['rating']) ? (int)$_POST['rating'] : 5;
             
+            // --- XỬ LÝ UPLOAD ẢNH ---
+            $image = null;
+            if (isset($_FILES['comment_image']) && $_FILES['comment_image']['error'] == 0) {
+                // Tạo thư mục nếu chưa có
+                $targetDir = "Public/Uploads/Comments/";
+                if (!file_exists($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+
+                // Đặt tên file ngẫu nhiên để tránh trùng
+                $fileName = time() . "_" . basename($_FILES["comment_image"]["name"]);
+                $targetFilePath = $targetDir . $fileName;
+                
+                // Kiểm tra định dạng ảnh
+                $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
+                $allowTypes = array('jpg', 'png', 'jpeg', 'gif', 'webp');
+                
+                if (in_array($fileType, $allowTypes)) {
+                    if (move_uploaded_file($_FILES["comment_image"]["tmp_name"], $targetFilePath)) {
+                        $image = $fileName;
+                    }
+                }
+            }
+            // ------------------------
+
             if ($rating < 1) $rating = 1;
             if ($rating > 5) $rating = 5;
 
-            if ($content !== '') {
-                $this->model->insertComment($userId, $id, $content, $rating);
+            // Gọi hàm insertComment mới (có thêm tham số $image)
+            if ($content !== '' || $image !== null) {
+                $this->model->insertComment($userId, $id, $content, $rating, $image);
             }
 
             header("Location: ?ctrl=product&act=detail&id=" . $id);
@@ -98,7 +126,23 @@ class ProductController {
 
         include_once 'Views/users/product_detail.php';
     }
+function index() { 
+        // ... Load các model cũ ...
+        include_once 'Models/Product.php';
+        
+        // THÊM ĐOẠN NÀY ĐỂ GỌI BANNER
+        include_once 'Models/Banner.php'; 
+        $bannerModel = new Banner();
+        $banners = $bannerModel->getActiveBanners(); 
+        // -----------------------------
 
+        $productModel = new Product();
+        $spHot = $productModel->getHotProducts();
+        $spMoi = $productModel->getNewProducts();
+        $spGiaTot = $productModel->getSaleProducts();
+        
+        include_once 'Views/users/Page_home.php';
+    }
     // Trang danh sách / lọc / tìm kiếm + phân trang
     function list() {
         $titleMain = "DANH MỤC SẢN PHẨM"; 
@@ -153,30 +197,29 @@ class ProductController {
 
     // --- HÀM MỚI THÊM: Xử lý đánh giá nhiều sản phẩm từ trang hóa đơn ---
     // Hàm này phải nằm TRONG class ProductController (trước dấu đóng } cuối cùng)
+// Xử lý đánh giá nhiều sản phẩm từ trang hóa đơn (KHÔNG CẦN ẢNH)
     function submitMultiReviews() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user'])) {
             $userId = $_SESSION['user']['id'];
-            // Lấy mảng các đánh giá từ form
-            $reviews = $_POST['reviews'] ?? []; 
             $orderId = $_POST['order_id'] ?? 0;
+            $reviews = $_POST['reviews'] ?? []; // Mảng chứa rating và content
 
             foreach ($reviews as $productId => $data) {
                 $rating = (int)$data['rating'];
                 $content = trim($data['content']);
 
-                // Chỉ lưu nếu có nội dung hoặc đã chọn sao
+                // Chỉ lưu nếu có nội dung hoặc rating hợp lệ
                 if ($rating > 0 || !empty($content)) {
-                    // Gọi hàm insertComment đã có sẵn trong Model
+                    // Gọi hàm insertComment (Model có thể nhận 4 hoặc 5 tham số đều được)
+                    // Tham số thứ 5 là ảnh, ta không truyền gì thì nó sẽ là null
                     $this->model->insertComment($userId, $productId, $content, $rating);
                 }
             }
             
-            // Chuyển hướng về trang chi tiết đơn hàng để user thấy
             echo "<script>alert('Cảm ơn bạn đã đánh giá!'); window.location='?ctrl=order&act=detail&id=$orderId';</script>";
         } else {
             header("Location: index.php");
         }
     }
-
-} // <--- Dấu đóng Class quan trọng nằm ở đây
+}
 ?>

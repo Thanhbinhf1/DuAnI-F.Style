@@ -1,6 +1,6 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-/* Chỉnh Select2 */
+/* CSS Select2 */
 .select2-container .select2-selection--single {
     height: 38px !important;
     border: 1px solid #ced4da !important;
@@ -17,7 +17,7 @@
     height: 36px !important;
 }
 
-/* Chỉnh Voucher Ticket */
+/* CSS Voucher */
 .voucher-ticket {
     border: 2px dashed #ff5722;
     background: #fff4f0;
@@ -45,6 +45,34 @@
     font-size: 12px;
     color: #666;
 }
+
+/* CSS Gợi ý địa chỉ (MỚI) */
+.address-suggestion {
+    background: #e3f2fd;
+    border: 1px dashed #2196f3;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-use-address {
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-use-address:hover {
+    background: #1976d2;
+}
 </style>
 
 <div class="container" style="margin-top: 30px; margin-bottom: 50px;">
@@ -67,7 +95,19 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="fw-bold mb-2">Địa chỉ:</label>
+                    <label class="fw-bold mb-2">Địa chỉ nhận hàng:</label>
+
+                    <?php if(!empty($_SESSION['user']['address']) && !empty($_SESSION['user']['province_id'])): ?>
+                    <div class="address-suggestion" id="saved-address-box">
+                        <div>
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            Bạn có địa chỉ đã lưu: <strong><?= $_SESSION['user']['address'] ?></strong>
+                        </div>
+                        <button type="button" class="btn-use-address" id="btn-use-saved">
+                            Sử dụng
+                        </button>
+                    </div>
+                    <?php endif; ?>
                     <div class="row g-2">
                         <div class="col-12 mb-2">
                             <select id="province" class="form-select" style="width: 100%;">
@@ -185,20 +225,19 @@
 
 <script>
 $(document).ready(function() {
-    // --- 1. XỬ LÝ ĐỊA CHỈ (SELECT2 + API) ---
-    $('#province').select2({
-        placeholder: "Tỉnh/Thành",
-        width: '100%'
-    });
-    $('#district').select2({
-        placeholder: "Quận/Huyện",
-        width: '100%'
-    });
-    $('#ward').select2({
-        placeholder: "Phường/Xã",
+
+    // --- 1. LẤY DỮ LIỆU ĐỊA CHỈ ĐÃ LƯU (NHƯNG CHƯA ĐIỀN NGAY) ---
+    const savedProv = "<?= $_SESSION['user']['province_id'] ?? '' ?>";
+    const savedDist = "<?= $_SESSION['user']['district_id'] ?? '' ?>";
+    const savedWard = "<?= $_SESSION['user']['ward_id'] ?? '' ?>";
+    const savedStreet = "<?= $_SESSION['user']['street_address'] ?? '' ?>";
+
+    // Khởi tạo Select2
+    $('#province, #district, #ward').select2({
         width: '100%'
     });
 
+    // Load danh sách Tỉnh (Chưa chọn gì cả)
     $.getJSON('https://esgoo.net/api-tinhthanh/1/0.htm', function(data) {
         if (data.error == 0) {
             $.each(data.data, function(k, v) {
@@ -208,25 +247,64 @@ $(document).ready(function() {
         }
     });
 
+    // --- SỰ KIỆN: KHI BẤM NÚT "SỬ DỤNG ĐỊA CHỈ" ---
+    $('#btn-use-saved').click(function() {
+        if (savedProv) {
+            // 1. Điền số nhà
+            $("#street_name").val(savedStreet);
+            // 2. Chọn Tỉnh (Cái này sẽ kích hoạt sự kiện change bên dưới)
+            $("#province").val(savedProv).trigger('change');
+
+            // Ẩn bảng gợi ý đi cho gọn
+            $('#saved-address-box').fadeOut();
+        } else {
+            alert('Chưa có địa chỉ lưu!');
+        }
+    });
+
+    // --- LOGIC LOAD CẤP CON (TỰ ĐỘNG CHỌN NẾU KHỚP ID LƯU) ---
+
+    // Khi Tỉnh thay đổi -> Load Huyện
     $("#province").change(function() {
-        $.getJSON('https://esgoo.net/api-tinhthanh/2/' + $(this).val() + '.htm', function(data) {
+        let id = $(this).val();
+        if (!id) return;
+
+        $.getJSON('https://esgoo.net/api-tinhthanh/2/' + id + '.htm', function(data) {
             $("#district").html('<option value="">Quận/Huyện</option>');
             $("#ward").html('<option value="">Phường/Xã</option>');
-            $.each(data.data, function(k, v) {
-                $("#district").append('<option value="' + v.id + '" data-name="' + v
-                    .full_name + '">' + v.full_name + '</option>');
-            });
+            if (data.error == 0) {
+                $.each(data.data, function(k, v) {
+                    $("#district").append('<option value="' + v.id + '" data-name="' + v
+                        .full_name + '">' + v.full_name + '</option>');
+                });
+
+                // Nếu ID Tỉnh khớp với Tỉnh đã lưu -> Tự động chọn Huyện luôn
+                if (id == savedProv && savedDist) {
+                    $("#district").val(savedDist).trigger('change');
+                }
+            }
         });
         updateAddr();
     });
 
+    // Khi Huyện thay đổi -> Load Xã
     $("#district").change(function() {
-        $.getJSON('https://esgoo.net/api-tinhthanh/3/' + $(this).val() + '.htm', function(data) {
+        let id = $(this).val();
+        if (!id) return;
+
+        $.getJSON('https://esgoo.net/api-tinhthanh/3/' + id + '.htm', function(data) {
             $("#ward").html('<option value="">Phường/Xã</option>');
-            $.each(data.data, function(k, v) {
-                $("#ward").append('<option value="' + v.id + '" data-name="' + v
-                    .full_name + '">' + v.full_name + '</option>');
-            });
+            if (data.error == 0) {
+                $.each(data.data, function(k, v) {
+                    $("#ward").append('<option value="' + v.id + '" data-name="' + v
+                        .full_name + '">' + v.full_name + '</option>');
+                });
+
+                // Nếu ID Huyện khớp với Huyện đã lưu -> Tự động chọn Xã luôn
+                if (id == savedDist && savedWard) {
+                    $("#ward").val(savedWard).trigger('change');
+                }
+            }
         });
         updateAddr();
     });
@@ -242,14 +320,10 @@ $(document).ready(function() {
         $("#full_address_input").val([s, p, q, t].filter(Boolean).join(', '));
     }
 
-    // --- 2. XỬ LÝ VOUCHER ---
-
-    // Mở Modal & Tải danh sách
+    // --- 3. VOUCHER & QR (Giữ nguyên) ---
     $('#open-voucher-modal').click(function(e) {
         e.preventDefault();
         $('#voucherModal').modal('show');
-
-        // Gọi AJAX lấy danh sách
         $.ajax({
             url: '?ctrl=cart&act=listVouchers',
             dataType: 'json',
@@ -257,41 +331,25 @@ $(document).ready(function() {
                 var html = '';
                 if (res.status == 'success' && res.data.length > 0) {
                     res.data.forEach(function(v) {
-                        html += `
-                        <div class="voucher-ticket" onclick="selectVoucher('${v.code}')">
-                            <div>
-                                <div class="voucher-code">${v.code}</div>
-                                <div class="voucher-desc">${v.description || 'Giảm giá đơn hàng'}</div>
-                                <small class="text-muted">HSD: ${v.end_date}</small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-danger">-${v.discount_percent}%</span><br>
-                                <small class="text-primary">Dùng ngay</small>
-                            </div>
-                        </div>`;
+                        html +=
+                            `<div class="voucher-ticket" onclick="selectVoucher('${v.code}')"><div><div class="voucher-code">${v.code}</div><div class="voucher-desc">${v.description||'Giảm giá'}</div><small class="text-muted">HSD: ${v.end_date}</small></div><div class="text-end"><span class="badge bg-danger">-${v.discount_percent}%</span><br><small class="text-primary">Dùng ngay</small></div></div>`;
                     });
                 } else {
-                    html = '<p class="text-center">Hiện không có mã giảm giá nào.</p>';
+                    html = '<p class="text-center">Trống</p>';
                 }
                 $('#voucher-list-container').html(html);
             }
         });
     });
-
-    // Hàm chọn voucher từ Modal
     window.selectVoucher = function(code) {
         $('#voucher_code').val(code);
         $('#voucherModal').modal('hide');
-        $('#btn-apply-voucher').click(); // Tự động bấm nút Áp dụng
+        $('#btn-apply-voucher').click();
     };
-
-    // Nút Áp dụng Voucher
     $('#btn-apply-voucher').click(function() {
         var code = $('#voucher_code').val().trim();
         var total = parseFloat($('#temp-total').data('original'));
-
         if (code == '') return;
-
         $.ajax({
             url: '?ctrl=cart&act=checkVoucher',
             type: 'POST',
@@ -303,22 +361,18 @@ $(document).ready(function() {
                 if (res.status == 'success') {
                     var discount = total * (res.percent / 100);
                     var newTotal = total - discount;
-
                     $('#discount-percent').text(res.percent);
                     $('#discount-value').text(new Intl.NumberFormat('vi-VN').format(
                         discount));
                     $('#final-total').text(new Intl.NumberFormat('vi-VN').format(newTotal) +
                         ' đ');
                     $('#discount-row').show();
-
                     $('#discount_amount_input').val(discount);
                     $('#voucher_code_input').val(code);
-
                     $('#voucher-message').html(
-                        '<span class="text-success fw-bold"><i class="fas fa-check-circle"></i> Đã áp dụng mã ' +
+                        '<span class="text-success fw-bold"><i class="fas fa-check-circle"></i> Đã áp dụng ' +
                         code + '</span>');
-                    $('#voucher_code').prop('disabled', true);
-                    $('#btn-apply-voucher').prop('disabled', true).text('Đã dùng');
+                    $('#voucher_code, #btn-apply-voucher').prop('disabled', true);
                 } else {
                     $('#voucher-message').html('<span class="text-danger">' + res.message +
                         '</span>');
@@ -334,8 +388,6 @@ $(document).ready(function() {
         $('#discount_amount_input').val(0);
         $('#voucher_code_input').val('');
     }
-
-    // --- 3. QR CODE INFO ---
     $('input[name="payment_method"]').change(function() {
         $(this).val() == 'BANK' ? $('#qr-payment-info').slideDown() : $('#qr-payment-info').slideUp();
     });

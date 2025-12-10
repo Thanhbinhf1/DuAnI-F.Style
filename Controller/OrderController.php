@@ -42,111 +42,113 @@ class OrderController {
 
     // 2. Xử lý lưu đơn hàng
     function saveOrder() {
-    // Chỉ cho phép POST
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        header("Location: index.php");
-        exit;
-    }
+        // Chỉ cho phép POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php");
+            exit;
+        }
 
-    // Bắt buộc đăng nhập
-    if (!isset($_SESSION['user'])) {
-        echo "<script>alert('Vui lòng đăng nhập để đặt hàng!'); window.location='?ctrl=user&act=login';</script>";
-        exit;
-    }
+        // Bắt buộc đăng nhập
+        if (!isset($_SESSION['user'])) {
+            echo "<script>alert('Vui lòng đăng nhập để đặt hàng!'); window.location='?ctrl=user&act=login';</script>";
+            exit;
+        }
 
-    // Giỏ hàng phải có sản phẩm
-    if (empty($_SESSION['cart'])) {
-        echo "<script>alert('Giỏ hàng trống!'); window.location='index.php';</script>";
-        exit;
-    }
+        // Giỏ hàng phải có sản phẩm
+        if (empty($_SESSION['cart'])) {
+            echo "<script>alert('Giỏ hàng trống!'); window.location='index.php';</script>";
+            exit;
+        }
 
-    $userId  = $_SESSION['user']['id'];
+        $userId  = $_SESSION['user']['id'];
 
-    // Lấy dữ liệu từ form
-    $fullname = trim($_POST['fullname'] ?? '');
-    $phone    = trim($_POST['phone'] ?? '');
-    $address  = trim($_POST['address'] ?? '');
-    $note     = trim($_POST['note'] ?? '');
-    $payment  = $_POST['payment_method'] ?? 'COD'; // 'COD' hoặc 'BANK'
+        // Lấy dữ liệu từ form
+        $fullname = trim($_POST['fullname'] ?? '');
+        $phone    = trim($_POST['phone'] ?? '');
+        $address  = trim($_POST['address'] ?? '');
+        $note     = trim($_POST['note'] ?? '');
+        $payment  = $_POST['payment_method'] ?? 'COD'; // 'COD' hoặc 'BANK'
 
-    // Validate đơn giản
-    $errors = [];
+        // Validate đơn giản
+        $errors = [];
 
-    if ($fullname === '') {
-        $errors[] = 'Vui lòng nhập họ và tên người nhận.';
-    }
+        if ($fullname === '') {
+            $errors[] = 'Vui lòng nhập họ và tên người nhận.';
+        }
 
-    if ($phone === '') {
-        $errors[] = 'Vui lòng nhập số điện thoại.';
-    } elseif (!preg_match('/^0[0-9]{9}$/', $phone)) {
-        // Ví dụ: 10 số, bắt đầu bằng 0
-        $errors[] = 'Số điện thoại không hợp lệ.';
-    }
+        if ($phone === '') {
+            $errors[] = 'Vui lòng nhập số điện thoại.';
+        } elseif (!preg_match('/^0[0-9]{9}$/', $phone)) {
+            $errors[] = 'Số điện thoại không hợp lệ.';
+        }
 
-    if ($address === '') {
-        $errors[] = 'Vui lòng nhập địa chỉ nhận hàng.';
-    }
+        if ($address === '') {
+            $errors[] = 'Vui lòng nhập địa chỉ nhận hàng.';
+        }
 
-    if (!in_array($payment, ['COD', 'BANK'])) {
-        $payment = 'COD';
-    }
+        if (!in_array($payment, ['COD', 'BANK'])) {
+            $payment = 'COD';
+        }
 
-    // Nếu có lỗi -> báo và quay lại
-    if (!empty($errors)) {
-        $msg = implode("\\n", $errors);
-        echo "<script>alert('$msg'); history.back();</script>";
-        exit;
-    }
+        // Nếu có lỗi -> báo và quay lại
+        if (!empty($errors)) {
+            $msg = implode("\\n", $errors);
+            echo "<script>alert('$msg'); history.back();</script>";
+            exit;
+        }
 
-    // Tính tổng tiền từ giỏ hàng
-    $totalMoney = 0;
-    foreach ($_SESSION['cart'] as $item) {
-        $totalMoney += $item['price'] * $item['quantity'];
-    }
-
-    // Tạo đơn hàng
-    $orderId = $this->model->createOrder(
-        $userId,
-        $fullname,
-        $phone,
-        $address,
-        $totalMoney,
-        $payment,
-        $note
-    );
-
-    if ($orderId) {
-        // Lưu chi tiết từng sản phẩm
+        // Tính tổng tiền từ giỏ hàng
+        $totalMoney = 0;
         foreach ($_SESSION['cart'] as $item) {
-            $this->model->createOrderDetail(
-                $orderId,
-                $item['id'],
-                $item['quantity'],
-                $item['price']
-            );
+            $totalMoney += $item['price'] * $item['quantity'];
         }
 
-        // Xóa giỏ hàng sau khi tạo đơn
-        unset($_SESSION['cart']);
+        // Tạo đơn hàng
+        $orderId = $this->model->createOrder(
+            $userId,
+            $fullname,
+            $phone,
+            $address,
+            $totalMoney,
+            $payment,
+            $note
+        );
 
-        // PHÂN LUỒNG THEO HÌNH THỨC THANH TOÁN
-        if ($payment === 'BANK') {
-            // Chuyển sang trang quét mã QR cho đơn hàng vừa tạo
-            header("Location: ?ctrl=order&act=payment&id=" . $orderId);
-            exit;
-        } else { // COD
-            echo "<script>alert('Đặt hàng thành công! Đơn hàng của bạn sẽ được xử lý trong thời gian sớm nhất.'); 
-                  window.location='?ctrl=user&act=profile';</script>";
+        if ($orderId) {
+            // Lưu chi tiết từng sản phẩm
+            foreach ($_SESSION['cart'] as $item) {
+                $this->model->createOrderDetail(
+                    $orderId,
+                    $item['id'],
+                    $item['quantity'],
+                    $item['price']
+                );
+            }
+
+            // Xóa giỏ hàng sau khi tạo đơn
+            unset($_SESSION['cart']);
+
+            // PHÂN LUỒNG THEO HÌNH THỨC THANH TOÁN
+            if ($payment === 'BANK') {
+                // Chuyển sang trang quét mã QR cho đơn hàng vừa tạo
+                header("Location: ?ctrl=order&act=payment&id=" . $orderId);
+                exit;
+            } else { // COD
+                // SỬA: Chuyển hướng sang trang HÓA ĐƠN để hiện Popup đánh giá
+                echo "<script>
+                        alert('Đặt hàng thành công!'); 
+                        window.location='?ctrl=order&act=printInvoice&id=" . $orderId . "';
+                      </script>";
+                exit;
+            }
+        } else {
+            echo "<script>alert('Lỗi hệ thống! Vui lòng thử lại sau.'); history.back();</script>";
             exit;
         }
-    } else {
-        echo "<script>alert('Lỗi hệ thống! Vui lòng thử lại sau.'); history.back();</script>";
-        exit;
     }
-}
 
 
-    // 2. THÊM HÀM MỚI: Hiển thị trang thanh toán QR
+    // 3. Hiển thị trang thanh toán QR
     function payment() {
         if (isset($_GET['id'])) {
             $orderId = $_GET['id'];
@@ -160,6 +162,7 @@ class OrderController {
             }
         }
     }
+
     function detail() {
         if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
         $orderId = $_GET['id'] ?? 0;
@@ -184,15 +187,12 @@ class OrderController {
         $trackingId = $order['tracking_code'] ?? ('FS' . str_pad($orderId, 6, '0', STR_PAD_LEFT));
         $trackingUrl = 'https://tracking.ghn.dev/?code=' . urlencode($trackingId);
 
-        // --- SỬA LOGIC TẠI ĐÂY ---
         $status = (int)$order['status'];
         $statusStep = 0;
         
-        // Chỉ tăng bước nếu đơn hàng KHÔNG bị hủy
         if ($status === 1) { $statusStep = 2; } // Đang giao
         if ($status === 2) { $statusStep = 3; } // Đã giao thành công
         
-        // Kiểm tra xem đơn có bị hủy không
         $isCancelled = ($status === 3);
 
         $createdAt = strtotime($order['created_at']);
@@ -207,28 +207,28 @@ class OrderController {
                 'title' => 'Xác nhận & đóng gói',
                 'description' => 'Kho đang chuẩn bị sản phẩm để bàn giao.',
                 'time' => date('H:i d/m/Y', $createdAt + 3600),
-                'done' => ($statusStep >= 1 && !$isCancelled) // Không tick xanh nếu đã hủy
+                'done' => ($statusStep >= 1 && !$isCancelled)
             ],
             [
                 'title' => 'Đang giao hàng',
                 'description' => 'Đơn hàng đang được vận chuyển bởi ' . $carrierName . '.',
                 'time' => date('H:i d/m/Y', $createdAt + 7200),
-                'done' => ($statusStep >= 2 && !$isCancelled), // Không tick xanh nếu đã hủy
+                'done' => ($statusStep >= 2 && !$isCancelled),
                 'carrier' => $carrierName,
                 'tracking' => $trackingId,
                 'tracking_link' => $trackingUrl
             ],
             [
-                // Thay đổi tiêu đề bước cuối dựa trên trạng thái hủy
                 'title' => $isCancelled ? 'Đã hủy' : 'Hoàn tất',
                 'description' => $isCancelled ? 'Đơn hàng đã bị hủy.' : 'Đơn hàng đã giao thành công.',
                 'time' => date('H:i d/m/Y', $createdAt + 10800),
-                'done' => ($statusStep >= 3 || $isCancelled) // Nếu hủy thì vẫn hiện bước cuối (màu đỏ hoặc xanh tùy CSS, nhưng nội dung là Hủy)
+                'done' => ($statusStep >= 3 || $isCancelled)
             ]
         ];
 
         include_once 'Views/users/order_detail.php';
     }
+
     function reorder() {
         if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
         $orderId = $_GET['id'] ?? 0;
@@ -279,7 +279,8 @@ class OrderController {
             return;
         }
 
-        $orderDetails = $this->model->getOrderDetails($orderId) ?: [];
+       // Đổi thành getOrderDetailsForReview để lấy cả hình ảnh sản phẩm
+$orderDetails = $this->model->getOrderDetailsForReview($orderId) ?: [];
         include_once 'Views/users/order_invoice.php';
     }
 
@@ -311,7 +312,6 @@ class OrderController {
             return;
         }
 
-        // status: 0 - chờ, 1 - đang giao, 2 - hoàn thành, 3 - hủy
         if ((int)$order['status'] !== 0) {
             echo "<script>alert('Đơn hàng đã được xử lý, không thể hủy.'); window.location='?ctrl=order&act=detail&id={$orderId}';</script>";
             return;

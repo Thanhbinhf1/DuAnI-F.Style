@@ -60,12 +60,14 @@ class Product {
         return $this->db->query($sql, [$id]); 
     }
 
-    // Lấy chi tiết 1 sản phẩm
     function getProductById($id) {
-        $sql = "SELECT * FROM products WHERE id = ?";
+        // Thêm dòng LEFT JOIN để lấy tên danh mục (c.name as category_name)
+        $sql = "SELECT p.*, c.name as category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                WHERE p.id = ?";
         return $this->db->queryOne($sql, [$id]);
     }
-
     // Tăng lượt xem (để xác định HOT)
     function increaseView($id) {
         $sql = "UPDATE products SET views = views + 1 WHERE id = ?";
@@ -150,11 +152,11 @@ class Product {
         return $this->db->query($sql, [$productId]);
     }
 
-    // Thêm bình luận mới
-    function insertComment($userId, $productId, $content, $rating) {
-        $sql = "INSERT INTO comments (user_id, product_id, content, rating, date)
-                VALUES (?, ?, ?, ?, NOW())";
-        return $this->db->execute($sql, [$userId, $productId, $content, $rating]);
+// Thêm bình luận mới (Có hỗ trợ ảnh)
+    function insertComment($userId, $productId, $content, $rating, $image = null) {
+        $sql = "INSERT INTO comments (user_id, product_id, content, rating, image, date)
+                VALUES (?, ?, ?, ?, ?, NOW())";
+        return $this->db->execute($sql, [$userId, $productId, $content, $rating, $image]);
     }
 
     // Lấy rating trung bình & tổng số đánh giá
