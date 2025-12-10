@@ -259,6 +259,20 @@ class AdminModel {
         return $this->db->query($sql, [$days]);
     }
 
+    // --- QUẢN LÝ BÌNH LUẬN ---
+    function getAllComments() {
+        $sql = "SELECT c.*, u.fullname, p.name as product_name, p.image as product_image
+                FROM comments c
+                JOIN users u ON c.user_id = u.id
+                JOIN products p ON c.product_id = p.id
+                ORDER BY c.date DESC";
+        return $this->db->query($sql);
+    }
+
+    function deleteComment($id) {
+        $sql = "DELETE FROM comments WHERE id = ?";
+        return $this->db->execute($sql, [$id]);
+    }
     // [CẬP NHẬT] Thống kê doanh thu & Trạng thái (Đã xóa các phần dư thừa)
     public function getSaleStatistics($days = 30) {
         // 1. Doanh thu (Lọc theo số ngày được chọn)

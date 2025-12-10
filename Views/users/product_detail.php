@@ -1,340 +1,598 @@
 <?php
-// --- XỬ LÝ ẢNH CHÍNH ---
+// --- XỬ LÝ ẢNH & DỮ LIỆU ---
 $mainImg = $sp['image'];
-// Kiểm tra đường dẫn ảnh (nếu chưa có http/https thì thêm đường dẫn nội bộ)
+// Kiểm tra link ảnh
 if (!str_contains($mainImg, 'http')) {
     $mainImg = "./Public/Uploads/Products/" . $mainImg;
 }
-
-// --- XỬ LÝ GALLERY (Lấy từ Controller truyền sang) ---
 $galleryImages = $gallery ?? [];
-
-// Rating
 $avgRating  = $averageRating['avg_rating'] ?? 0;
 $totalCmt   = $averageRating['total'] ?? 0;
+
+$hasSale = isset($sp['price_sale']) && $sp['price_sale'] > 0;
+$priceShow = $hasSale ? $sp['price_sale'] : $sp['price'];
 ?>
 
-<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
-    <div class="product-detail-container">
+<style>
+/* 1. TỔNG THỂ */
+.product-detail-wrapper {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    margin-top: 30px;
+}
 
-        <div class="left-column" style="flex: 0 0 40%;">
-            <div class="mb-3">
-                <img id="main-product-image" src="<?= $mainImg ?>" alt="<?= htmlspecialchars($sp['name']) ?>"
-                    style="width: 100%; border-radius: 10px; border: 1px solid #eee; object-fit: cover;">
-            </div>
+/* 2. ẢNH SẢN PHẨM */
+.main-image-box {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 15px;
+}
 
-            <div class="d-flex flex-wrap gap-2">
-                <img src="<?= $mainImg ?>" class="thumb-image active" data-src="<?= $mainImg ?>"
-                    style="width: 70px; height: 70px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #eee;">
+.thumb-list {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
 
-                <?php if (!empty($galleryImages)): ?>
-                <?php foreach ($galleryImages as $img):
-                        $thumbUrl = $img['image_url'];
-                        if (!str_contains($thumbUrl, 'http')) {
-                            $thumbUrl = "./Public/Uploads/Products/" . $thumbUrl;
-                        }
-                    ?>
-                <img src="<?= $thumbUrl ?>" class="thumb-image" data-src="<?= $thumbUrl ?>"
-                    style="width: 70px; height: 70px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #eee;">
-                <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        </div>
+.thumb-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    opacity: 0.6;
+}
 
-        <div class="right-column" style="flex: 1;">
-            <h1><?= $sp['name'] ?></h1>
+.thumb-image:hover {
+    opacity: 1;
+}
 
-            <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0 15px;">
-                <span style="font-size: 14px; color: #777;">
-                    Thương hiệu: <b><?= $sp['brand'] ?: 'F.Style' ?></b>
-                    &nbsp;|&nbsp; Mã SP: <b><?= $sp['sku_code'] ?: 'Chưa cập nhật' ?></b>
-                </span>
-            </div>
+.thumb-image.active {
+    border-color: #ff5722;
+    opacity: 1;
+    transform: translateY(-2px);
+}
 
-            <div style="margin-bottom: 10px;">
-                <?php if ($totalCmt > 0): ?>
-                <span style="color: #f59e0b; font-weight: 600;">⭐ <?= $avgRating ?>/5</span>
-                <span style="color: #777; font-size: 14px;">(<?= $totalCmt ?> đánh giá)</span>
-                <?php else: ?>
-                <span style="color: #777; font-size: 14px;">Chưa có đánh giá</span>
-                <?php endif; ?>
-            </div>
+/* 3. THÔNG TIN SẢN PHẨM */
+.product-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.3;
+}
 
-            <?php
-            $hasSale = isset($sp['price_sale']) && $sp['price_sale'] > 0;
-            $priceShow = $hasSale ? $sp['price_sale'] : $sp['price'];
-            ?>
-            <div style="margin: 20px 0;">
-                <span id="display-price" class="price"><?= number_format($priceShow) ?> đ</span>
-                <?php if ($hasSale): ?>
-                <span style="text-decoration: line-through; color:#999; margin-left: 10px;">
-                    <?= number_format($sp['price']) ?> đ
-                </span>
-                <span
-                    style="margin-left: 8px; color:#d0011b; font-weight:600;">-<?= round(100 - $sp['price_sale'] * 100 / $sp['price']) ?>%</span>
-                <?php endif; ?>
-            </div>
+.product-meta {
+    font-size: 14px;
+    color: #666;
+    margin: 10px 0;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #eee;
+}
 
-            <form action="?ctrl=cart&act=add" method="post" id="product-form">
-                <input type="hidden" name="id" value="<?= $sp['id'] ?>">
-                <input type="hidden" name="variant_id" id="selected_variant_id" value="">
+.price-box {
+    background: #fafafa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
 
-                <?php if (!empty($variants)): ?>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-weight: bold;">Màu sắc:</label>
-                    <div id="color-options" class="variant-group"></div>
+.current-price {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ff5722;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: #aaa;
+    margin-left: 10px;
+    font-size: 16px;
+}
+
+/* 4. NÚT BIẾN THỂ (GRID LAYOUT) */
+.variant-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.variant-btn {
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 0 5px;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-size: 14px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.variant-btn:hover:not(:disabled) {
+    border-color: #333;
+    background: #f9f9f9;
+}
+
+.variant-btn.active {
+    border-color: #ff5722;
+    background: #fff4f0;
+    color: #ff5722;
+    font-weight: bold;
+    box-shadow: 0 0 0 1px #ff5722 inset;
+}
+
+.variant-btn:disabled {
+    background: #f2f2f2;
+    color: #bbb;
+    cursor: not-allowed;
+    border-color: #eee;
+    text-decoration: line-through;
+}
+
+/* 5. NÚT HÀNH ĐỘNG - PHIÊN BẢN CHUẨN (ĐÃ XÓA MARGIN THỪA) */
+.action-group {
+    display: flex !important;
+    /* Xếp ngang */
+    gap: 15px;
+    /* Khoảng cách giữa 2 nút */
+    margin-top: 25px;
+    /* Cách phần trên 25px */
+    width: 100%;
+    padding: 0 !important;
+    /* Xóa padding của khung nếu có */
+}
+
+.btn-action {
+    flex: 1 !important;
+    /* Chia đều 50-50 */
+    height: 55px;
+
+    /* QUAN TRỌNG: XÓA MARGIN 10 MÀ BẠN NÓI */
+    margin: 0 !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 13px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+/* Màu sắc nút */
+.btn-add-cart {
+    background: #333;
+    color: white;
+}
+
+.btn-add-cart:hover {
+    background: #555;
+}
+
+.btn-buy-now {
+    background: #ff5722;
+    color: white;
+}
+
+.btn-buy-now:hover {
+    background: #ff784e;
+}
+
+/* Trạng thái bị khóa */
+.btn-action:disabled {
+    background: #e0e0e0 !important;
+    color: #999 !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Icon */
+.btn-action i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.btn-add-cart {
+    background: #333;
+    color: white;
+}
+
+.btn-add-cart:hover {
+    background: #555;
+}
+
+.btn-buy-now {
+    background: #ff5722;
+    color: white;
+}
+
+.btn-buy-now:hover {
+    background: #ff784e;
+}
+
+.btn-action:disabled {
+    background: #e0e0e0 !important;
+    color: #999 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Icon trong nút */
+.btn-action i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* 6. INPUT SỐ LƯỢNG */
+.qty-input {
+    width: 60px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: 35px;
+    font-weight: bold;
+}
+</style>
+
+<div class="container mb-5">
+    <div class="product-detail-wrapper">
+        <div class="row">
+
+            <div class="col-md-5">
+                <div class="main-image-box">
+                    <img id="main-product-image" src="<?= $mainImg ?>" alt="<?= htmlspecialchars($sp['name']) ?>"
+                        style="width: 100%; aspect-ratio: 1/1; object-fit: cover;">
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label style="font-weight: bold;">Kích thước:</label>
-                    <div id="size-options" class="variant-group">
-                        <span style="color: #999; font-style: italic;">(Vui lòng chọn màu trước)</span>
+                <div class="thumb-list">
+                    <img src="<?= $mainImg ?>" class="thumb-image active" data-src="<?= $mainImg ?>">
+                    <?php if (!empty($galleryImages)): ?>
+                    <?php foreach ($galleryImages as $img):
+                            $thumbUrl = str_contains($img['image_url'], 'http') ? $img['image_url'] : "./Public/Uploads/Products/" . $img['image_url'];
+                        ?>
+                    <img src="<?= $thumbUrl ?>" class="thumb-image" data-src="<?= $thumbUrl ?>">
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="col-md-7 ps-md-4">
+                <h1 class="product-title"><?= $sp['name'] ?></h1>
+
+                <div class="product-meta">
+                    <span>Thương hiệu: <b class="text-dark"><?= $sp['brand'] ?: 'F.Style' ?></b></span>
+                    <span class="mx-2">|</span>
+                    <span>Mã SP: <b class="text-dark"><?= $sp['sku_code'] ?: 'N/A' ?></b></span>
+                    <span class="mx-2">|</span>
+                    <span class="text-warning fw-bold">⭐ <?= $avgRating ?>/5</span>
+                    <span class="text-muted small">(<?= $totalCmt ?> đánh giá)</span>
+                </div>
+
+                <div class="price-box">
+                    <span id="display-price" class="current-price"><?= number_format($priceShow) ?> đ</span>
+                    <?php if ($hasSale): ?>
+                    <span class="old-price"><?= number_format($sp['price']) ?> đ</span>
+                    <span class="badge bg-danger ms-2">-<?= round(100 - $sp['price_sale']*100/$sp['price']) ?>%</span>
+                    <?php endif; ?>
+                </div>
+
+                <form action="?ctrl=cart&act=add" method="post" id="product-form">
+                    <input type="hidden" name="id" value="<?= $sp['id'] ?>">
+                    <input type="hidden" name="variant_id" id="selected_variant_id" value="">
+
+                    <?php if (!empty($variants)): ?>
+                    <div class="mb-3">
+                        <label class="fw-bold mb-1 d-block">Màu sắc:</label>
+                        <div id="color-options" class="variant-group"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="fw-bold mb-1 d-block">Kích thước:</label>
+                        <div id="size-options" class="variant-group">
+                            <small class="text-muted fst-italic py-2">Vui lòng chọn màu trước...</small>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <label class="fw-bold m-0">Số lượng:</label>
+                        <div class="input-group" style="width: 120px;">
+                            <button class="btn btn-outline-secondary btn-sm" type="button"
+                                onclick="this.parentNode.querySelector('input[type=number]').stepDown()">-</button>
+                            <input type="number" name="quantity" class="form-control text-center p-1" value="1" min="1">
+                            <button class="btn btn-outline-secondary btn-sm" type="button"
+                                onclick="this.parentNode.querySelector('input[type=number]').stepUp()">+</button>
+                        </div>
+                        <span id="stock-info" class="text-danger small fw-bold"></span>
+                    </div>
+
+                    <div class="action-group">
+                        <button type="submit" id="btn-add-cart" class="btn-action btn-add-cart" disabled>
+                            <i class="fas fa-shopping-cart"></i> <span>Thêm vào giỏ</span>
+                        </button>
+
+                        <button type="submit" id="btn-buy-now" formaction="?ctrl=cart&act=buyNow"
+                            class="btn-action btn-buy-now" disabled>
+                            <i class="fas fa-bolt"></i> <span>Mua ngay</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="fw-bold">Thông tin chi tiết</h6>
+                    <table class="table table-sm table-borderless text-muted small" style="max-width: 400px;">
+                        <tr>
+                            <td width="120">Danh mục:</td>
+                            <td><?= isset($sp['category_name']) ? $sp['category_name'] : 'Chưa cập nhật' ?></td>
+                        </tr>
+                        <tr>
+                            <td>Chất liệu:</td>
+                            <td><?= $sp['material'] ?: 'Đang cập nhật' ?></td>
+                        </tr>
+                        <tr>
+                            <td>Xuất xứ:</td>
+                            <td>Việt Nam</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="bg-white p-4 rounded shadow-sm border">
+                <h4 class="fw-bold border-bottom pb-2 mb-3">Mô tả sản phẩm</h4>
+                <div class="text-break" style="line-height: 1.6;">
+                    <?= nl2br(htmlspecialchars($sp['description'])) ?>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded shadow-sm border mt-4">
+                <h4 class="fw-bold border-bottom pb-2 mb-3">Đánh giá khách hàng</h4>
+
+                <?php if (!empty($comments)): ?>
+                <?php foreach ($comments as $c): ?>
+                <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                    <div class="flex-shrink-0">
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center fw-bold text-secondary"
+                            style="width: 40px; height: 40px;">
+                            <?= substr($c['fullname'] ?: $c['username'], 0, 1) ?>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <strong class="text-dark"><?= htmlspecialchars($c['fullname'] ?: $c['username']) ?></strong>
+                            <span class="text-warning small"><?= str_repeat('★', $c['rating']) ?></span>
+                        </div>
+                        <small class="text-muted d-block mb-1"><?= date('d/m/Y H:i', strtotime($c['date'])) ?></small>
+
+                        <p class="mb-1 text-secondary"><?= nl2br(htmlspecialchars($c['content'])) ?></p>
+
+                        <?php if (!empty($c['image'])): 
+                                $cmtImg = "./Public/Uploads/Comments/" . $c['image'];
+                            ?>
+                        <img src="<?= $cmtImg ?>" class="rounded border mt-1"
+                            style="max-width: 100px; max-height: 100px; object-fit: cover; cursor: pointer;"
+                            onclick="window.open(this.src)">
+                        <?php endif; ?>
                     </div>
                 </div>
+                <?php endforeach; ?>
+                <?php else: ?>
+                <p class="text-muted text-center py-3">Chưa có đánh giá nào.</p>
                 <?php endif; ?>
 
-                <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                    <label style="margin: 0;">Số lượng:</label>
-                    <input type="number" name="quantity" value="1" min="1"
-                        style="padding: 8px; width: 70px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
-                    <span id="stock-info" style="color: #666; font-size: 14px;"></span>
-                </div>
+                <?php if (isset($_SESSION['user'])): ?>
+                <form action="?ctrl=product&act=detail&id=<?= $sp['id'] ?>" method="post" enctype="multipart/form-data"
+                    class="mt-3 bg-light p-3 rounded">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+                    <h6 class="fw-bold mb-2">Viết đánh giá của bạn</h6>
 
-                <div class="btn-actions">
-                    <button type="submit" id="btn-add-cart" class="product-action-btn primary"
-                        <?= !empty($variants) ? 'disabled' : '' ?>
-                        style="<?= !empty($variants) ? 'background: #ccc; cursor: not-allowed;' : '' ?>">
-                        <?= !empty($variants) ? 'Chọn phân loại hàng' : 'Thêm vào giỏ hàng' ?>
-                    </button>
+                    <div class="d-flex gap-3 mb-2 align-items-center">
+                        <select name="rating" class="form-select form-select-sm w-auto">
+                            <option value="5">5 Sao (Tuyệt vời)</option>
+                            <option value="4">4 Sao (Tốt)</option>
+                            <option value="3">3 Sao (Bình thường)</option>
+                            <option value="2">2 Sao (Tệ)</option>
+                            <option value="1">1 Sao (Rất tệ)</option>
+                        </select>
 
-                    <button type="submit" id="btn-buy-now" formaction="?ctrl=cart&act=buyNow"
-                        class="product-action-btn secondary" <?= !empty($variants) ? 'disabled' : '' ?>
-                        style="<?= !empty($variants) ? 'background: #ccc; cursor: not-allowed;' : '' ?>">
-                        Mua ngay
-                    </button>
-                </div>
-            </form>
+                        <div class="file-upload-wrapper">
+                            <label for="cmt_img_input" class="btn btn-outline-secondary btn-sm"
+                                style="cursor: pointer;">
+                                <i class="fas fa-camera"></i> Thêm ảnh
+                            </label>
+                            <input type="file" name="comment_image" id="cmt_img_input" accept="image/*"
+                                style="display: none;" onchange="previewImage(this)">
+                            <span id="file-name-display" class="ms-2 small text-muted"></span>
+                        </div>
+                    </div>
 
-            <div style="margin-top: 30px;">
-                <h5>Thông tin sản phẩm</h5>
-                <table class="table table-sm" style="max-width: 500px;">
-                    <tr>
-                        <td style="width: 160px; color:#777;">Danh mục</td>
-                        <td><?= $sp['category_name'] ?? 'Chưa xác định' ?></td>
-                    </tr>
-                    <tr>
-                        <td style="color:#777;">Thương hiệu</td>
-                        <td><?= $sp['brand'] ?: 'F.Style' ?></td>
-                    </tr>
-                    <tr>
-                        <td style="color:#777;">Chất liệu</td>
-                        <td><?= $sp['material'] ?: 'Đang cập nhật' ?></td>
-                    </tr>
-                    <tr>
-                        <td style="color:#777;">Mã sản phẩm</td>
-                        <td><?= $sp['sku_code'] ?: 'Đang cập nhật' ?></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
+                    <textarea name="comment_content" rows="2" class="form-control mb-2"
+                        placeholder="Chia sẻ cảm nhận về sản phẩm..."></textarea>
 
-    <div class="description">
-        <h4>Mô tả chi tiết</h4>
-        <p><?= nl2br(htmlspecialchars($sp['description'])) ?></p>
-    </div>
+                    <div id="image-preview-container" class="mb-2" style="display: none;">
+                        <img id="img-preview" src=""
+                            style="max-height: 80px; border-radius: 5px; border: 1px solid #ddd;">
+                        <button type="button" class="btn-close ms-2" style="vertical-align: top;"
+                            onclick="removeImage()"></button>
+                    </div>
 
-    <div class="section-product">
-        <div class="section-header">
-            <h2>Sản phẩm liên quan</h2>
-        </div>
-        <div class="product-list">
-            <?php if (!empty($spLienQuan)): ?>
-            <?php foreach ($spLienQuan as $spc):
-                    $img = $spc['image'];
-                    if (!str_contains($img, 'http')) $img = "./Public/Uploads/Products/" . $img;
-                ?>
-            <div class="product-item">
-                <a href="?ctrl=product&act=detail&id=<?= $spc['id'] ?>">
-                    <img src="<?= $img ?>" alt="<?= $spc['name'] ?>">
-                    <h3><?= $spc['name'] ?></h3>
-                </a>
-                <p><?= number_format($spc['price']) ?> đ</p>
-                <a href="?ctrl=product&act=detail&id=<?= $spc['id'] ?>" class="btn-buy-now-hover">Xem chi tiết</a>
-            </div>
-            <?php endforeach; ?>
-            <?php else: ?>
-            <p class="text-muted">Chưa có sản phẩm liên quan.</p>
-            <?php endif; ?>
-        </div>
-    </div>
+                    <button type="submit" class="btn btn-dark btn-sm px-4">Gửi đánh giá</button>
+                </form>
 
-    <div style="margin-top: 40px;">
-        <h4>Đánh giá & Bình luận</h4>
-        <?php if (!empty($comments)): ?>
-        <?php foreach ($comments as $c): $name = $c['fullname'] ?: $c['username']; ?>
-        <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
-            <div style="display:flex; justify-content:space-between;">
-                <strong><?= htmlspecialchars($name) ?></strong>
-                <small style="color:#999;"><?= date('d/m/Y H:i', strtotime($c['date'])) ?></small>
-            </div>
-            <div style="color:#f59e0b; font-size: 13px;">
-                <?php for ($i = 1; $i <= 5; $i++): ?>
-                <i class="fa<?= $i <= $c['rating'] ? 's' : 'r' ?> fa-star"></i>
-                <?php endfor; ?>
-            </div>
-            <p><?= nl2br(htmlspecialchars($c['content'])) ?></p>
-        </div>
-        <?php endforeach; ?>
-        <?php else: ?>
-        <p style="color:#777;">Chưa có bình luận.</p>
-        <?php endif; ?>
-
-        <div style="margin-top: 20px;">
-            <?php if (isset($_SESSION['user'])): ?>
-            <form action="?ctrl=product&act=detail&id=<?= $sp['id'] ?>" method="post">
-                <input type="hidden" name="csrf_token"
-                    value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
-                <div class="mb-2">
-                    <label style="font-weight:600; font-size:14px;">Chấm sao:</label>
-                    <select name="rating" class="form-select form-select-sm" style="max-width: 150px;">
-                        <?php for ($i = 5; $i >= 1; $i--): echo "<option value='$i'>$i sao</option>"; endfor; ?>
-                    </select>
-                </div>
-                <div class="mb-2">
-                    <textarea name="comment_content" rows="3" class="form-control" required
-                        placeholder="Chia sẻ cảm nhận..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-dark btn-sm">Gửi bình luận</button>
-            </form>
-            <?php else: ?>
-            <p style="color:#777;">Bạn cần <a href="?ctrl=user&act=login">đăng nhập</a> để bình luận.</p>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    // 1. CHỨC NĂNG BẠN CẦN: CLICK ẢNH NHỎ -> ĐỔI ẢNH LỚN
-    const mainImage = document.getElementById('main-product-image');
-    const thumbnails = document.querySelectorAll('.thumb-image');
-
-    thumbnails.forEach(thumb => {
-        thumb.addEventListener('click', function() {
-            // Lấy đường dẫn ảnh từ thuộc tính data-src của ảnh nhỏ
-            const newSrc = this.getAttribute('data-src');
-
-            // Gán đường dẫn đó cho ảnh lớn
-            if (mainImage && newSrc) {
-                mainImage.src = newSrc;
-            }
-
-            // Xử lý hiệu ứng viền (Active) để biết đang chọn hình nào
-            thumbnails.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-
-    // 2. XỬ LÝ BIẾN THỂ (SIZE/MÀU) VÀ KHÓA NÚT MUA
-    const variants = <?= json_encode($variants ?? [], JSON_UNESCAPED_UNICODE) ?>;
-
-    if (Array.isArray(variants) && variants.length > 0) {
-        const colorContainer = document.getElementById('color-options');
-        const sizeContainer = document.getElementById('size-options');
-        const priceDisplay = document.getElementById('display-price');
-        const stockDisplay = document.getElementById('stock-info');
-        const variantInput = document.getElementById('selected_variant_id');
-        const btnAdd = document.getElementById('btn-add-cart');
-        const btnBuyNow = document.getElementById('btn-buy-now');
-
-        const uniqueColors = [...new Set(variants.map(v => v.color))];
-
-        // Tạo nút màu
-        uniqueColors.forEach(color => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.innerText = color;
-            btn.className = 'variant-btn';
-            btn.addEventListener('click', function() {
-                Array.from(colorContainer.children).forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                showSizesForColor(color);
-            });
-            colorContainer.appendChild(btn);
-        });
-
-        // Hiển thị Size khi chọn màu
-        function showSizesForColor(selectedColor) {
-            sizeContainer.innerHTML = "";
-            const available = variants.filter(v => v.color === selectedColor);
-
-            available.forEach(variant => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.innerText = variant.size;
-                btn.className = 'variant-btn';
-
-                if (parseInt(variant.quantity) <= 0) {
-                    btn.disabled = true;
-                    btn.innerText += " (Hết)";
-                    btn.style.opacity = "0.5";
-                    btn.style.cursor = "not-allowed";
+                <script>
+                // Script xem trước ảnh khi chọn
+                function previewImage(input) {
+                    if (input.files && input.files[0]) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('img-preview').src = e.target.result;
+                            document.getElementById('image-preview-container').style.display = 'block';
+                            document.getElementById('file-name-display').innerText = input.files[0].name;
+                        }
+                        reader.readAsDataURL(input.files[0]);
+                    }
                 }
 
-                btn.addEventListener('click', function() {
-                    Array.from(sizeContainer.children).forEach(b => b.classList.remove(
-                        'active'));
-                    this.classList.add('active');
-                    updateProductInfo(variant);
-                });
+                function removeImage() {
+                    document.getElementById('cmt_img_input').value = "";
+                    document.getElementById('image-preview-container').style.display = 'none';
+                    document.getElementById('file-name-display').innerText = "";
+                }
+                </script>
 
-                sizeContainer.appendChild(btn);
+                <?php else: ?>
+                <div class="alert alert-warning py-2 small mt-3">
+                    Vui lòng <a href="?ctrl=user&act=login" class="alert-link">đăng nhập</a> để gửi đánh giá kèm hình
+                    ảnh.
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="bg-white p-3 rounded shadow-sm border">
+                <h5 class="fw-bold mb-3">Sản phẩm liên quan</h5>
+                <?php if (!empty($spLienQuan)): ?>
+                <div class="d-flex flex-column gap-3">
+                    <?php foreach ($spLienQuan as $spc): 
+                        $img = str_contains($spc['image'], 'http') ? $spc['image'] : "./Public/Uploads/Products/" . $spc['image'];
+                    ?>
+                    <div class="d-flex gap-3 align-items-center">
+                        <a href="?ctrl=product&act=detail&id=<?= $spc['id'] ?>">
+                            <img src="<?= $img ?>" class="rounded border"
+                                style="width: 70px; height: 70px; object-fit: cover;">
+                        </a>
+                        <div>
+                            <a href="?ctrl=product&act=detail&id=<?= $spc['id'] ?>"
+                                class="text-decoration-none text-dark fw-bold two-lines">
+                                <?= $spc['name'] ?>
+                            </a>
+                            <div class="text-danger fw-bold small mt-1"><?= number_format($spc['price']) ?> đ</div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. CHUYỂN ẢNH GALLERY
+        const mainImg = document.getElementById('main-product-image');
+        document.querySelectorAll('.thumb-image').forEach(img => {
+            img.addEventListener('click', function() {
+                mainImg.src = this.dataset.src;
+                document.querySelectorAll('.thumb-image').forEach(i => i.classList.remove(
+                    'active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 2. XỬ LÝ BIẾN THỂ (SIZE/MÀU)
+        const variants = <?= json_encode($variants ?? [], JSON_UNESCAPED_UNICODE) ?>;
+
+        if (Array.isArray(variants) && variants.length > 0) {
+            const colorContainer = document.getElementById('color-options');
+            const sizeContainer = document.getElementById('size-options');
+            const priceDisplay = document.getElementById('display-price');
+            const stockDisplay = document.getElementById('stock-info');
+            const variantInput = document.getElementById('selected_variant_id');
+            const btnAdd = document.getElementById('btn-add-cart');
+            const btnBuy = document.getElementById('btn-buy-now');
+
+            const uniqueColors = [...new Set(variants.map(v => v.color))];
+
+            uniqueColors.forEach(color => {
+                const btn = document.createElement('div');
+                btn.innerText = color;
+                btn.className = 'variant-btn';
+                btn.onclick = function() {
+                    Array.from(colorContainer.children).forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    renderSizes(color);
+                };
+                colorContainer.appendChild(btn);
             });
 
-            // Reset khi chưa chọn xong size
-            variantInput.value = "";
-            stockDisplay.innerText = "";
-            btnAdd.disabled = true;
-            btnAdd.style.background = "#ccc";
-            btnAdd.style.cursor = "not-allowed";
-            btnAdd.innerText = "Vui lòng chọn Size";
-            if (btnBuyNow) {
-                btnBuyNow.disabled = true;
-                btnBuyNow.style.background = "#ccc";
-                btnBuyNow.style.cursor = "not-allowed";
+            function renderSizes(color) {
+                sizeContainer.innerHTML = '';
+                const available = variants.filter(v => v.color === color);
+
+                available.forEach(v => {
+                    const btn = document.createElement('div');
+                    btn.innerText = v.size;
+                    btn.className = 'variant-btn';
+
+                    if (parseInt(v.quantity) <= 0) {
+                        btn.classList.add('disabled');
+                        btn.style.pointerEvents = 'none';
+                        btn.innerText += ' (Hết)';
+                    } else {
+                        btn.onclick = function() {
+                            Array.from(sizeContainer.children).forEach(b => b.classList.remove(
+                                'active'));
+                            this.classList.add('active');
+                            selectVariant(v);
+                        };
+                    }
+                    sizeContainer.appendChild(btn);
+                });
+
+                resetButtons();
             }
-        }
 
-        // Cập nhật thông tin khi chọn đủ
-        function updateProductInfo(variant) {
-            const price = parseInt(variant.price) || <?= (int)$priceShow ?>;
-            priceDisplay.innerText = new Intl.NumberFormat('vi-VN').format(price) + ' đ';
-            stockDisplay.innerText = `(Còn ${variant.quantity} sản phẩm)`;
-            variantInput.value = variant.id;
+            function selectVariant(v) {
+                const price = parseInt(v.price) || <?= (int)$priceShow ?>;
+                priceDisplay.innerText = new Intl.NumberFormat('vi-VN').format(price) + ' đ';
+                stockDisplay.innerText = `(Còn ${v.quantity} sp)`;
+                variantInput.value = v.id;
 
-            btnAdd.disabled = false;
-            btnAdd.style.background = "#333";
-            btnAdd.style.cursor = "pointer";
-            btnAdd.innerText = "Thêm vào giỏ hàng";
-
-            if (btnBuyNow) {
-                btnBuyNow.disabled = false;
-                btnBuyNow.style.background = "";
-                btnBuyNow.style.cursor = "pointer";
+                // Mở nút mua & Thêm icon (KHÔNG thêm style inline để tránh lệch)
+                btnAdd.disabled = false;
+                btnAdd.innerHTML = '<i class="fas fa-shopping-cart"></i> <span>Thêm vào giỏ</span>';
+                btnBuy.disabled = false;
             }
-        }
-    }
 
-    // 3. CHẶN SUBMIT FORM NẾU CHƯA CHỌN BIẾN THỂ
-    const form = document.getElementById('product-form');
-    form.addEventListener('submit', function(e) {
-        const variantInput = document.getElementById('selected_variant_id');
-        if (variants && variants.length > 0 && !variantInput.value) {
-            e.preventDefault();
-            alert("Vui lòng chọn đầy đủ Màu sắc và Kích thước!");
+            function resetButtons() {
+                variantInput.value = '';
+                stockDisplay.innerText = '';
+
+                btnAdd.disabled = true;
+                btnAdd.innerHTML = '<i class="fas fa-hand-pointer"></i> <span>Chọn phân loại</span>';
+                btnBuy.disabled = true;
+            }
+
+            resetButtons(); // Khóa nút khi mới vào
         }
+
+        // Validate trước khi submit
+        document.getElementById('product-form').addEventListener('submit', function(e) {
+            if (variants && variants.length > 0 && !document.getElementById('selected_variant_id')
+                .value) {
+                e.preventDefault();
+                alert('Vui lòng chọn Màu sắc và Kích thước!');
+            }
+        });
     });
-});
-</script>
+    </script>

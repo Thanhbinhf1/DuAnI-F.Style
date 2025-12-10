@@ -3,6 +3,29 @@ include_once 'Models/User.php';
 include_once 'csrf.php'; // Đảm bảo file này tồn tại
 
 class UserController {
+    function saveAddress() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['user'])) {
+            $id = $_SESSION['user']['id'];
+            $province_id = $_POST['province_id'];
+            $district_id = $_POST['district_id'];
+            $ward_id     = $_POST['ward_id'];
+            $street      = $_POST['street_address'];
+            $full_addr   = $_POST['full_address_str']; // Chuỗi địa chỉ đầy đủ
+
+            include_once 'Models/User.php';
+            $userModel = new User();
+            $userModel->updateAddress($id, $province_id, $district_id, $ward_id, $street, $full_addr);
+
+            // Cập nhật lại Session để các trang khác nhận diện ngay
+            $_SESSION['user']['province_id'] = $province_id;
+            $_SESSION['user']['district_id'] = $district_id;
+            $_SESSION['user']['ward_id'] = $ward_id;
+            $_SESSION['user']['street_address'] = $street;
+            $_SESSION['user']['address'] = $full_addr;
+
+            echo "<script>alert('Đã lưu địa chỉ mặc định!'); window.location='?ctrl=user&act=profile';</script>";
+        }
+    }
     private $model;
 
     function __construct() {
