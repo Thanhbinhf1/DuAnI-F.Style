@@ -17,9 +17,8 @@ if (!defined('BASE_URL')) {
     define('BASE_URL', '/'); 
 }
 
-// Hàm gửi email SỬ DỤNG PHPMailer (kết nối trực tiếp SMTP)
+// Hàm gửi email SỬ DỤNG PHPMailer
 function sendEmail_PHPMailer($to, $subject, $body) {
-    // TẠO INSTANCE PHPMailer
     $mail = new PHPMailer(true);
     
     try {
@@ -31,8 +30,8 @@ function sendEmail_PHPMailer($to, $subject, $body) {
         // ====================================================
         // THAY THẾ BẰNG THÔNG TIN GMAIL VÀ APP PASSWORD CỦA BẠN
         // ====================================================
-        $mail->Username   = 'truongquangquy2512@gmail.com'; // Ví dụ: luyenhuu@gmail.com
-        $mail->Password   = 'rvnzachoylhyjsrq';   // Mật khẩu 16 ký tự mà Google đã tạo
+        $mail->Username   = 'truongquangquy2512@gmail.com'; // Thay thế
+        $mail->Password   = 'rvnzachoylhyjsrq';   // Thay thế
 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         
         $mail->Port       = 587;                                    
@@ -40,15 +39,13 @@ function sendEmail_PHPMailer($to, $subject, $body) {
 
         // Thiết lập mã hóa Tiếng Việt và Người gửi
         $mail->CharSet = 'UTF-8';
-        $mail->setFrom('no-reply@fstyle.com', 'F.Style Store'); // Địa chỉ hiển thị chuyên nghiệp
+        $mail->setFrom('no-reply@fstyle.com', 'F.Style Store'); 
         
         $mail->isHTML(false); 
         $mail->Subject = $subject;
         $mail->Body    = $body;
 
-        // Người nhận (To)
         $mail->addAddress($to);     
-        
         $mail->send();
         return true;
     } catch (Exception $e) {
@@ -90,14 +87,12 @@ class UserController {
             $user = $this->model->getUserByEmail($email);
 
             if ($user) {
-                // TẠO MÃ XÁC NHẬN NGẪU NHIÊN 6 CHỮ SỐ
                 $code = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT); 
                 $expiry = date('Y-m-d H:i:s', time() + 600); // Hết hạn sau 10 phút
                 $userId = $user['id'];
 
                 $this->model->setResetCode($userId, $code, $expiry);
                 
-                // --- Xử lý gửi email bằng PHPMailer ---
                 $subject = "Mã xác nhận Đặt lại mật khẩu F.Style: " . $code;
                 $body = "Chào " . ($user['fullname'] ?? $user['username']) . ",\n\n"
                       . "Mã xác nhận ĐẶT LẠI MẬT KHẨU của bạn là:\n\n"
@@ -112,13 +107,11 @@ class UserController {
                     echo "<script>alert('{$success}'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
                     exit;
                 } else {
-                    // Xử lý khi gửi mail thất bại (vẫn chuyển sang trang nhập mã nhưng nên log lỗi)
-                    $errorMsg = "LỖI: Không thể gửi Email. Vui lòng kiểm tra lại Username/App Password trong file code.";
-                    echo "<script>alert('Lỗi gửi mail: Mã xác nhận đã được tạo. Vui lòng thử nhập mã thủ công.'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
+                    $errorMsg = "LỖI: Không thể gửi Email. Vui lòng kiểm tra lại Username/App Password.";
+                    echo "<script>alert('Lỗi gửi mail: Mã xác nhận đã được tạo. Vui lòng thử nhập mã thủ công và kiểm tra cấu hình SMTP.'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
                     exit;
                 }
             } else {
-                // Luôn báo thành công để tránh lộ thông tin user
                 $success = "Hệ thống đã gửi mã xác nhận 6 chữ số đến Email: $email. Vui lòng kiểm tra hộp thư.";
                 echo "<script>alert('{$success}'); window.location='?ctrl=user&act=verifyCodeForm&email=" . urlencode($email) . "';</script>";
                 exit;
@@ -141,16 +134,19 @@ class UserController {
         $email = trim($_POST['email'] ?? '');
         $code = trim($_POST['code'] ?? '');
         $error = '';
+        
+        // FIX LỖI TIMEZONE: Lấy thời gian hiện tại từ PHP
+        $currentTime = date('Y-m-d H:i:s'); 
 
         if (empty($email) || empty($code)) {
             $error = 'Vui lòng nhập Email và Mã xác nhận.';
         } elseif (strlen($code) !== 6 || !is_numeric($code)) {
             $error = 'Mã xác nhận không hợp lệ.';
         } else {
-            $user = $this->model->getUserByCodeAndEmail($code, $email);
+            // TRUYỀN THỜI GIAN HIỆN TẠI VÀO HÀM KIỂM TRA
+            $user = $this->model->getUserByCodeAndEmail($code, $email, $currentTime);
 
             if ($user) {
-                // Mã chính xác -> Chuyển sang trang đặt mật khẩu mới, mang theo mã
                 header("Location: " . BASE_URL . "?ctrl=user&act=resetPassword&code=" . $code);
                 exit;
             } else {
@@ -169,9 +165,13 @@ class UserController {
     function resetPassword() {
         $code = $_GET['code'] ?? ''; 
         $error = $_GET['error'] ?? '';
+        
+        // FIX LỖI TIMEZONE: Lấy thời gian hiện tại từ PHP
+        $currentTime = date('Y-m-d H:i:s');
 
         // Kiểm tra lại code có hợp lệ không trước khi cho hiển thị form
-        if (empty($code) || !$this->model->getUserByCodeAndEmail($code, '')) {
+        // Dùng 'temp@email.com' vì hàm Model cần tham số email, nhưng ở đây ta chỉ cần check mã
+        if (empty($code) || !$this->model->getUserByCodeAndEmail($code, 'temp@email.com', $currentTime)) {
             $error = 'Yêu cầu đặt lại mật khẩu không hợp lệ hoặc mã đã hết hạn. Vui lòng bắt đầu lại.';
         }
         
@@ -204,14 +204,13 @@ class UserController {
             }
         }
         
-        // Quay lại trang reset password với lỗi
         $encodedError = urlencode($error);
         header("Location: " . BASE_URL . "?ctrl=user&act=resetPassword&code={$code}&error={$encodedError}");
         exit;
     }
 
 
-    // ... (Các hàm cũ: register, login, logout, profile, etc. giữ nguyên)
+    // ... (Các hàm cũ: register, login, logout, profile, editProfile, updateProfile giữ nguyên)
     function register() {
         include_once 'Views/users/user_register.php';
     }
@@ -250,7 +249,6 @@ class UserController {
         $user = trim($_POST['username'] ?? '');
         $pass = trim($_POST['password'] ?? '');
 
-        // Validate đơn giản
         if (empty($user) || empty($pass)) {
              $error = "Vui lòng nhập đầy đủ thông tin.";
              include_once 'Views/users/user_login.php';
@@ -262,7 +260,6 @@ class UserController {
         if ($check && password_verify($pass, $check['password'])) {
             $_SESSION['user'] = $check;
             
-            // Chống Session Fixation
             session_regenerate_id(true);
 
             if ((int)$check['role'] === 1) {
@@ -298,7 +295,6 @@ class UserController {
         include_once 'Views/users/profile.php';
     }
     
-    // Các hàm khác giữ nguyên cấu trúc nhưng thêm header() redirect thay vì echo script
     function editProfile() {
          if (!isset($_SESSION['user'])) { header("Location: ?ctrl=user&act=login"); exit; }
          include_once 'Views/users/edit_profile.php';
@@ -315,7 +311,6 @@ class UserController {
 
         $this->model->updateUser($id, $fullname, $email, $phone, $address);
         
-        // Cập nhật lại session
         $_SESSION['user']['fullname'] = $fullname;
         $_SESSION['user']['email'] = $email;
         $_SESSION['user']['phone'] = $phone;
