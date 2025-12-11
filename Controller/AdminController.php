@@ -452,8 +452,15 @@ function categoryPost() {
             }
             
             if ($isValid) {
+                // NẾU TRẠNG THÁI MỚI LÀ 3 (HỦY) -> Hoàn kho
+                if ($newStatus == 3) {
+                    include_once 'Models/Product.php';
+                    $prodModel = new Product();
+                    $prodModel->restoreStockForOrder($orderId);
+                }
+
                 $result = $this->model->updateOrderStatus($orderId, $newStatus);
-                $msg = $result ? 'Cập nhật trạng thái thành công!' : 'LỖI: Cập nhật thất bại.';
+                // ...
             }
 
             // Redirect về đúng trang đã gọi (list hoặc detail)

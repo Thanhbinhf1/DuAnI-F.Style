@@ -316,6 +316,7 @@ $orderDetails = $this->model->getOrderDetailsForReview($orderId) ?: [];
             echo "<script>alert('Đơn hàng đã được xử lý, không thể hủy.'); window.location='?ctrl=order&act=detail&id={$orderId}';</script>";
             return;
         }
+        $this->productModel->restoreStockForOrder($orderId);
 
         $this->model->updateOrderStatus($orderId, 3);
         echo "<script>alert('Đã hủy đơn hàng.'); window.location='?ctrl=user&act=profile#orders';</script>";
