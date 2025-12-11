@@ -248,6 +248,26 @@ $priceShow = $hasSale ? $sp['price_sale'] : $sp['price'];
     height: 35px;
     font-weight: bold;
 }
+
+.btn-action {
+    display: flex !important;
+    /* Kích hoạt Flexbox */
+    align-items: center !important;
+    /* Căn giữa theo chiều dọc */
+    justify-content: center !important;
+    /* Căn giữa theo chiều ngang */
+    padding: 0 10px !important;
+    /* Padding đều 2 bên */
+    height: 55px !important;
+    /* Chiều cao cố định */
+    white-space: nowrap;
+    /* Không cho chữ xuống dòng */
+}
+
+.btn-action i {
+    margin-right: 8px !important;
+    /* Khoảng cách icon và chữ */
+}
 </style>
 
 <div class="container mb-5">

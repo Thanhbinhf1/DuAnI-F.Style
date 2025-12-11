@@ -1,9 +1,9 @@
 <?php
-// Fallback: Nếu Controller quên truyền data thì tự lấy
+// Tự động lấy chi tiết sản phẩm nếu chưa có
 if (empty($orderDetails) && isset($_GET['id'])) {
     include_once 'Models/Order.php';
     $orderModel = new Order();
-    // Gọi hàm lấy chi tiết có kèm hình ảnh
+    // Ưu tiên dùng hàm lấy đầy đủ thông tin (kèm ảnh)
     if (method_exists($orderModel, 'getOrderDetailsForReview')) {
         $orderDetails = $orderModel->getOrderDetailsForReview($_GET['id']);
     } else {
@@ -34,8 +34,7 @@ if (empty($orderDetails) && isset($_GET['id'])) {
             <div class="col-md-6">
                 <h5 style="font-size: 16px; font-weight: 600; color: #555;">Người nhận</h5>
                 <p style="margin: 3px 0;">
-                    <strong><?= htmlspecialchars($order['fullname'] ?? $user['fullname']) ?></strong>
-                </p>
+                    <strong><?= htmlspecialchars($order['fullname'] ?? $user['fullname']) ?></strong></p>
                 <p style="margin: 3px 0;"><?= htmlspecialchars($order['phone'] ?? $user['phone']) ?></p>
                 <p style="margin: 3px 0; color: #666;"><?= htmlspecialchars($order['address'] ?? 'Tại cửa hàng') ?></p>
             </div>
@@ -106,32 +105,33 @@ if (empty($orderDetails) && isset($_GET['id'])) {
                   $pId = $item['product_id'];
                   $pName = $item['product_name'] ?? $item['name'];
                   
-                  // --- XỬ LÝ ẢNH CHỐNG LỖI (FALLBACK) ---
+                  // --- LOGIC XỬ LÝ ẢNH CHỐNG LỖI ---
                   $imgRaw = $item['image'] ?? '';
-                  $imgSrc = ''; 
+                  // Mặc định dùng ảnh placeholder online nếu không tìm thấy ảnh thật
+                  $imgSrc = "https://via.placeholder.com/80x80.png?text=No+Img"; 
                   
                   if (!empty($imgRaw)) {
                       if (strpos($imgRaw, 'http') !== false) {
-                          $imgSrc = $imgRaw;
+                          $imgSrc = $imgRaw; // Link online giữ nguyên
                       } else {
-                          $imgSrc = "./Public/Uploads/Products/" . $imgRaw;
+                          // Tạo đường dẫn file nội bộ
+                          $localPath = "Public/Uploads/Products/" . $imgRaw;
+                          
+                          // Kiểm tra file có thật sự tồn tại trên ổ cứng không?
+                          if (file_exists($localPath)) {
+                              $imgSrc = "./" . $localPath;
+                          } 
+                          // Nếu file không tồn tại -> Giữ nguyên ảnh placeholder mặc định
                       }
                   }
-                  // ---------------------------------------
+                  // ------------------------------------
               ?>
                     <div class="card mb-3 border-0 shadow-sm">
                         <div class="row g-0 align-items-center p-3">
                             <div class="col-2 text-center">
-                                <?php if($imgSrc): ?>
-                                <img src="<?= $imgSrc ?>" class="rounded border"
-                                    style="width: 60px; height: 60px; object-fit: cover;"
-                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <?php endif; ?>
-
-                                <div class="rounded border bg-light d-flex align-items-center justify-content-center fw-bold text-secondary"
-                                    style="width: 60px; height: 60px; font-size: 20px; display: <?= $imgSrc ? 'none' : 'flex' ?>; margin: 0 auto;">
-                                    <?= substr($pName, 0, 1) ?>
-                                </div>
+                                <img src="<?= $imgSrc ?>" class="rounded border bg-white"
+                                    style="width: 60px; height: 60px; object-fit: cover;" alt="SP"
+                                    onerror="this.src='https://via.placeholder.com/80x80.png?text=Error'">
                             </div>
 
                             <div class="col-10 ps-3">
@@ -151,7 +151,7 @@ if (empty($orderDetails) && isset($_GET['id'])) {
 
                                 <textarea name="reviews[<?= $pId ?>][content]"
                                     class="form-control form-control-sm bg-light" rows="2"
-                                    placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm này..."></textarea>
+                                    placeholder="Nhập đánh giá của bạn..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var myModal = new bootstrap.Modal(modalEl);
             myModal.show();
         }
-    }, 800);
+    }, 1000);
 });
 </script>
 <?php endif; ?>
