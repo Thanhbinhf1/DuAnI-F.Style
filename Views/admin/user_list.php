@@ -81,7 +81,6 @@
             <th style="padding: 15px; text-align: left;">Email</th>
             <th style="padding: 15px; text-align: center;">Tổng mua</th>
             <th style="padding: 15px; text-align: center;">Đã hủy</th>
-            <th style="padding: 15px; text-align: left;">Mật khẩu</th>
             <th style="padding: 15px; text-align: center;">Thao tác</th>
         </tr>
     </thead>
@@ -119,13 +118,6 @@
                 <?php else: ?>
                 <span class="badge-zero">-</span>
                 <?php endif; ?>
-            </td>
-
-            <td style="padding: 15px;">
-                <div
-                    style="background: #f1f1f1; padding: 5px 10px; border-radius: 4px; display: inline-block; color: #7f8c8d;">
-                    <span style="font-size: 18px; line-height: 10px; position: relative; top: 3px;">••••••</span>
-                </div>
             </td>
 
             <td style="padding: 15px; text-align: center;">

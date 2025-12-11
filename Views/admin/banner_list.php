@@ -10,22 +10,26 @@
 
     <div class="row g-4">
         <?php if(!empty($banners)): ?>
-        <?php foreach ($banners as $b): ?>
+        <?php foreach ($banners as $b): 
+            // --- FIX LỖI ẢNH ---
+            $imgSrc = $b['image'];
+            // Nếu không phải link online và không chứa dấu / -> Thêm đường dẫn thư mục
+            if (!empty($imgSrc) && strpos($imgSrc, 'http') === false && strpos($imgSrc, '/') === false) {
+                $imgSrc = "./Public/Uploads/Banners/" . $imgSrc;
+            }
+            // ------------------
+        ?>
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm border-0 banner-card">
                 <div class="position-relative">
-                    <img src="<?=$b['image']?>" class="card-img-top" style="height: 180px; object-fit: cover;">
+                    <img src="<?=$imgSrc?>" class="card-img-top" style="height: 180px; object-fit: cover;"
+                        onerror="this.src='https://via.placeholder.com/300x180?text=Lỗi+Ảnh'">
 
                     <a href="?ctrl=admin&act=bannerToggle&id=<?=$b['id']?>&status=<?=$b['status']?>"
                         class="position-absolute top-0 end-0 m-2 badge <?=$b['status']?'bg-success':'bg-secondary'?> text-decoration-none shadow"
                         title="Bấm để thay đổi trạng thái">
-
-                        <?php if($b['status']): ?>
-                        <i class="fas fa-eye"></i> Đang hiện
-                        <?php else: ?>
-                        <i class="fas fa-eye-slash"></i> Đã ẩn
-                        <?php endif; ?>
-
+                        <?php if($b['status']): ?> <i class="fas fa-eye"></i> Đang hiện <?php else: ?> <i
+                            class="fas fa-eye-slash"></i> Đã ẩn <?php endif; ?>
                     </a>
                 </div>
 
@@ -39,35 +43,19 @@
                 </div>
 
                 <div class="card-footer bg-white border-0 d-flex justify-content-end gap-2 pb-3">
-                    <a href="?ctrl=admin&act=bannerForm&id=<?=$b['id']?>" class="btn btn-outline-warning btn-sm">
-                        <i class="fas fa-edit"></i> Sửa
-                    </a>
+                    <a href="?ctrl=admin&act=bannerForm&id=<?=$b['id']?>" class="btn btn-outline-warning btn-sm"><i
+                            class="fas fa-edit"></i> Sửa</a>
                     <a href="?ctrl=admin&act=bannerDelete&id=<?=$b['id']?>" onclick="return confirm('Xóa banner này?')"
-                        class="btn btn-outline-danger btn-sm">
-                        <i class="fas fa-trash"></i> Xóa
-                    </a>
+                        class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Xóa</a>
                 </div>
             </div>
         </div>
         <?php endforeach; ?>
         <?php else: ?>
         <div class="col-12 text-center py-5 text-muted">
-            <i class="fas fa-folder-open fa-3x mb-3"></i>
-            <p>Chưa có banner nào. Hãy thêm mới ngay!</p>
+            <p>Chưa có banner nào.</p>
         </div>
         <?php endif; ?>
     </div>
 </div>
-
-<style>
-/* Hiệu ứng hover cho card */
-.banner-card {
-    transition: transform 0.2s;
-}
-
-.banner-card:hover {
-    transform: translateY(-5px);
-}
-</style>
-
 <?php include_once 'Views/admin/layout_footer.php'; ?>

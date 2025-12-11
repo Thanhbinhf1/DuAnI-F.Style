@@ -36,7 +36,13 @@ class AdminController {
         include_once 'Views/admin/banner_list.php';
     }
 
-    function bannerForm() {
+function bannerForm() {
+        // --- THÊM ĐOẠN NÀY ĐỂ TẠO TOKEN ---
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        // ----------------------------------
+
         include_once 'Models/Banner.php';
         $banner = null;
         if (isset($_GET['id'])) {
@@ -514,15 +520,15 @@ function categoryPost() {
         }
     }
     
-    function statistics() {
-        // 1. Lấy khoảng thời gian từ URL (mặc định 30 ngày)
+ function statistics() {
+        // 1. Lấy khoảng thời gian từ URL (mặc định là 30 ngày nếu không chọn)
         $days = isset($_GET['time']) ? (int)$_GET['time'] : 30;
         
-        // 2. Truyền số ngày vào Model
+        // 2. Truyền số ngày vào Model để lọc dữ liệu
         $stats = $this->model->getSaleStatistics($days);
         $stats['top_selling'] = $this->model->getTopSellingProducts(10, $days);
         
-        // 3. Gửi biến $days sang View để giữ trạng thái select box
+        // 3. Gửi biến $days sang View để giữ trạng thái của bộ lọc
         $selectedDays = $days; 
         
         include_once 'Views/admin/statistics.php';

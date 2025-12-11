@@ -95,5 +95,6 @@ class PageController {
 
         include_once 'Views/users/Page_contact.php';
     }
+
 }
 ?>
