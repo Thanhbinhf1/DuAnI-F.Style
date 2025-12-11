@@ -1,16 +1,134 @@
-<div class="banner-wrapper" id="homeBanner">
-    <?php if (!empty($banners)): ?>
-    <?php foreach ($banners as $i => $b): ?>
-    <div class="banner-slide <?= $i === 0 ? 'active' : '' ?>">
-    </div>
-    <?php endforeach; ?>
-    <?php foreach ($banners as $i => $b): ?>
-    <?php $imgSrc = !empty($b['image']) ? $b['image'] : './Public/Img/banner.jpg'; ?>
+<style>
+.banner-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    /* Chiều cao banner */
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 30px;
+}
 
-    <div class="banner-slide <?= $i === 0 ? 'active' : '' ?>">
-        <img src="<?= $imgSrc ?>" alt="<?= htmlspecialchars($b['title']) ?>"
-            onerror="this.onerror=null; this.src='./Public/Img/banner.jpg';">
+.banner-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+}
 
+.banner-slide.active {
+    opacity: 1;
+    visibility: visible;
+    z-index: 1;
+}
+
+.banner-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.8);
+}
+
+.banner-content {
+    position: absolute;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+.banner-content h1 {
+    font-size: 3em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.btn-banner {
+    padding: 10px 30px;
+    background: #ff5722;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 30px;
+    display: inline-block;
+    margin-top: 15px;
+}
+
+.banner-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    gap: 10px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.dot.active {
+    background: #ff5722;
+    transform: scale(1.2);
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .banner-container {
+        height: 300px;
+    }
+
+    .banner-content h1 {
+        font-size: 1.8em;
+    }
+
+    .btn-banner {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+}
+</style>
+
+<?php
+// Xử lý dữ liệu: Đảm bảo luôn có ít nhất 2 banner để chạy slide
+$displayBanners = isset($banners) ? $banners : [];
+
+if (count($displayBanners) < 2) {
+    // Nếu chưa có banner nào, tạo banner mẫu 1
+    if (empty($displayBanners)) {
+        $displayBanners[] = [
+            'image' => './Public/Img/banner.jpg',
+            'title' => 'F.STYLE FASHION',
+            'link'  => '?ctrl=product&act=list'
+        ];
+    }
+    // Tạo banner mẫu 2 để đủ cặp chạy luân phiên
+    $displayBanners[] = [
+        'image' => 'https://img.freepik.com/free-photo/fashion-portrait-young-businessman-handsome-model-man-casual-cloth-suit-sunglasses-hands-pockets_158538-12.jpg',
+        'title' => 'BỘ SƯU TẬP MỚI 2025',
+        'link'  => '?ctrl=product&act=list&type=new'
+    ];
+}
+?>
+
+<div class="banner-container" id="homeBanner">
+    <?php foreach ($displayBanners as $i => $b): ?>
+    <div class="banner-slide <?= $i===0 ? 'active' : '' ?>">
+        <img src="<?= !empty($b['image']) ? $b['image'] : './Public/Img/banner.jpg' ?>"
+            alt="<?= htmlspecialchars($b['title']) ?>" onerror="this.src='./Public/Img/banner.jpg'">
         <div class="banner-content">
             <h1><?= htmlspecialchars($b['title']) ?></h1>
             <?php if (!empty($b['link'])): ?>
@@ -21,25 +139,14 @@
     <?php endforeach; ?>
 
     <div class="banner-dots">
-        <?php foreach ($banners as $i => $b): ?>
-        <div class="dot <?= $i === 0 ? 'active' : '' ?>" onclick="manualSlide(<?= $i ?>)"></div>
+        <?php foreach ($displayBanners as $i => $b): ?>
+        <div class="dot <?= $i===0 ? 'active' : '' ?>" onclick="manualSwitchSlide(<?= $i ?>)"></div>
         <?php endforeach; ?>
     </div>
-
-    <?php else: ?>
-    <div class="banner-slide active">
-        <img src="./Public/Img/banner.jpg" alt="F.Style Banner"
-            onerror="this.src='https://via.placeholder.com/1200x500/000000/FFFFFF?text=F.Style+Fashion'">
-        <div class="banner-content">
-            <h1>F.STYLE FASHION</h1>
-            <p>Phong cách thời thượng - Dẫn đầu xu hướng</p>
-            <a href="?ctrl=product&act=list" class="btn-banner">Mua Sắm Ngay</a>
-        </div>
-    </div>
-    <?php endif; ?>
 </div>
 
 <div class="container" style="margin-top: 50px;">
+
     <section class="section-product">
         <div class="section-header">
             <h2>SẢN PHẨM HOT 🔥</h2>
@@ -60,6 +167,7 @@
                     <span class="badge badge-sale">-<?=round(100 - ($sp['price_sale']/$sp['price']*100))?>%</span>
                     <?php endif; ?>
                 </div>
+
                 <div class="product-info">
                     <h3 class="product-name"><a href="<?=$link?>" title="<?=$sp['name']?>"><?=$sp['name']?></a></h3>
                     <div class="product-meta">
@@ -100,11 +208,13 @@
             <h2>HÀNG MỚI VỀ 🆕</h2>
             <a href="?ctrl=product&act=list&type=new">Xem tất cả &rarr;</a>
         </div>
+
         <div class="new-arrival-layout" style="display: flex; gap: 20px; flex-wrap: wrap;">
             <div class="big-poster" style="flex: 1; min-width: 300px;">
                 <img src="https://img.freepik.com/free-photo/portrait-handsome-smiling-stylish-young-man-model-dressed-red-checkered-shirt-fashion-man-posing_158538-4909.jpg"
                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; min-height: 400px;">
             </div>
+
             <div class="product-grid-right"
                 style="flex: 1.5; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
                 <?php 
@@ -197,46 +307,51 @@
 </div>
 
 <script>
-// Logic Javascript cho Banner Slide
 document.addEventListener('DOMContentLoaded', function() {
     let currentSlide = 0;
     const slides = document.querySelectorAll('.banner-slide');
     const dots = document.querySelectorAll('.dot');
-    let slideInterval;
+    let slideTimer;
 
-    // Hàm chuyển slide
-    function goToSlide(n) {
+    // --- CẤU HÌNH THỜI GIAN: 3000ms = 3 giây ---
+    const TIME_PER_SLIDE = 3000;
+
+    function showSlide(n) {
         if (slides.length === 0) return;
 
-        // Xóa class active cũ
-        slides[currentSlide].classList.remove('active');
-        if (dots[currentSlide]) dots[currentSlide].classList.remove('active');
+        // Xử lý vòng lặp index
+        if (n >= slides.length) currentSlide = 0;
+        else if (n < 0) currentSlide = slides.length - 1;
+        else currentSlide = n;
 
-        // Tính toán slide tiếp theo
-        currentSlide = (n + slides.length) % slides.length;
+        // Xóa class active cũ
+        slides.forEach(s => s.classList.remove('active'));
+        dots.forEach(d => d.classList.remove('active'));
 
         // Thêm class active mới
         slides[currentSlide].classList.add('active');
         if (dots[currentSlide]) dots[currentSlide].classList.add('active');
     }
 
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ... các biến khai báo ...
-
-    // Hàm tự động chạy
-    function startSlideShow() {
-        slideInterval = setInterval(() => {
-            // Tự động chuyển sang slide tiếp theo sau 3 giây
-            goToSlide(currentSlide + 1);
-        }, 3000);
+    function startAutoSlide() {
+        slideTimer = setInterval(() => {
+            showSlide(currentSlide + 1);
+        }, TIME_PER_SLIDE);
     }
 
-    // QUAN TRỌNG: Nó chỉ bắt đầu chạy nếu tìm thấy CÓ NHIỀU HƠN 1 slide
+    // Hàm gọi khi bấm nút chấm tròn
+    window.manualSwitchSlide = function(n) {
+        clearInterval(slideTimer); // Dừng tự động
+        showSlide(n); // Chuyển slide ngay lập tức
+        startAutoSlide(); // Bắt đầu đếm lại 3 giây
+    };
+
+    // Bắt đầu chạy nếu có nhiều hơn 1 slide
     if (slides.length > 1) {
-        startSlideShow();
+        startAutoSlide();
+    } else if (slides.length === 1) {
+        // Nếu chỉ có 1 slide thì hiện nó lên luôn
+        slides[0].classList.add('active');
     }
 });
 </script>
