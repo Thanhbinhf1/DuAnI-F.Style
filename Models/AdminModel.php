@@ -307,5 +307,24 @@ class AdminModel {
             'status_ratio' => $statusRatio,
         ];
     }
+    // --- KHU VỰC XỬ LÝ BIẾN THỂ (SIZE/MÀU) ---
+
+    // 1. Thêm biến thể mới
+    function insertVariant($productId, $color, $size, $quantity) {
+        $sql = "INSERT INTO product_variants (product_id, color, size, quantity) VALUES (?, ?, ?, ?)";
+        return $this->db->execute($sql, [$productId, $color, $size, $quantity]);
+    }
+
+    // 2. Xóa tất cả biến thể của sản phẩm (Dùng khi cập nhật sản phẩm)
+    function deleteVariants($productId) {
+        $sql = "DELETE FROM product_variants WHERE product_id = ?";
+        return $this->db->execute($sql, [$productId]);
+    }
+    
+    // 3. Lấy danh sách biến thể (Dùng để hiển thị lại khi Sửa sản phẩm)
+     function getVariants($productId) {
+        $sql = "SELECT * FROM product_variants WHERE product_id = ?";
+        return $this->db->query($sql, [$productId]);
+    }
 }
 ?>
