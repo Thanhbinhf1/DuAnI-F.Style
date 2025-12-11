@@ -1,111 +1,4 @@
-<style>
-/* CSS CHO SLIDESHOW */
-.banner-container {
-    position: relative;
-    width: 100%;
-    height: 500px;
-    /* Chiều cao banner */
-    overflow: hidden;
-    background: #000;
-}
 
-.banner-slide {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
-    /* Hiệu ứng mờ dần */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    visibility: hidden;
-    /* Ẩn hẳn để không che các phần tử khác */
-}
-
-.banner-slide.active {
-    opacity: 1;
-    z-index: 1;
-    visibility: visible;
-}
-
-.banner-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.7);
-    /* Làm tối ảnh chút để chữ nổi */
-}
-
-.banner-content {
-    position: absolute;
-    z-index: 2;
-    text-align: center;
-    color: white;
-    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
-    padding: 0 20px;
-}
-
-.banner-content h1 {
-    font-size: 3em;
-    margin-bottom: 15px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.banner-content p {
-    font-size: 1.2em;
-    margin-bottom: 20px;
-}
-
-.btn-banner {
-    display: inline-block;
-    padding: 12px 35px;
-    background: #ff5722;
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 30px;
-    text-transform: uppercase;
-    transition: all 0.3s;
-    border: 2px solid #ff5722;
-}
-
-.btn-banner:hover {
-    background: transparent;
-    color: #ff5722;
-    transform: scale(1.05);
-}
-
-/* Chấm tròn điều hướng */
-.banner-dots {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 3;
-    display: flex;
-    gap: 12px;
-}
-
-.dot {
-    width: 12px;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: 0.3s;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dot.active {
-    background: #ff5722;
-    transform: scale(1.3);
-    border-color: #ff5722;
-}
-</style>
 
 <div class="banner-container" id="homeBanner">
     <?php if (!empty($banners)): ?>
@@ -143,7 +36,7 @@
 
     <section class="section-product">
         <div class="section-header">
-            <h2>SẢN PHẨM HOT 🔥</h2>
+            <h2>SẢN PHẨM HOT </h2>
             <a href="?ctrl=product&act=list&type=hot">Xem tất cả &rarr;</a>
         </div>
         <div class="product-list">
@@ -199,7 +92,7 @@
 
     <section class="section-product">
         <div class="section-header">
-            <h2>HÀNG MỚI VỀ 🆕</h2>
+            <h2>HÀNG MỚI VỀ </h2>
             <a href="?ctrl=product&act=list&type=new">Xem tất cả &rarr;</a>
         </div>
 
@@ -274,7 +167,7 @@
     </section>
 
     <section class="section-news" style="margin-bottom: 50px;">
-        <h2>TIN TỨC THỜI TRANG 📰</h2>
+        <h2>TIN TỨC THỜI TRANG </h2>
         <div class="news-list"
             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
             <div class="news-item">

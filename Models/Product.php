@@ -303,6 +303,25 @@ function countProductsByCategoryId($categoryId) {
     }
     
 // ... (các hàm khác)
+// --- Cập nhật lại số lượng sản phẩm (Dùng khi Hủy đơn) ---
+    function restoreStockForOrder($orderId) {
+        // 1. Lấy danh sách sản phẩm trong đơn hàng
+        $sqlGet = "SELECT product_id, quantity FROM order_details WHERE order_id = ?";
+        $items = $this->db->query($sqlGet, [$orderId]);
+
+        if ($items) {
+            foreach ($items as $item) {
+                // 2. Cộng lại số lượng vào bảng products
+                // (Lưu ý: Nếu bạn quản lý kho theo biến thể màu/size, bạn cần lưu variant_id vào order_details thì mới trả kho chính xác được)
+                // Ở đây mình trả kho vào bảng products làm mẫu:
+                $sqlUpdate = "UPDATE products SET quantity = quantity + ? WHERE id = ?";
+                $this->db->execute($sqlUpdate, [$item['quantity'], $item['product_id']]);
+                
+                // Nếu muốn trả kho vào bảng variants (nếu có logic update tồn kho tổng):
+                // $this->db->execute("UPDATE product_variants SET quantity = quantity + ? WHERE product_id = ?", [$item['quantity'], $item['product_id']]);
+            }
+        }
+    }
 }
 
 

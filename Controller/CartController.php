@@ -1,5 +1,6 @@
 <?php
 include_once 'Models/Product.php';
+include_once 'Models/Database.php';
 
 class CartController {
     private $model;
@@ -147,26 +148,39 @@ public function addToCart() {
         echo "<script>window.location='?ctrl=cart&act=view';</script>";
     }
     function updateAjax() {
-        // --- ĐOẠN CODE QUAN TRỌNG NHẤT: Xóa sạch HTML Header thừa ---
-        while (ob_get_level()) {
-            ob_end_clean();
-        }
-        // -------------------------------------------------------------
-
+        while (ob_get_level()) { ob_end_clean(); }
+        
         if (isset($_POST['key']) && isset($_POST['qty'])) {
             $key = $_POST['key'];
             $qty = (int)$_POST['qty'];
 
             if (isset($_SESSION['cart'][$key])) {
-                $stock = $_SESSION['cart'][$key]['stock'];
-                
-                // Kiểm tra và gán số lượng hợp lệ
-                if ($qty > $stock) $qty = $stock;
+                $productId = $_SESSION['cart'][$key]['id'];
+                $variantId = $_SESSION['cart'][$key]['variant_id'];
+
+                // --- CODE SỬA: Lấy tồn kho thực tế từ DB ---
+                $realStock = 0;
+                if ($variantId > 0) {
+                    // Nếu là biến thể
+                    $variant = $this->model->getVariantDetail($variantId);
+                    $realStock = $variant ? (int)$variant['quantity'] : 0;
+                } else {
+                    // Nếu là sản phẩm thường
+                    $prod = $this->model->getProductById($productId);
+                    // Giả sử bảng products có cột quantity, nếu không thì mặc định 100
+                    $realStock = isset($prod['quantity']) ? (int)$prod['quantity'] : 100; 
+                }
+                // -------------------------------------------
+
+                // Kiểm tra số lượng
+                if ($qty > $realStock) $qty = $realStock;
                 if ($qty < 1) $qty = 1;
 
+                // Cập nhật session
                 $_SESSION['cart'][$key]['quantity'] = $qty;
-                
-                // Tính toán giá trị mới
+                $_SESSION['cart'][$key]['stock']    = $realStock; // Cập nhật luôn stock trong session cho đồng bộ
+
+                // Tính toán lại tiền
                 $price = $_SESSION['cart'][$key]['price'];
                 $rowTotal = $price * $qty; 
                 
@@ -175,23 +189,19 @@ public function addToCart() {
                     $totalOrder += $item['price'] * $item['quantity'];
                 }
 
-                // Trả về kết quả JSON sạch
                 echo json_encode([
                     'status' => 'success', 
                     'new_qty' => $qty,
                     'row_total' => number_format($rowTotal) . ' đ', 
-                    'cart_total' => number_format($totalOrder) . ' đ'
+                    'cart_total' => number_format($totalOrder) . ' đ',
+                    'message' => ($qty == $realStock) ? 'Đã đạt giới hạn tồn kho!' : ''
                 ]);
-                exit; // Dừng ngay lập tức để không in thêm Footer
+                exit; 
             }
         }
-        
-        // Fallback nếu không thành công
         echo json_encode(['status' => 'error', 'message' => 'Lỗi cập nhật.']);
         exit; 
-    
-    
-}
+    }
 }
 
 ?>

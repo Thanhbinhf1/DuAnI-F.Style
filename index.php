@@ -1,5 +1,6 @@
 <?php
 session_start();
+include_once 'config.php';
 ob_start(); // Bật bộ đệm đầu ra
 
 define('BASE_URL', '/DuAnI-F.Style/');

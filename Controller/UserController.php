@@ -23,20 +23,15 @@ if (!defined('BASE_URL')) {
 function sendEmail_PHPMailer($to, $subject, $body) {
     $mail = new PHPMailer(true);
     
-    try {
+    
         // Cấu hình Server (Gmail)
+       try {
         $mail->isSMTP();                                            
-        $mail->Host       = 'smtp.gmail.com';                     
+        $mail->Host       = MAIL_HOST;       // Dùng hằng số              
         $mail->SMTPAuth   = true;                                   
-        
-        // ====================================================
-        // THAY THẾ BẰNG THÔNG TIN GMAIL VÀ APP PASSWORD CỦA BẠN
-        // ====================================================
-        $mail->Username   = 'truongquangquy2512@gmail.com'; // Ví dụ: truongquanguqy2512@gmail.com
-        $mail->Password   = 'rvnzachoylhyjsrq';   // Ví dụ: rvnzachoylhyjsrq
-
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         
-        $mail->Port       = 587;                                    
+        $mail->Username   = MAIL_USER;       // Dùng hằng số
+        $mail->Password   = MAIL_PASS;       // Dùng hằng số
+        $mail->Port       = MAIL_PORT;       // Dùng hằng số                                
         
         // Cấu hình mã hóa Tiếng Việt và Người gửi
         $mail->CharSet = 'UTF-8';
