@@ -377,21 +377,24 @@ textarea.form-control {
 
 <script>
     function addVariantRow() {
-        var table = document.getElementById("variantTable").getElementsByTagName('tbody')[0];
-        var rowCount = table.rows.length; // Dùng làm index
-        var row = table.insertRow(rowCount);
-        
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        var cell3 = row.insertCell(2);
-        var cell4 = row.insertCell(3);
-        
-        // Tạo input name="variants[0][color]", variants[1][color]...
-        cell1.innerHTML = `<input type="text" name="variants[${rowCount}][color]" class="form-control" placeholder="Màu (Đen, Trắng...)" required>`;
-        cell2.innerHTML = `<input type="text" name="variants[${rowCount}][size]" class="form-control" placeholder="Size (S, M, L...)" required>`;
-        cell3.innerHTML = `<input type="number" name="variants[${rowCount}][quantity]" class="form-control" value="10" min="0" required>`;
-        cell4.innerHTML = `<button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Xóa</button>`;
-    }
+    var table = document.getElementById("variantTable").getElementsByTagName('tbody')[0];
+    var rowCount = table.rows.length;
+    var row = table.insertRow(rowCount);
+    
+    // Thêm 5 ô (thêm 1 ô cho giá so với cũ)
+    var cell1 = row.insertCell(0);
+    var cell2 = row.insertCell(1);
+    var cell3 = row.insertCell(2);
+    var cell4 = row.insertCell(3); // Ô Giá
+    var cell5 = row.insertCell(4); // Ô Xóa
+    
+    cell1.innerHTML = `<input type="text" name="variants[${rowCount}][color]" class="form-control" placeholder="Màu" required>`;
+    cell2.innerHTML = `<input type="text" name="variants[${rowCount}][size]" class="form-control" placeholder="Size" required>`;
+    cell3.innerHTML = `<input type="number" name="variants[${rowCount}][quantity]" class="form-control" value="10" min="0" required>`;
+    // Code thêm ô input giá:
+    cell4.innerHTML = `<input type="number" name="variants[${rowCount}][price]" class="form-control" value="0" min="0" placeholder="Giá" required>`;
+    cell5.innerHTML = `<button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Xóa</button>`;
+}
 
     function removeRow(btn) {
         var row = btn.parentNode.parentNode;

@@ -310,9 +310,12 @@ class AdminModel {
     // --- KHU VỰC XỬ LÝ BIẾN THỂ (SIZE/MÀU) ---
 
     // 1. Thêm biến thể mới
-    function insertVariant($productId, $color, $size, $quantity) {
-        $sql = "INSERT INTO product_variants (product_id, color, size, quantity) VALUES (?, ?, ?, ?)";
-        return $this->db->execute($sql, [$productId, $color, $size, $quantity]);
+    function insertVariant($productId, $color, $size, $quantity, $price) {
+        // Thêm cột price vào câu lệnh SQL
+        $sql = "INSERT INTO product_variants (product_id, color, size, quantity, price) 
+                VALUES (?, ?, ?, ?, ?)";
+        
+        return $this->db->execute($sql, [$productId, $color, $size, $quantity, $price]);
     }
 
     // 2. Xóa tất cả biến thể của sản phẩm (Dùng khi cập nhật sản phẩm)

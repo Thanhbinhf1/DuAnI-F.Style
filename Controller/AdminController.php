@@ -265,11 +265,13 @@ function categoryPost() {
     function productForm() {
         $product = null;
         $galleryImages = [];
+        $variantsList = [];
         
         if (isset($_GET['id'])) {
             $product = $this->model->getProductById($_GET['id']);
             if ($product) {
                 $galleryImages = $this->model->getGalleryImages($_GET['id']);
+                $variantsList = $this->model->getVariants($_GET['id']);
             }
         }
         $categories = $this->model->getAllCategories();
@@ -380,14 +382,19 @@ function categoryPost() {
                 // 2. Lưu biến thể từ Form gửi lên
                 if (isset($_POST['variants']) && is_array($_POST['variants'])) {
                     foreach ($_POST['variants'] as $variant) {
-                        // Lấy dữ liệu từng dòng
                         $color = trim($variant['color'] ?? '');
                         $size  = trim($variant['size'] ?? '');
                         $qty   = (int)($variant['quantity'] ?? 0);
+                        
+                        // --- LẤY GIÁ TỪ FORM (Nếu để trống thì lấy giá gốc sản phẩm) ---
+                        $priceVariant = (float)($variant['price'] ?? 0);
+                        if ($priceVariant <= 0) {
+                            $priceVariant = $price; // Lấy biến $price (giá gốc) ở đoạn trên làm mặc định
+                        }
 
-                        // Chỉ lưu nếu có đủ màu và size
                         if ($color !== '' && $size !== '') {
-                            $this->model->insertVariant($productId, $color, $size, $qty);
+                            // Truyền thêm $priceVariant vào hàm insert
+                            $this->model->insertVariant($productId, $color, $size, $qty, $priceVariant);
                         }
                     }
                 }
