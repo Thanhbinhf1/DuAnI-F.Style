@@ -370,11 +370,35 @@ function categoryPost() {
                     }
                 }
             }
+            if ($result) { // Chỉ làm nếu lưu sản phẩm thành công
+                
+                // 1. Nếu đang sửa ($id > 0), xóa hết biến thể cũ để lưu lại cái mới
+                if ($id > 0) {
+                    $this->model->deleteVariants($productId);
+                }
+
+                // 2. Lưu biến thể từ Form gửi lên
+                if (isset($_POST['variants']) && is_array($_POST['variants'])) {
+                    foreach ($_POST['variants'] as $variant) {
+                        // Lấy dữ liệu từng dòng
+                        $color = trim($variant['color'] ?? '');
+                        $size  = trim($variant['size'] ?? '');
+                        $qty   = (int)($variant['quantity'] ?? 0);
+
+                        // Chỉ lưu nếu có đủ màu và size
+                        if ($color !== '' && $size !== '') {
+                            $this->model->insertVariant($productId, $color, $size, $qty);
+                        }
+                    }
+                }
+            }
 
             $msg = $result ? $msg : 'LỖI: Thao tác thất bại.';
             $this->redirectWithAlert($msg, '?ctrl=admin&act=productList');
         }
+        
     }
+    
 
     function productToggleStatus() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {

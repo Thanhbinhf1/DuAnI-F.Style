@@ -322,6 +322,23 @@ function countProductsByCategoryId($categoryId) {
             }
         }
     }
+    function insertVariant($productId, $color, $size, $quantity) {
+        // Giả sử bảng tên là 'product_variants'
+        $sql = "INSERT INTO product_variants (product_id, color, size, quantity) VALUES (?, ?, ?, ?)";
+        return $this->db->execute($sql, [$productId, $color, $size, $quantity]);
+    }
+
+    // Xóa tất cả biến thể của sản phẩm (Dùng khi update)
+    function deleteVariants($productId) {
+        $sql = "DELETE FROM product_variants WHERE product_id = ?";
+        return $this->db->execute($sql, [$productId]);
+    }
+    
+    // Lấy danh sách biến thể để hiển thị trong form sửa
+    function getVariants($productId) {
+        $sql = "SELECT * FROM product_variants WHERE product_id = ?";
+        return $this->db->query($sql, [$productId]);
+    }
 }
 
 

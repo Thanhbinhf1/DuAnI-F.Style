@@ -202,11 +202,23 @@ class AdminModel {
                 FROM orders o 
                 LEFT JOIN users u ON o.user_id = u.id";
         
+        // Giữ nguyên logic lọc nếu bạn bấm vào các tab trạng thái
         if ($status !== null && $status !== 'all') {
             $sql .= " WHERE o.status = " . (int)$status;
         }
         
-        $sql .= " ORDER BY o.created_at DESC";
+        // --- PHẦN SỬA ĐỔI ---
+        // Logic sắp xếp:
+        // 1. CASE WHEN o.status = 0 THEN 0 ELSE 1 END ASC: 
+        //    -> Nếu đơn là "Chờ xác nhận" (0) thì gán ưu tiên 0 (lên đầu).
+        //    -> Các đơn khác gán là 1 (xuống dưới).
+        // 2. o.id ASC:
+        //    -> Sắp xếp theo ID tăng dần (người mua trước có ID nhỏ hơn sẽ hiện trước).
+        
+        $sql .= " ORDER BY 
+                  CASE WHEN o.status = 0 THEN 0 ELSE 1 END ASC, 
+                  o.id ASC";
+        
         return $this->db->query($sql);
     }
 

@@ -335,6 +335,69 @@ textarea.form-control {
                 </div>
             </div>
         </div>
+        
+        <div class="mb-3" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9;">
+    <label class="form-label fw-bold">Phân loại hàng (Màu sắc & Kích thước)</label>
+    
+    <table class="table table-bordered" id="variantTable" style="background: white;">
+        <thead>
+            <tr>
+                <th>Màu sắc</th>
+                <th>Kích thước (Size)</th>
+                <th>Số lượng kho</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php 
+            // Nếu đang Sửa, lấy biến thể cũ từ DB hiện ra
+            // Cần gọi Model trong Controller trước khi include View để có biến $variantsList
+            // Tuy nhiên, để nhanh gọn, ta giả sử mảng này trống nếu thêm mới
+            
+            // Bạn cần thêm dòng này vào productForm() trong AdminController:
+            // $variantsList = [];
+            // if ($id > 0) $variantsList = $this->model->getVariants($id);
+
+            $variantsList = isset($variantsList) ? $variantsList : [];
+            if (!empty($variantsList)) {
+                foreach ($variantsList as $index => $v) {
+                    echo "<tr>
+                        <td><input type='text' name='variants[$index][color]' class='form-control' value='{$v['color']}' placeholder='Ví dụ: Đen' required></td>
+                        <td><input type='text' name='variants[$index][size]' class='form-control' value='{$v['size']}' placeholder='Ví dụ: XL' required></td>
+                        <td><input type='number' name='variants[$index][quantity]' class='form-control' value='{$v['quantity']}' min='0' required></td>
+                        <td><button type='button' class='btn btn-danger btn-sm' onclick='removeRow(this)'>Xóa</button></td>
+                    </tr>";
+                }
+            }
+            ?>
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-primary btn-sm" onclick="addVariantRow()">+ Thêm phân loại</button>
+</div>
+
+<script>
+    function addVariantRow() {
+        var table = document.getElementById("variantTable").getElementsByTagName('tbody')[0];
+        var rowCount = table.rows.length; // Dùng làm index
+        var row = table.insertRow(rowCount);
+        
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+        var cell4 = row.insertCell(3);
+        
+        // Tạo input name="variants[0][color]", variants[1][color]...
+        cell1.innerHTML = `<input type="text" name="variants[${rowCount}][color]" class="form-control" placeholder="Màu (Đen, Trắng...)" required>`;
+        cell2.innerHTML = `<input type="text" name="variants[${rowCount}][size]" class="form-control" placeholder="Size (S, M, L...)" required>`;
+        cell3.innerHTML = `<input type="number" name="variants[${rowCount}][quantity]" class="form-control" value="10" min="0" required>`;
+        cell4.innerHTML = `<button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Xóa</button>`;
+    }
+
+    function removeRow(btn) {
+        var row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+</script>
 
         <div style="margin-top: 20px; padding-bottom: 50px;">
             <button type="submit" class="btn-submit">
