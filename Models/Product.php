@@ -339,6 +339,15 @@ function countProductsByCategoryId($categoryId) {
         $sql = "SELECT * FROM product_variants WHERE product_id = ?";
         return $this->db->query($sql, [$productId]);
     }
+    function decreaseVariantStock($variantId, $quantity) {
+      
+        $sql = "UPDATE product_variants SET quantity = quantity - ? WHERE id = ?";
+        return $this->db->execute($sql, [$quantity, $variantId]);
+    }
+    function decreaseProductStock($productId, $quantity) {
+        $sql = "UPDATE products SET quantity = quantity - ? WHERE id = ?";
+        return $this->db->execute($sql, [$quantity, $productId]);
+    }
 }
 
 

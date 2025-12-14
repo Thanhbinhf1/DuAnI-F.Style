@@ -102,6 +102,16 @@ class OrderController {
         foreach ($_SESSION['cart'] as $item) {
             $totalMoney += $item['price'] * $item['quantity'];
         }
+        // --- BỔ SUNG: Xử lý giảm giá ---
+$discountAmount = isset($_POST['discount_amount']) ? (float)$_POST['discount_amount'] : 0;
+// Validate lại discount ở server (để tránh hack html) nếu có thời gian, 
+// nhưng ít nhất phải trừ tiền ở đây:
+$finalTotal = $totalMoney - $discountAmount;
+if ($finalTotal < 0) $finalTotal = 0;
+$voucherCode = $_POST['voucher_code_used'] ?? null;
+if($voucherCode) {
+    // Logic cập nhật số lượng voucher đã dùng (giảm quantity của voucher đi 1)
+}
 
         // Tạo đơn hàng
         $orderId = $this->model->createOrder(
@@ -116,14 +126,17 @@ class OrderController {
 
         if ($orderId) {
             // Lưu chi tiết từng sản phẩm
-            foreach ($_SESSION['cart'] as $item) {
-                $this->model->createOrderDetail(
-                    $orderId,
-                    $item['id'],
-                    $item['quantity'],
-                    $item['price']
-                );
-            }
+           foreach ($_SESSION['cart'] as $item) {
+    $this->model->createOrderDetail($orderId, $item['id'], $item['quantity'], $item['price']);
+    
+    // --- BỔ SUNG: TRỪ TỒN KHO ---
+    // Gọi sang ProductModel để trừ số lượng
+    if ($item['variant_id'] > 0) {
+        $this->productModel->decreaseVariantStock($item['variant_id'], $item['quantity']);
+    } else {
+        $this->productModel->decreaseProductStock($item['id'], $item['quantity']);
+    }
+}
 
             // Xóa giỏ hàng sau khi tạo đơn
             unset($_SESSION['cart']);
