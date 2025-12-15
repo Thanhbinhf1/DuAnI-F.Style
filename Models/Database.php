@@ -1,20 +1,24 @@
 <?php 
 class Database {
-    private $servername = "localhost";
+    // 1. QUAN TRỌNG: Đổi localhost thành 127.0.0.1 để tránh bị treo
+    private $servername = "127.0.0.1"; 
     private $username   = "root";
     private $password   = "";
+    
+    // 2. Kiểm tra kỹ tên DB này có khớp trong phpMyAdmin không
     private $dbname     = "F.Style"; 
+    
     private $conn;
 
     function __construct() {
         try {
-            $dsn = "mysql:host={$this->servername};dbname={$this->dbname};charset=utf8";
+            // Thêm port=3306 để chắc chắn
+            $dsn = "mysql:host={$this->servername};port=3306;dbname={$this->dbname};charset=utf8";
             $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch(PDOException $e) {
-            // SỬA: Không echo lỗi ra màn hình
-            error_log("Lỗi kết nối DB: " . $e->getMessage());
-            throw new Exception("Lỗi kết nối cơ sở dữ liệu. Vui lòng thử lại sau.");
+            // Khi lỗi, dòng này sẽ giúp bạn biết sai cái gì thay vì treo máy
+            die("Lỗi kết nối Database: " . $e->getMessage()); 
         }
     }
 
@@ -25,7 +29,7 @@ class Database {
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
             error_log("Lỗi SQL (query): " . $e->getMessage());
-            return []; // Trả về mảng rỗng để không crash vòng lặp
+            return []; 
         }
     }
 
