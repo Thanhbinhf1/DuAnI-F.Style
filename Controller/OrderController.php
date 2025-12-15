@@ -102,16 +102,23 @@ class OrderController {
         foreach ($_SESSION['cart'] as $item) {
             $totalMoney += $item['price'] * $item['quantity'];
         }
-        // --- BỔ SUNG: Xử lý giảm giá ---
-$discountAmount = isset($_POST['discount_amount']) ? (float)$_POST['discount_amount'] : 0;
-// Validate lại discount ở server (để tránh hack html) nếu có thời gian, 
-// nhưng ít nhất phải trừ tiền ở đây:
-$finalTotal = $totalMoney - $discountAmount;
-if ($finalTotal < 0) $finalTotal = 0;
-$voucherCode = $_POST['voucher_code_used'] ?? null;
-if($voucherCode) {
-    // Logic cập nhật số lượng voucher đã dùng (giảm quantity của voucher đi 1)
-}
+
+        // --- [CODE MỚI BỔ SUNG: XỬ LÝ VOUCHER] ---
+        
+        // Lấy số tiền giảm giá từ input hidden ở form checkout
+        // (Trong view checkout.php bạn đã có <input name="discount_amount">)
+        $discountMoney = 0;
+        if (isset($_POST['discount_amount'])) {
+            $discountMoney = (float)$_POST['discount_amount'];
+        }
+
+        // Trừ tiền giảm giá
+        $finalTotal = $totalMoney - $discountMoney;
+
+        // Đảm bảo tổng tiền không bị âm (trường hợp giảm giá > tổng tiền)
+        if ($finalTotal < 0) {
+            $finalTotal = 0;
+        }
 
         // Tạo đơn hàng
         $orderId = $this->model->createOrder(
@@ -119,7 +126,7 @@ if($voucherCode) {
             $fullname,
             $phone,
             $address,
-            $totalMoney,
+            $finalTotal,
             $payment,
             $note
         );

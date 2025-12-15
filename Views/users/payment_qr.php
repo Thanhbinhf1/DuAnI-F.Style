@@ -68,7 +68,7 @@
             <p style="font-style: italic; color: #666; margin-bottom: 20px;">
                 * Hệ thống sẽ xử lý đơn hàng sau khi nhận được thanh toán. 
             </p>
-            <a href="?ctrl=user&act=profile"
+            <a href="<?= BASE_URL ?>"
                style="
                     padding: 12px 24px;
                     background: #ff5722;
